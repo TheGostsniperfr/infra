@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: default-issuer
+  namespace: cert-manager
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: brianperret.pro@gmail.com
+    privateKeySecretRef:
+      name: default-issuer-acoount-key
+    solvers:
+      - http01:
+          ingress:
+            class: public
