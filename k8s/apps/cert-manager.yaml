@@ -24,4 +24,4 @@ spec:
           value: "true"
   destination:
     server: in-cluster
-    namespace: nginx-ingress
+    namespace: cert-manager

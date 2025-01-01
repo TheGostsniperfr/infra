@@ -10,7 +10,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: argocd.arffornia.ddns.net
+  - host: argocd.arffornia.com
     http:
       paths:
       - path: /
@@ -22,5 +22,5 @@ spec:
               name: https
   tls:
   - hosts:
-    - argocd.arffornia.ddns.net
+    - argocd.arffornia.com
     secretName: argocd-server-tls 
