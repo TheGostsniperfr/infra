@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: nginx-ingress
+  name: ingress-nginx
   namespace: argocd
   labels:
-    app: nginx-ingress
+    app: ingress-nginx
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -17,7 +17,7 @@ spec:
   source:
     repoURL: https://github.com/TheGostsniperfr/infra.git
     targetRevision: HEAD
-    path: k8s/config/nginx-ingress
+    path: k8s/config/ingress-nginx
   destination:
     name: in-cluster
-    namespace: nginx-ingress
+    namespace: ingress-nginx
