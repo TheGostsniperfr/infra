@@ -23,5 +23,5 @@ spec:
         - name: installCRDs
           value: "true"
   destination:
-    server: in-cluster
+    name: in-cluster
     namespace: cert-manager
