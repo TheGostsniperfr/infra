@@ -4,6 +4,6 @@ kind: Kustomization
 namespace: argocd
 
 resources:
-  - argocd.yaml
+  # - argocd.yaml
   - ingress-nginx.yaml
   - cert-manager.yaml
