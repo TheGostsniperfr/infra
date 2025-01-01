@@ -5,6 +5,7 @@ namespace: argocd
 
 resources:
   - namespace.yaml
+  - argocd-server-certificate.yaml
   - github.com/argoproj/argo-cd/manifests/cluster-install?ref=v2.13.2
   - ingress.yaml
   - apps.yaml
