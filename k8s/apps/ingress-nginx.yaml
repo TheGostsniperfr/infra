@@ -2,22 +2,35 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: ingress-nginx
-  namespace: argocd
-  labels:
-    app: ingress-nginx
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  labels:
+    app: ingress-nginx
 spec:
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
     automated:
       prune: true
-  project: default
-  source:
-    repoURL: https://github.com/TheGostsniperfr/infra.git
-    targetRevision: HEAD
-    path: k8s/config/ingress-nginx
   destination:
     name: in-cluster
     namespace: ingress-nginx
+  project: default
+  source:
+    repoURL: https://kubernetes.github.io/ingress-nginx
+    chart: ingress-nginx
+    targetRevision: 4.9.1
+    helm:
+      values: |
+        controller:
+          service:
+            type: NodePort
+          ingressClass: public
+          config:
+            entries:
+              error-log-level: "debug"
+          ingressClassResource:
+            name: public
+            default: true
+          metrics:
+            enabled: true
