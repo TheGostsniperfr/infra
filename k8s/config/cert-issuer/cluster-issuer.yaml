@@ -10,6 +10,9 @@ spec:
     privateKeySecretRef:
       name: default-issuer-account-key
     solvers:
-      - http01:
-          ingress:
-            class: nginx
+      - dns01:
+          cloudflare:
+            email: brian.perret@gmail.com
+            apiTokenSecretRef:
+              name: cloudflare-api-token-secret
+              key: api-token
