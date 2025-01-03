@@ -23,8 +23,8 @@ spec:
     helm:
       values: |
         controller:
-          service:
-            type: NodePort
+          # service:
+            # type: NodePort
           ingressClass: public
           config:
             entries:
