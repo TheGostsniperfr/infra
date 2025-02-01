@@ -1,18 +1,26 @@
-apiVersion: "acid.zalan.do/v1"
+apiVersion: acid.zalan.do/v1
 kind: postgresql
 metadata:
   name: postgres-cluster
-  namespace: postgres-operator
 spec:
-  teamID: "tgs"
+  allowedSourceRanges: null
+  databases:
+    arffornia: arffornia
+  enableConnectionPooler: true
+  enableReplicaConnectionPooler: true
+  enableReplicaLoadBalancer: true
+  numberOfInstances: 3
+  postgresql:
+    version: '17'
+  resources:
+    limits:
+      cpu: 500m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+  teamId: tgs
+  users:
+    arffornia: []
   volume:
     size: 10Gi
-  numberOfInstances: 3 
-  users:
-    arffornia.arffornia: []
-  databases:
-    arffornia: arffornia.arffornia
-  postgresql:
-    version: "17"
-  labels:
-    app: postgres-cluster
