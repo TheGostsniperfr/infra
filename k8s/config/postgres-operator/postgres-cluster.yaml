@@ -14,3 +14,5 @@ spec:
     arffornia: arffornia.arffornia
   postgresql:
     version: "17"
+  labels:
+    app: postgres-cluster
