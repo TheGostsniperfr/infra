@@ -6,3 +6,5 @@ namespace: postgres-operator
 resources:
   - namespace.yaml
   - github.com/zalando/postgres-operator/manifests?ref=v1.14.0
+  - postgres-pv.yaml
+  - postgres-pvc.yaml
