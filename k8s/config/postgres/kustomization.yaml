@@ -6,3 +6,4 @@ namespace: postgres
 resources:
   - namespace.yaml
   - service.yaml
+  - postgres-cluster.yaml
