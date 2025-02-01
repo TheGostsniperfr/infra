@@ -1,0 +1,16 @@
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: postgres-cluster
+  namespace: postgres-operator
+spec:
+  teamID: "tgs"
+  volume:
+    size: 10Gi
+  numberOfInstances: 3 
+  users:
+    arffornia.arffornia: []
+  databases:
+    arffornia: arffornia.arffornia
+  postgresql:
+    version: "17"
