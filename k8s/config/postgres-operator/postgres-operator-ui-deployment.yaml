@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
       - name: postgres-operator-ui
-        image: zalando/postgres-operator-ui:latest
+        image: ghcr.io/zalando/postgres-operator-ui:v1.14.0
         ports:
         - containerPort: 8080
