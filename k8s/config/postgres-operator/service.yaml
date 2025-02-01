@@ -10,4 +10,4 @@ spec:
       targetPort: postgresql
   selector:
     app: postgres-cluster
-  clusterIP: ClusterIP 
+  type: ClusterIP 
