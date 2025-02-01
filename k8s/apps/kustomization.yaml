@@ -9,4 +9,4 @@ resources:
   - cert-manager.yaml
   - default-issuer.yaml
   - metallb.yaml
-  - postgres-operator
+  - postgres-operator.yaml
