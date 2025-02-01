@@ -10,3 +10,4 @@ resources:
   - default-issuer.yaml
   - metallb.yaml
   - postgres-operator.yaml
+  - postgres.yaml
