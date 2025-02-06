@@ -17,3 +17,5 @@ spec:
   destination:
     name: in-cluster
     namespace: longhorn-system
+  kustomize:
+    buildOptions: --enable-helm
