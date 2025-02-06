@@ -5,8 +5,7 @@ namespace: longhorn-system
 
 resources:
   - namespace.yaml
-  - ingress.yaml
-  - longhorn-frontend-certificate.yaml
+  - longhorn-ingress.yaml
 
 helmCharts:
   - name: longhorn
