@@ -1,0 +1,21 @@
+preUpgradeChecker:
+  jobEnabled: false
+
+longhornUI:
+  replicas: 1
+
+ingress:
+  enabled: true
+  host: longhorn.arffornia.com
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  tls:
+    - hosts:
+        - longhorn.arffornia.com
+      secretName: longhorn-tls
+
+longhorn:
+  frontend:
+    https:
+      enabled: true
+      tlsSecret: longhorn-tls

@@ -11,3 +11,4 @@ resources:
   - metallb.yaml
   - postgres-operator.yaml
   - postgres.yaml
+  - longhorn.yaml
