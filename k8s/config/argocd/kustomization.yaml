@@ -11,4 +11,4 @@ resources:
   - apps.yaml
 
 patches:
-  - path: argocd-cm.yaml
+  - path: patch-argocd-cm.yaml
