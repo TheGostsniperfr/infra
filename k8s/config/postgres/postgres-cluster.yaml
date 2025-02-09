@@ -25,4 +25,4 @@ spec:
     arffornia: []
   volume:
     size: 10Gi
-    storageClass: local-storage
+    storageClass: longhorn
