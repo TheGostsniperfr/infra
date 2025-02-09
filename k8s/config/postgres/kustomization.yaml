@@ -7,6 +7,4 @@ resources:
   - namespace.yaml
   - service.yaml
   - postgres-cluster.yaml
-  - postgres-pv.yaml
   - postgres-pvc.yaml
-  - local-storage.yaml
