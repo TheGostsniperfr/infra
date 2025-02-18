@@ -4,20 +4,27 @@ metadata:
   name: longhorn-ingress
   namespace: longhorn-system
   annotations:
+    cert-manager.io/cluster-issuer: default-issuer
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/auth-type: basic
-    nginx.ingress.kubernetes.io/ssl-redirect: 'false'
     nginx.ingress.kubernetes.io/auth-secret: basic-auth
     nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required '
     nginx.ingress.kubernetes.io/proxy-body-size: 10000m
 spec:
   ingressClassName: public
   rules:
-  - http:
+  - host: longhorn.arffornia.com
+    http:
       paths:
-      - pathType: Prefix
-        path: "/"
+      - path: "/"
+        pathType: Prefix
         backend:
           service:
             name: longhorn-frontend
             port:
-              number: 80
+              number: 443
+  tls:
+  - hosts:
+    - longhorn.arffornia.com
+    secretName: longhorn-system-tls 
