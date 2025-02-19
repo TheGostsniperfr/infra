@@ -22,5 +22,5 @@ spec:
               name: https
   tls:
   - hosts:
-    - argocd.arffornia.com
+      - argocd.arffornia.com
     secretName: argocd-server-tls 

@@ -26,5 +26,5 @@ spec:
               number: 443
   tls:
   - hosts:
-    - longhorn.arffornia.com
+      - longhorn.arffornia.com
     secretName: longhorn-system-tls 
