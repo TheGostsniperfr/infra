@@ -7,3 +7,4 @@ metadata:
     app.kubernetes.io/part-of: argocd
 data:
   kustomize.buildOptions: "--enable-helm"
+  server.insecure: "true"
