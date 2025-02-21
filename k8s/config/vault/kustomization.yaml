@@ -1,10 +1,18 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: default
+namespace: vault
 
 resources:
-  - configmap.yaml
-  - rbac.yaml
-  - services.yaml
-  - statefulset.yaml
+  - namespace.yaml
+  - vault-certificate.yaml
+  
+helmCharts:
+  - name: vault
+    repo: https://helm.releases.hashicorp.com
+    version: 0.29.1
+    releaseName: vault
+    namespace: vault
+    valuesFile: vault-values.yaml
+
+
