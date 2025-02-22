@@ -24,9 +24,7 @@ spec:
   teamId: tgs
   users:
     arffornia: []
-    nextcloud:
-      - superuser
-      - createdb
+    nextcloud: []
   volume:
     size: 10Gi
     storageClass: longhorn
