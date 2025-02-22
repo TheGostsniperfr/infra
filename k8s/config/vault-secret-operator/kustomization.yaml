@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: vault-secret-operator
+
+resources:
+  - namespace.yaml
+  
+helmCharts:
+  - name: vault-secret-operator
+    repo: https://ricoberger.github.io/helm-charts
+    version: 3.0.0
+    releaseName: vault-secret-operator
+    namespace: vault-secret-operator
+    valuesFile: vso-values.yaml
+
+

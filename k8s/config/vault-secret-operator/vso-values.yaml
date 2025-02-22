@@ -1,0 +1,30 @@
+# Doc: https://github.com/ricoberger/vault-secrets-operator/blob/main/charts/README.md
+# Values: https://github.com/ricoberger/vault-secrets-operator/blob/main/charts/vault-secrets-operator/values.yaml
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/ricoberger/vault-secrets-operator
+  tag: v1.26.0
+  pullPolicy: IfNotPresent
+
+vault:
+  authMethod: approle
+  appRolePath: auth/approle 
+
+environmentVars:
+  - name: VAULT_ROLE_ID
+    valueFrom:
+      secretKeyRef:
+        name: vault-approle
+        key: VAULT_ROLE_ID
+  - name: VAULT_SECRET_ID
+    valueFrom:
+      secretKeyRef:
+        name: vault-approle
+        key: VAULT_SECRET_ID
+  - name: VAULT_TOKEN_MAX_TTL
+    valueFrom:
+      secretKeyRef:
+        name: vault-approle
+        key: VAULT_TOKEN_MAX_TTL
