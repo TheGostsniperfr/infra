@@ -5,6 +5,7 @@ namespace: vault-secret-operator
 
 resources:
   - namespace.yaml
+  - secret.yaml
   
 helmCharts:
   - name: vault-secret-operator
