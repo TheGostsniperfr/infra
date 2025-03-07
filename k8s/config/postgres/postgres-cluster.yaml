@@ -7,6 +7,7 @@ spec:
   allowedSourceRanges: null
   databases:
     arffornia: arffornia
+    nextcloud: nextcloud
   enableConnectionPooler: true
   enableReplicaConnectionPooler: true
   enableReplicaLoadBalancer: true
@@ -23,6 +24,7 @@ spec:
   teamId: tgs
   users:
     arffornia: []
+    nextcloud: []
   volume:
     size: 10Gi
     storageClass: longhorn

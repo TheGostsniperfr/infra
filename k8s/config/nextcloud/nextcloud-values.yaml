@@ -1,0 +1,45 @@
+image:
+  repository: nextcloud
+  tag: latest
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    cert-manager.io/cluster-issuer: default-issuer
+  ingressClassName: public
+  hosts:
+    - host: nextcloud.arffornia.com
+  tls:
+    - hosts:
+        - nextcloud.arffornia.com
+      secretName: nextcloud-tls
+
+nextcloud:
+  host: nextcloud.arffornia.com
+  username: 
+    valueFrom:
+      secretKeyRef:
+        name: nextcloud-admin-secret
+        key: username
+  password: 
+    valueFrom:
+      secretKeyRef:
+        name: nextcloud-admin-secret
+        key: password
+
+  database:
+    type: postgresql
+    host: postgres-cluster.postgres.svc.cluster.local
+    user: nextcloud
+    password: 
+      valueFrom:
+        secretKeyRef:
+          name: nextcloud-db-secret
+          key: password
+    name: nextcloud
+
+extraEnv:
+  - name: NEXTCLOUD_TRUSTED_DOMAINS
+    value: "nextcloud.arffornia.com"
