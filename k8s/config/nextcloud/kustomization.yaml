@@ -10,8 +10,8 @@ resources:
   
 helmCharts:
   - name: nextcloud
-    repo: https://helm.releases.hashicorp.com
-    version: 6.6.4
+    repo: https://nextcloud.github.io/helm/
+    version: 6.6.6
     releaseName: nextcloud
     namespace: nextcloud
     valuesFile: nextcloud-values.yaml
