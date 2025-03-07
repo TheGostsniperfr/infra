@@ -1,3 +1,5 @@
+# Values: https://github.com/nextcloud/helm/blob/main/charts/nextcloud/values.yaml
+
 image:
   repository: nextcloud
   tag: latest
@@ -18,27 +20,21 @@ ingress:
 
 nextcloud:
   host: nextcloud.arffornia.com
-  username: 
-    valueFrom:
-      secretKeyRef:
-        name: nextcloud-admin-secret
-        key: username
-  password: 
-    valueFrom:
-      secretKeyRef:
-        name: nextcloud-admin-secret
-        key: password
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-admin-secret
+    usernameKey: username
+    passwordKey: password
 
   database:
     type: postgresql
     host: postgres-cluster.postgres.svc.cluster.local
-    user: nextcloud
-    password: 
-      valueFrom:
-        secretKeyRef:
-          name: nextcloud-db-secret
-          key: password
-    name: nextcloud
+    database: nextcloud
+    existingSecret:
+      enabled: true
+      secretName: nextcloud-db-secret
+      usernameKey: username
+      passwordKey: password
 
 extraEnv:
   - name: NEXTCLOUD_TRUSTED_DOMAINS
