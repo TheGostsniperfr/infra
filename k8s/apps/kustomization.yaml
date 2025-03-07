@@ -14,3 +14,4 @@ resources:
   - longhorn.yaml
   - vault.yaml
   - vault-secrets-operator.yaml
+  - nextcloud.yaml
