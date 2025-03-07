@@ -13,4 +13,4 @@ resources:
   - postgres.yaml
   - longhorn.yaml
   - vault.yaml
-  - vault-secret-operator.yaml
+  - vault-secrets-operator.yaml
