@@ -8,11 +8,9 @@ resources:
   - secret.yaml
   
 helmCharts:
-  - name: vault-secret-operator
-    repo: https://ricoberger.github.io/helm-charts
+  - name: vault-secrets-operator
+    repo: oci://ghcr.io/ricoberger/charts
     version: 3.0.0
     releaseName: vault-secret-operator
     namespace: vault-secret-operator
     valuesFile: vso-values.yaml
-
-
