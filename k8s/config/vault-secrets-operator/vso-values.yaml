@@ -11,6 +11,8 @@ image:
 vault:
   authMethod: approle
   appRolePath: auth/approle 
+  reconciliationTime: 60
+  address: https://vault.arffornia.com
 
 environmentVars:
   - name: VAULT_ROLE_ID
