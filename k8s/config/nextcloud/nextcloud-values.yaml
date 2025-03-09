@@ -1,5 +1,7 @@
 # Values: https://github.com/nextcloud/helm/blob/main/charts/nextcloud/values.yaml
 
+replicaCount: 1
+
 image:
   repository: nextcloud
   tag: latest
@@ -8,15 +10,20 @@ image:
 ingress:
   enabled: true
   annotations:
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     cert-manager.io/cluster-issuer: default-issuer
-  ingressClassName: public
+    kubernetes.io/ingress.class: public
+  className: public
   hosts:
     - host: nextcloud.arffornia.com
+      paths:
+        - /
   tls:
     - hosts:
         - nextcloud.arffornia.com
       secretName: nextcloud-tls
+
+service:
+  type: ClusterIP
 
 nextcloud:
   host: nextcloud.arffornia.com
