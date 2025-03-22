@@ -46,3 +46,8 @@ nextcloud:
 extraEnv:
   - name: NEXTCLOUD_TRUSTED_DOMAINS
     value: "nextcloud.arffornia.com"
+
+phpClientHttpsFix:
+  enabled: true
+  protocol: https
+  
