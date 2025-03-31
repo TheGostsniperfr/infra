@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: arffornia-website-tls
+  namespace: arffornia-website
+spec:
+  secretName: arffornia-website-tls 
+  dnsNames:
+    - arffornia.com
+  issuerRef:
+    name: default-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
