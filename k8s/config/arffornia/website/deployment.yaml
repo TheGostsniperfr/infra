@@ -41,9 +41,9 @@ spec:
           - name: app-storage
             mountPath: /var/www/html
         env:
-          - name: PHP_HOST
+          - name: TARGET_HOST
             value: "app"
-          - name: PHP_PORT
+          - name: TARGET_PORT
             value: "9000"
           - name: LISTEN_PORT
             value: "80"
