@@ -15,3 +15,4 @@ resources:
   - vault.yaml
   - vault-secrets-operator.yaml
   - nextcloud.yaml
+  - arffornia/
