@@ -21,6 +21,8 @@ spec:
         envFrom:
         - secretRef:
             name: arffornia-website-secret
+        - secretRef:
+            name: arffornia-db-secret
         - configMapRef:
             name: arffornia-website-config
         resources:
