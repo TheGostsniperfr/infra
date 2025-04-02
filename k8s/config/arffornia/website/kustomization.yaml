@@ -4,7 +4,9 @@ kind: Kustomization
 namespace: arffornia-website
 
 resources:
+  - namespace.yaml
   - ingress.yaml
   - deployment.yaml
   - secret.yaml
   - certificate.yaml
+  - config.yaml
