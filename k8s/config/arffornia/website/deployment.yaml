@@ -18,6 +18,9 @@ spec:
         image: ghcr.io/arffornia/arffornia_website:latest
         ports:
         - containerPort: 9000
+        volumeMounts:
+            - name: app-storage
+              mountPath: /var/www/html
         envFrom:
         - secretRef:
             name: arffornia-website-secret
@@ -29,3 +32,15 @@ spec:
           requests:
             cpu: "100m"
             memory: "256Mi"
+
+      - name: nginx
+        image: ghcr.io/arffornia/nginx_arffornia_website:latest
+        ports:
+          - containerPort: 80
+        volumeMounts:
+          - name: app-storage
+            mountPath: /var/www/html
+            
+      volumes:
+        - name: app-storage
+          emptyDir: {}
