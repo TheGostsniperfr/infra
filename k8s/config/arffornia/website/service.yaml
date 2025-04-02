@@ -7,7 +7,12 @@ spec:
   selector:
     app: arffornia-website
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
-      targetPort: 80
+      targetPort:
+    - name: php-fpm
+      protocol: TCP
+      port: 9000
+      targetPort: 9000
   type: ClusterIP
