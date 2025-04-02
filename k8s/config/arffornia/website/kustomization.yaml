@@ -10,3 +10,4 @@ resources:
   - secret.yaml
   - certificate.yaml
   - config.yaml
+  - service.yaml
