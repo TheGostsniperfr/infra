@@ -40,7 +40,14 @@ spec:
         volumeMounts:
           - name: app-storage
             mountPath: /var/www/html
-            
+        env:
+          - name: PHP_HOST
+            value: "app"
+          - name: PHP_PORT
+            value: "9000"
+          - name: LISTEN_PORT
+            value: "80"
+
       volumes:
         - name: app-storage
           emptyDir: {}
