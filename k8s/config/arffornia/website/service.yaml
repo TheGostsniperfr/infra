@@ -10,9 +10,5 @@ spec:
     - name: http
       protocol: TCP
       port: 80
-      targetPort:
-    - name: php-fpm
-      protocol: TCP
-      port: 9000
-      targetPort: 9000
+      targetPort: 80
   type: ClusterIP

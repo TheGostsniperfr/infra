@@ -14,13 +14,10 @@ spec:
         app: arffornia-website
     spec:
       containers:
-      - name: app
+      - name: fpm
         image: ghcr.io/arffornia/arffornia_website:latest
         ports:
         - containerPort: 9000
-        volumeMounts:
-            - name: app-storage
-              mountPath: /var/www/html
         envFrom:
         - secretRef:
             name: arffornia-website-secret
@@ -37,17 +34,10 @@ spec:
         image: ghcr.io/arffornia/nginx_arffornia_website:latest
         ports:
           - containerPort: 80
-        volumeMounts:
-          - name: app-storage
-            mountPath: /var/www/html
         env:
           - name: TARGET_HOST
-            value: "app"
+            value: "127.0.0.1"
           - name: TARGET_PORT
             value: "9000"
           - name: LISTEN_PORT
             value: "80"
-
-      volumes:
-        - name: app-storage
-          emptyDir: {}
