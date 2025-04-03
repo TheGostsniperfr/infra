@@ -13,9 +13,31 @@ spec:
       labels:
         app: arffornia-website
     spec:
+      initContainers:
+        - name: database-migrations
+          image: ghcr.io/arffornia/arffornia_website:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+          - secretRef:
+              name: arffornia-website-secret
+          - secretRef:
+              name: arffornia-website-secret-template
+          - secretRef:
+              name: arffornia-db-secret
+          - configMapRef:
+              name: arffornia-website-config
+          command:
+            - "php"
+          args:
+            - "artisan"
+            - "migrate:fresh"
+            - "--seed"
+            - "--force"
+
       containers:
       - name: fpm
         image: ghcr.io/arffornia/arffornia_website:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9000
         envFrom:
@@ -34,6 +56,7 @@ spec:
 
       - name: nginx
         image: ghcr.io/arffornia/nginx_arffornia_website:latest
+        imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 80
         env:
