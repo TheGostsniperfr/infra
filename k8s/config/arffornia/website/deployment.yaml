@@ -22,6 +22,8 @@ spec:
         - secretRef:
             name: arffornia-website-secret
         - secretRef:
+            name: arffornia-website-secret-template
+        - secretRef:
             name: arffornia-db-secret
         - configMapRef:
             name: arffornia-website-config
