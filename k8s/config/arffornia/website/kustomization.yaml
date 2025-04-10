@@ -5,9 +5,15 @@ namespace: arffornia-website
 
 resources:
   - namespace.yaml
-  - ingress.yaml
-  - deployment.yaml
   - secret.yaml
   - certificate.yaml
   - config.yaml
-  - service.yaml
+
+helmCharts:
+  - name: arffornia-website-chart
+    repo: oci://ghcr.io/arffornia
+    version: latest # Just for test period
+    releaseName: arffornia-website
+    namespace: arffornia-website
+    valuesFile: values.yaml
+

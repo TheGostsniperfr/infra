@@ -1,0 +1,60 @@
+replicaCount: 1
+
+images:
+  # Image of the front / web server used (default nginx)
+  frontend:
+    repository: ghcr.io/arffornia/nginx_arffornia_website
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+  # Image of the Laravel app used
+  backend:
+    repository: ghcr.io/arffornia/arffornia_website
+    pullPolicy: IfNotPresent
+    tag: "latest"
+    port: 9000
+    host: "127.0.0.1"
+
+initContainers:
+  enabled: true
+
+  command:
+    - "php"
+  args:
+    - "artisan"
+    - "migrate:fresh"
+    - "--seed"
+    - "--force"
+
+envFrom:
+  - secretRef:
+      name: arffornia-website-secret
+  - secretRef:
+      name: arffornia-website-secret-template
+  - secretRef:
+      name: arffornia-db-secret
+      
+  - configMapRef:
+      name: arffornia-website-config
+
+ingress:
+  enabled: true
+  className: "public"
+  annotations:
+    cert-manager.io/cluster-issuer: default-issuer
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+  hosts:
+    - host: arffornia.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: 
+   - secretName: arffornia-website-tls 
+     hosts:
+       - arffornia.com
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
