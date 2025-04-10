@@ -12,7 +12,7 @@ resources:
 helmCharts:
   - name: arffornia-website-chart
     repo: oci://ghcr.io/arffornia
-    version: latest # Just for test period
+    version: 0.0.12 
     releaseName: arffornia-website
     namespace: arffornia-website
     valuesFile: values.yaml

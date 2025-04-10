@@ -4,13 +4,13 @@ images:
   # Image of the front / web server used (default nginx)
   frontend:
     repository: ghcr.io/arffornia/nginx_arffornia_website
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     tag: "latest"
 
   # Image of the Laravel app used
   backend:
     repository: ghcr.io/arffornia/arffornia_website
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     tag: "latest"
     port: 9000
     host: "127.0.0.1"
