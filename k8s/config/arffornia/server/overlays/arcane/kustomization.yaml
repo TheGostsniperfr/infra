@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: arffornia-server-arcane
+
+resources:
+  - ../../base
+  - namespace.yaml
+
+helmCharts:
+  - name: minecraft
+    repo: ghcr.io/itzg/minecraft-server-charts
+    version: 4.26.3
+    releaseName: arffornia-server-arcane
+    namespace: arffornia-server-arcane
+    valuesFile: patch-values.yaml
+
