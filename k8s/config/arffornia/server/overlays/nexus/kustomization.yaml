@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: arffornia-server-nexus
 
 resources:
-  - ../../base
+  - ../../base/
   - namespace.yaml
 
 helmCharts:
