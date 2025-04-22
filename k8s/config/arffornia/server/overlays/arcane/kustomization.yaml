@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: arffornia-server-arcane
 
 resources:
-  - ../../base
+  - ../../base/
   - namespace.yaml
 
 helmCharts:

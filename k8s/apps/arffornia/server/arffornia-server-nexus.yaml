@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: arffornia-proxy
+  name: arffornia-server-nexus
   namespace: argocd
   labels:
-    app: arffornia-proxy
+    app: arffornia-server-nexus
 spec:
   syncPolicy:
     syncOptions:
@@ -15,7 +15,7 @@ spec:
   source:
     repoURL: https://github.com/TheGostsniperfr/infra.git
     targetRevision: HEAD
-    path: k8s/config/arffornia/proxy
+    path: k8s/config/arffornia/server/overlays/nexus
   destination:
     name: in-cluster
-    namespace: arffornia-proxy
+    namespace: arffornia-server-nexus

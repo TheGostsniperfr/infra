@@ -213,7 +213,7 @@ minecraftServer:
   # Set to true if running Feed The Beast and get an error like "unable to launch forgemodloader"
   ftbLegacyJavaFixer: default
   # One of: peaceful, easy, normal, and hard
-  difficulty: easy
+  difficulty: normal
   # A comma-separated list of player names to whitelist.
   whitelist:
   # A comma-separated list of player names who should be admins.
@@ -282,11 +282,11 @@ minecraftServer:
   # When true, players will be prompted for a response and will be disconnected if they decline the required pack
   resourcePackEnforce: false
   # Check accounts against Minecraft account service.
-  onlineMode: default
+  onlineMode: true
   # Require public key to be signed by Mojang to join
   enforceSecureProfile: default
   # If you adjust this, you may need to adjust resources.requests above to match.
-  memory: 1024M
+  memory: 4096M
   # General JVM options to be passed to the Minecraft server invocation
   jvmOpts: ""
   # Options like -X that need to proceed general JVM options
@@ -368,8 +368,8 @@ minecraftServer:
     withGeneratedPassword: false
     port: 25575
     password: "CHANGEME!"
-    existingSecret:
-    secretKey: rcon-password
+    existingSecret: arffornia-server-secret
+    secretKey: RCON_PASSWORD
     serviceType: ClusterIP
     ## Set the external port if the rcon serviceType is NodePort
     nodePort:
@@ -451,11 +451,11 @@ persistence:
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-  # storageClass: "-"
+  storageClass: "longhorn"
   dataDir:
     # Set this to false if you don't care to persist state between restarts.
-    enabled: false
-    Size: 1Gi
+    enabled: true
+    Size: 10Gi
     accessModes:
       - ReadWriteOnce
     # existingClaim: nil
