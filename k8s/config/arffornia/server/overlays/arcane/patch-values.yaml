@@ -6,4 +6,5 @@ minecraftServer:
   serviceType: LoadBalancer  
   servicePort: 25565
 
-serviceAnnotations: noproxy.arffornia.com
+serviceAnnotations:
+  external-dns.alpha.kubernetes.io/hostname: "noproxy.arffornia.com"
