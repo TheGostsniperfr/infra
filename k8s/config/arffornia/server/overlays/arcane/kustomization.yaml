@@ -13,7 +13,7 @@ helmCharts:
     version: 4.26.3
     releaseName: arffornia-server-arcane
     namespace: arffornia-server-arcane
-    valuesFile: ../../base/patch-values.yaml
+    valuesFile: ../../base/values.yaml
     additionalValuesFiles: # Shallow merge
       - patch-values.yaml
 
