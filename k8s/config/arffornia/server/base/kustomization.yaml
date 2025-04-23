@@ -5,3 +5,4 @@ kind: Kustomization
 
 resources:
   - secret.yaml
+  - config.yaml
