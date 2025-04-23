@@ -9,7 +9,7 @@ resources:
 
 helmCharts:
   - name: minecraft
-    repo: ghcr.io/itzg/minecraft-server-charts
+    repo: oci://ghcr.io/itzg/minecraft-server-charts
     version: 4.26.3
     releaseName: arffornia-server-arcane
     namespace: arffornia-server-arcane
