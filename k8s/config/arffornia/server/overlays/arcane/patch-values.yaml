@@ -1,0 +1,2 @@
+minecraftServer:
+  motd: "Welcome to Minecraft on Kubernetes arcane!"

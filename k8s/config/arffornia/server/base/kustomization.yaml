@@ -5,12 +5,3 @@ kind: Kustomization
 
 resources:
   - secret.yaml
-
-helmCharts:
-  - name: minecraft
-    repo: ghcr.io/itzg/minecraft-server-charts
-    version: 4.26.3
-    releaseName: arffornia-server
-    namespace: arffornia-server
-    valuesFile: values.yaml
-
