@@ -15,8 +15,11 @@ replicaCount: 1
 ##
 resources:
   requests:
-    memory: 512Mi
-    cpu: 500m
+    memory: 0.5Gi
+    cpu: "0.5"
+  limits:
+    memory: 2Gi
+    cpu: "1"
 
 podSecurityContext:
   runAsUser: 1000
@@ -85,7 +88,19 @@ sidecarContainers: []
 #           - port=2049
 #           - hard
 #           - vers=4
-extraVolumes: []
+extraVolumes:
+  - volumeMounts:
+      - name: velocity-secret
+        mountPath: /secrets
+        readOnly: true
+    volumes:
+      - name: velocity-secret
+        secret:
+          secretName: arffornia-server-secret
+          items:
+            - key: VELOCITY_FORWARDING_SECRET
+              path: forwarding.secret
+
 
 # Extra fields to set on the pod
 #
@@ -201,7 +216,7 @@ minecraftProxy:
 
   # Needed when you wish to pass a forwarding secret to Velocity
   # velocityForwardingSecret: "CHANGEME!"
-  # velocityForwardingSecretFilePath: /server/forwarding.secret
+  velocityForwardingSecretFilePath: /secret/forwarding.secret
 
   rcon:
     # If you enable this, make SURE to change your password below.
@@ -254,13 +269,9 @@ minecraftProxy:
 ## Additional minecraft container environment variables
 ## Values can be either variable values or `valueFrom` yaml
 ##
-extraEnv:
-  {}
-  # some_variable: some value
-  # another_variable:
-  #   valueFrom:
-  #     fieldRef:
-#       fieldPath: status.hostIP
+envFrom:
+  - configMapRef:
+      name: arffornia-proxy-config
 
 persistence:
   ## minecraft data Persistent Volume Storage Class

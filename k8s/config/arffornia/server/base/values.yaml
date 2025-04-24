@@ -285,7 +285,8 @@ minecraftServer:
   # When true, players will be prompted for a response and will be disconnected if they decline the required pack
   resourcePackEnforce: false
   # Check accounts against Minecraft account service.
-  onlineMode: true
+  # Turn to off due to the Velocity Proxy
+  onlineMode: false
   # Require public key to be signed by Mojang to join
   enforceSecureProfile: default
   # If you adjust this, you may need to adjust resources.requests above to match.

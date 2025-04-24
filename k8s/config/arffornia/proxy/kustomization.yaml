@@ -6,6 +6,7 @@ namespace: arffornia-proxy-velocity
 resources:
   - namespace.yaml
   - secret.yaml
+  - config.yaml
 
 helmCharts:
   - name: minecraft-proxy

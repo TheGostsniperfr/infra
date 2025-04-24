@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: arffornia-proxy-config
+  namespace: arffornia-proxy-velocity
+data:
+  # Allow to dynamically sync values from /plugins, /mods, and /config with env var
+  # See doc: https://docker-minecraft-server.readthedocs.io/en/latest/configuration/interpolating/#replacing-variables-inside-configs
+  REPLACE_ENV_IN_PLACE: "true"
+  REPLACE_ENV_DURING_SYNC: "true"
+  REPLACE_ENV_VARIABLE_PREFIX: "CFG_"
