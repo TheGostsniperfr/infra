@@ -55,15 +55,15 @@ startupProbe:
   failureThreshold: 30
   periodSeconds: 10
 
-# initContainers:
-#   - name: do-something
-#     image: busybox
-#     command: ['do', 'something']
-#     volumesMounts:
-#       - name: nfs
-#         mountPath: /mnt/volume
-#         readOnly: true
-initContainers: []
+initContainers: 
+  - name: config_updater
+    image: ghcr.io/arffornia/config_updater:latest
+    env:
+      - name: KIND
+        value: proxy
+    volumeMounts:
+      - name: datadir
+        mountPath: /data
 
 # sidecarContainers:
 #   - name: do-something
