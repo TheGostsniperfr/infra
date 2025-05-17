@@ -93,7 +93,7 @@ startupProbe:
 
 initContainers: 
   - name: config_updater
-    image: ghcr.io/arffornia/config_updater:latest
+    image: ghcr.io/arffornia/config-updater:latest
     env:
       - name: KIND
         value: server
