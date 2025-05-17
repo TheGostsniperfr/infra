@@ -56,8 +56,8 @@ startupProbe:
   periodSeconds: 10
 
 initContainers: 
-  - name: config_updater
-    image: ghcr.io/arffornia/config_updater:latest
+  - name: config-updater
+    image: ghcr.io/arffornia/config-updater:latest
     env:
       - name: KIND
         value: proxy

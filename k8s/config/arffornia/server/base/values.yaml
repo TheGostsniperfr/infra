@@ -92,7 +92,7 @@ startupProbe:
   periodSeconds: 10
 
 initContainers: 
-  - name: config_updater
+  - name: config-updater
     image: ghcr.io/arffornia/config-updater:latest
     env:
       - name: KIND
