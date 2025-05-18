@@ -436,7 +436,7 @@ envFrom:
       name: arffornia-server-config
 
   - secretRef:
-    name: arffornia-proxy-secret
+      name: arffornia-proxy-secret
 
 persistence:
   labels: {}
