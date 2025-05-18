@@ -6,3 +6,4 @@ namespace: argocd
 resources:
   - arffornia-website.yaml
   - server/
+  - proxy/
