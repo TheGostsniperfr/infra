@@ -63,7 +63,7 @@ initContainers:
         value: proxy
     volumeMounts:
       - name: datadir
-        mountPath: /data
+        mountPath: /server
 
 # sidecarContainers:
 #   - name: do-something
@@ -93,14 +93,6 @@ extraVolumes:
       - name: velocity-secret
         mountPath: /secrets
         readOnly: true
-    volumes:
-      - name: velocity-secret
-        secret:
-          secretName: arffornia-server-secret
-          items:
-            - key: VELOCITY_FORWARDING_SECRET
-              path: forwarding.secret
-
 
 # Extra fields to set on the pod
 #
@@ -143,7 +135,7 @@ minecraftProxy:
   jvmXXOpts: ""
   # DEPRECATED: use top-level rconServiceAnnotations instead
   serviceAnnotations: {}
-  serviceType: ClusterIP
+  serviceType: LoadBalancer
   ## Set the port used if the serviceType is NodePort
   # nodePort:
   loadBalancerIP:
@@ -272,6 +264,9 @@ minecraftProxy:
 envFrom:
   - configMapRef:
       name: arffornia-proxy-config
+
+  - secretRef:
+      name: arffornia-proxy-secret
 
 persistence:
   ## minecraft data Persistent Volume Storage Class
