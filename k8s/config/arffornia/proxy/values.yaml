@@ -88,11 +88,6 @@ sidecarContainers: []
 #           - port=2049
 #           - hard
 #           - vers=4
-extraVolumes:
-  - volumeMounts:
-      - name: velocity-secret
-        mountPath: /secrets
-        readOnly: true
 
 # Extra fields to set on the pod
 #
