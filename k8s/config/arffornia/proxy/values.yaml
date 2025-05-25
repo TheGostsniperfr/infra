@@ -61,6 +61,13 @@ initContainers:
     env:
       - name: KIND
         value: proxy
+
+      - name: INSTALL_BASE_PATH
+        value: /server
+        
+      - name: MODS_DIR_NAME
+        value: plugins
+    
     volumeMounts:
       - name: datadir
         mountPath: /server
