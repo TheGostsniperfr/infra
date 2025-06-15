@@ -16,3 +16,4 @@ resources:
   - vault-secrets-operator.yaml
   - nextcloud.yaml
   - arffornia/
+  - csi-driver-smb.yaml

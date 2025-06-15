@@ -7,6 +7,15 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
+extraVolumes:
+  - name: nextcloud-nas-data
+    persistentVolumeClaim:
+      claimName: nextcloud-nas-pvc
+
+extraVolumeMounts:
+  - name: nextcloud-nas-data
+    mountPath: /mnt/nas
+
 ingress:
   enabled: true
   annotations:
@@ -42,6 +51,9 @@ nextcloud:
       secretName: nextcloud-db-secret
       usernameKey: username
       passwordKey: password
+
+redis:
+  enabled: true
 
 extraEnv:
   - name: NEXTCLOUD_TRUSTED_DOMAINS

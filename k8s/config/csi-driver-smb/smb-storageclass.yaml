@@ -1,0 +1,19 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: smb-nas
+provisioner: smb.csi.k8s.io
+parameters:
+  source: "//192.168.1.25/partage"
+  csi.storage.k8s.io/node-stage-secret-name: smb-nas-credentials
+  csi.storage.k8s.io/node-stage-secret-namespace: default
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+mountOptions:
+  - "uid=33"
+  - "gid=33"
+  - "vers=3.0"
+  - "dir_mode=0770"
+  - "file_mode=0660"
+  - "cache=strict"
+  - "noserverino"  # required to prevent data corruption

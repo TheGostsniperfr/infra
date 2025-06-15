@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: csi-driver-smb
+  namespace: argocd
+  labels:
+    app: csi-driver-smb
+spec:
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      prune: true
+  project: default
+  source:
+    repoURL: https://github.com/TheGostsniperfr/infra.git
+    targetRevision: HEAD
+    path: k8s/config/csi-driver-smb
+  destination:
+    name: in-cluster
+    namespace: csi-driver-smb

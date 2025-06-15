@@ -1,0 +1,5 @@
+# value.yml: https://github.com/kubernetes-csi/csi-driver-smb/blob/master/charts/latest/csi-driver-smb/values.yaml
+
+image:
+  windows:
+    enabled: false # No Windows nodes on the k8s cluster
