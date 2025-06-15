@@ -59,6 +59,9 @@ extraEnv:
   - name: NEXTCLOUD_TRUSTED_DOMAINS
     value: "nextcloud.arffornia.com"
 
+  - name: NEXTCLOUD_INSTALL_APPS
+    value: "files_external" # comma separated
+
 phpClientHttpsFix:
   enabled: true
   protocol: https
