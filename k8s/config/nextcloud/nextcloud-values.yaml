@@ -12,6 +12,7 @@ ingress:
   annotations:
     cert-manager.io/cluster-issuer: default-issuer
     kubernetes.io/ingress.class: public
+    nginx.ingress.kubernetes.io/proxy-body-size: "200G"
   className: public
   hosts:
     - host: nextcloud.arffornia.com
