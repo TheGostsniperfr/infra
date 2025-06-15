@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - smb-storageclass.yaml
+  - secret.yaml
   
 helmCharts:
   - name: csi-driver-smb
