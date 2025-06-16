@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: laguedro
+  namespace: argocd
+  labels:
+    app: laguedro
+spec:
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      prune: true
+  project: default
+  source:
+    repoURL: https://github.com/briossant/laguedro.git
+    targetRevision: HEAD
+    path: k8s/
+  destination:
+    name: in-cluster
+    namespace: laguedro
