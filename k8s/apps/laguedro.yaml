@@ -14,7 +14,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/briossant/laguedro.git
-    targetRevision: HEAD
+    targetRevision: feature/infra
     path: k8s/
   destination:
     name: in-cluster

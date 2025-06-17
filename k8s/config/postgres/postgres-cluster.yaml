@@ -8,6 +8,7 @@ spec:
   databases:
     arffornia: arffornia
     nextcloud: nextcloud
+    ping: ping
   enableConnectionPooler: true
   enableReplicaConnectionPooler: true
   enableReplicaLoadBalancer: true
@@ -25,6 +26,7 @@ spec:
   users:
     arffornia: []
     nextcloud: []
+    ping: []
   volume:
     size: 10Gi
     storageClass: longhorn
