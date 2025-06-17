@@ -8,6 +8,7 @@ resources:
   - secret.yaml
   - certificate.yaml
   - config.yaml
+  - service-account.yaml
 
 helmCharts:
   - name: arffornia-website-chart
