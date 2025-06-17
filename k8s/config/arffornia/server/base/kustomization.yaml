@@ -4,5 +4,4 @@ kind: Kustomization
 # No Namespace (neutral base)
 
 resources:
-  - secret.yaml
   - config.yaml
