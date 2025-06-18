@@ -6,6 +6,7 @@ namespace: vault
 resources:
   - namespace.yaml
   - vault-certificate.yaml
+  - k8s-auth-sa.yaml
   
 helmCharts:
   - name: vault
