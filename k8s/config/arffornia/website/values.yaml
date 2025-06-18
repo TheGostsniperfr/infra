@@ -60,6 +60,6 @@ resources:
     memory: 256Mi
 
 serviceAccount:
-  create: false
+  create: true
   name: arffornia-website-sa
   
