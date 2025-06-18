@@ -7,9 +7,6 @@ spec:
   secretName: vault-tls 
   dnsNames:
     - vault.arffornia.com
-    - vault.vault.svc
-  ipAddresses:
-    - 127.0.0.1
   issuerRef:
     name: default-issuer
     kind: ClusterIssuer
