@@ -5,7 +5,7 @@ metadata:
   namespace: arffornia-website
 data:
   APP_NAME: "Arffornia Website"
-  APP_ENV: "local"
+  APP_ENV: "production"
   # APP_KEY:
   APP_DEBUG: "true"
   APP_TIMEZONE: "UTC"
