@@ -37,7 +37,7 @@ ingress:
   annotations:
     cert-manager.io/cluster-issuer: default-issuer
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
 
   tls: false # Remove auto tls certificate creation
   extraTls:
@@ -94,7 +94,7 @@ extraEnvVars:
   - name: KC_HTTP_PORT
     value: "8080"
   - name: KC_HTTPS_PORT
-    value: "443"
+    value: "8443"
   - name: KC_PROXY
     value: "edge"
   - name: KC_DB
