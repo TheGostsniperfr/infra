@@ -39,6 +39,7 @@ ingress:
       more_set_headers "X-Forwarded-Proto: https";
       more_set_headers "X-Forwarded-Ssl: on";
       more_set_headers "X-Forwarded-Scheme: https";
+
   tls: true
   extraTls:
     - hosts:
@@ -92,8 +93,6 @@ extraEnvVars:
     value: "edge"
   - name: KC_HTTP_ENABLED
     value: "false"
-  - name: KC_HOSTNAME_STRICT
-    value: "true"
   - name: KC_HOSTNAME_STRICT_HTTPS
     value: "true"
   - name: KC_DB_URL_HOST
