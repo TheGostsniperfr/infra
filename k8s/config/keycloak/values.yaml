@@ -6,7 +6,7 @@ global:
 image:
   registry: docker.io
   repository: bitnami/keycloak
-  tag: "26.2.5-debian-12-r3"
+  tag: "24.0.5-debian-12-r8"
 
 production: true
 
@@ -88,7 +88,7 @@ extraEnvVars:
   - name: KC_HOSTNAME_ADMIN_URL
     value: "https://keycloak.arffornia.com"
   - name: KC_PROXY
-    value: "passthrough"
+    value: "edge"
   - name: KC_HOSTNAME_STRICT_HTTPS
     value: "true"
   - name: KC_HTTP_ENABLED
