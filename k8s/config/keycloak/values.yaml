@@ -88,7 +88,7 @@ extraEnvVars:
   - name: KC_HOSTNAME_ADMIN_URL
     value: "https://keycloak.arffornia.com"
   - name: KC_PROXY
-    value: "edge"
+    value: "passthrough"
   - name: KC_HOSTNAME_STRICT_HTTPS
     value: "true"
   - name: KC_HTTP_ENABLED
