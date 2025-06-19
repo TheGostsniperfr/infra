@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: keycloak-tls
+  namespace: nextcloud
+spec:
+  secretName: keycloak-tls 
+  dnsNames:
+    - keycloak.arffornia.com
+  issuerRef:
+    name: default-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
