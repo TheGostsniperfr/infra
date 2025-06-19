@@ -87,20 +87,16 @@ extraEnvVars:
 
   - name: KC_HOSTNAME
     value: "keycloak.arffornia.com"
-  - name: KC_HOSTNAME_STRICT
+  - name: KC_HOSTNAME_URL
+    value: "https://keycloak.arffornia.com"
+  - name: KC_HOSTNAME_ADMIN_URL
+    value: "https://keycloak.arffornia.com"
+  - name: KC_PROXY
+    value: "edge"
+  - name: KC_HTTP_ENABLED
     value: "true"
   - name: KC_HOSTNAME_STRICT_HTTPS
     value: "false"
-  - name: KC_HTTP_ENABLED
-    value: "true"
-  - name: KC_HTTP_PORT
-    value: "8080"
-  - name: KC_HTTPS_PORT
-    value: "8443"
-  - name: KC_PROXY
-    value: "edge"
-  - name: KC_DB
-    value: "postgres"
   
   - name: KC_DB_URL_HOST
     value: "postgres-cluster.postgres.svc.cluster.local"
