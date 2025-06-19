@@ -22,6 +22,7 @@ service:
   type: ClusterIP 
   ports:
     http: 8080
+    https: 8443
 
 tls:
   enabled: true
@@ -33,11 +34,11 @@ ingress:
   hostname: "keycloak.arffornia.com"
   path: "/" 
   pathType: Prefix
-  servicePort: "http"
+  servicePort: "https"
   annotations:
     cert-manager.io/cluster-issuer: default-issuer
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 
   tls: false # Remove auto tls certificate creation
   extraTls:
@@ -92,7 +93,7 @@ extraEnvVars:
   - name: KC_HOSTNAME_STRICT_HTTPS
     value: "true"
   - name: KC_HTTP_ENABLED
-    value: "true"
+    value: "false"
   - name: KC_HTTP_PORT
     value: "8080"
   - name: KC_HTTPS_PORT
