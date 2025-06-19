@@ -118,4 +118,4 @@ extraEnvVars:
         key: password
 
   - name: KC_LOG_LEVEL
-    value: "INFO"
+    value: "DEBUG"
