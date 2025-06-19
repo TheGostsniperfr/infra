@@ -14,4 +14,4 @@ helmCharts:
     version: "24.7.4"
     releaseName: keycloak
     namespace: keycloak
-    valuesFile: values-keycloak.yaml
+    valuesFile: values.yaml
