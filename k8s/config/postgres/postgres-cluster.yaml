@@ -9,6 +9,7 @@ spec:
     arffornia: arffornia
     nextcloud: nextcloud
     ping: ping
+    keycloak: keycloak
   enableConnectionPooler: true
   enableReplicaConnectionPooler: true
   enableReplicaLoadBalancer: true
@@ -27,6 +28,7 @@ spec:
     arffornia: []
     nextcloud: []
     ping: []
+    keycloak: []
   volume:
     size: 10Gi
     storageClass: longhorn
