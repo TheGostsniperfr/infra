@@ -83,10 +83,6 @@ extraEnvVars:
         key: password
   - name: KC_HOSTNAME
     value: "keycloak.arffornia.com"
-  - name: KC_HOSTNAME_URL
-    value: "https://keycloak.arffornia.com"
-  - name: KC_HOSTNAME_ADMIN_URL
-    value: "https://keycloak.arffornia.com"
   - name: KC_PROXY
     value: "edge"
   - name: KC_HOSTNAME_STRICT_HTTPS
