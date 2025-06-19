@@ -31,16 +31,15 @@ ingress:
   hostname: "keycloak.arffornia.com"
   path: "/"
   pathType: Prefix
-  servicePort: "http"
+  servicePort: "https"
   annotations:
     cert-manager.io/cluster-issuer: default-issuer
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/configuration-snippet: |
       more_set_headers "X-Forwarded-Proto: https";
       more_set_headers "X-Forwarded-Ssl: on";
       more_set_headers "X-Forwarded-Scheme: https";
-
-  tls: false
+  tls: true
   extraTls:
     - hosts:
         - keycloak.arffornia.com
@@ -92,9 +91,11 @@ extraEnvVars:
   - name: KC_PROXY
     value: "edge"
   - name: KC_HTTP_ENABLED
+    value: "false"
+  - name: KC_HOSTNAME_STRICT
     value: "true"
   - name: KC_HOSTNAME_STRICT_HTTPS
-    value: "false"
+    value: "true"
   - name: KC_DB_URL_HOST
     value: "postgres-cluster.postgres.svc.cluster.local"
   - name: KC_DB_URL_PORT
