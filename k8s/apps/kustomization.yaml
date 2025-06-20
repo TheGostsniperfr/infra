@@ -19,3 +19,4 @@ resources:
   - csi-driver-smb.yaml
   - laguedro.yaml
   - keycloak.yaml 
+  - adminer.yaml
