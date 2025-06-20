@@ -3,3 +3,8 @@
 image:
   windows:
     enabled: false # No Windows nodes on the k8s cluster
+
+serviceAccount:
+  create: true
+  controller: csi-smb-controller-sa
+  node: csi-smb-node-sa

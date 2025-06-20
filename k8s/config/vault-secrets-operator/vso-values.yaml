@@ -9,24 +9,9 @@ image:
   pullPolicy: IfNotPresent
 
 vault:
-  authMethod: approle
-  appRolePath: auth/approle 
-  reconciliationTime: 60
+  authMethod: kubernetes
   address: https://vault.arffornia.com
 
-environmentVars:
-  - name: VAULT_ROLE_ID
-    valueFrom:
-      secretKeyRef:
-        name: vault-approle
-        key: VAULT_ROLE_ID
-  - name: VAULT_SECRET_ID
-    valueFrom:
-      secretKeyRef:
-        name: vault-approle
-        key: VAULT_SECRET_ID
-  - name: VAULT_TOKEN_MAX_TTL
-    valueFrom:
-      secretKeyRef:
-        name: vault-approle
-        key: VAULT_TOKEN_MAX_TTL
+serviceAccount:
+  create: true
+  name: vault-secrets-operator

@@ -6,6 +6,14 @@ namespace: arffornia-server-nexus
 resources:
   - ../../base/
   - namespace.yaml
+  - secret.yaml
+  - service-account.yaml
+
+patches:
+  - path: patch-deployment-sa.yaml
+    target:
+      kind: Deployment
+      name: arffornia-server-nexus-minecraft
 
 helmCharts:
   - name: minecraft

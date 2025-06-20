@@ -66,4 +66,10 @@ extraEnv:
 phpClientHttpsFix:
   enabled: true
   protocol: https
+
+rbac:
+  enabled: true
+  serviceaccount:
+    create: true
+    name: nextcloud-sa
   

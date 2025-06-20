@@ -295,7 +295,7 @@ rconServiceAnnotations: {}
 
 # Can allow plugins access to the kubernetes api using a service account
 # https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
-serviceAccountName:
+serviceAccountName: arffornia-proxy-velocity-sa
 
 # dnsPolicy: ClusterFirst
 # dnsConfig:
