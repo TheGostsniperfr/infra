@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: adminer-ingress
+  namespace: adminer
+  annotations:
+    cert-manager.io/cluster-issuer: default-issuer
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: adminer-basic-auth-secret
+    nginx.ingress.kubernetes.io/auth-realm: "Authentication Required - Adminer"
+spec:
+  ingressClassName: public
+  rules:
+  - host: adminer.arffornia.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: adminer-service
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - adminer.arffornia.com
+    secretName: adminer-tls
