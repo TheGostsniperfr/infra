@@ -6,7 +6,7 @@ metadata:
 spec:
   secretName: keycloak-tls 
   dnsNames:
-    - keycloak.arffornia.com
+    - auth.arffornia.com
   issuerRef:
     name: default-issuer
     kind: ClusterIssuer

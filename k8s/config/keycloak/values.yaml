@@ -33,7 +33,7 @@ auth:
 ingress:
   enabled: true
   ingressClassName: "public"
-  hostname: "keycloak.arffornia.com"
+  hostname: "auth.arffornia.com"
   path: "/"
   pathType: Prefix
   servicePort: "http"
@@ -46,7 +46,7 @@ ingress:
   tls: true
   extraTls:
     - hosts:
-        - keycloak.arffornia.com
+        - auth.arffornia.com
       secretName: keycloak-tls
 
 postgresql:
@@ -77,7 +77,7 @@ resources:
 
 extraEnvVars:
   - name: KC_HOSTNAME
-    value: "keycloak.arffornia.com"
+    value: "auth.arffornia.com"
   - name: KC_PROXY
     value: "edge"
   - name: KC_HOSTNAME_STRICT_HTTPS
