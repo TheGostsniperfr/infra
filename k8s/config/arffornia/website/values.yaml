@@ -1,4 +1,4 @@
-replicaCount: 1
+replicaCount: 0
 
 images:
   # Image of the front / web server used (default nginx)
