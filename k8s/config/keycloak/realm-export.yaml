@@ -6,7 +6,7 @@ metadata:
 spec:
   path: secret/keycloak/epinaloa-realm-secret
   keys:
-    - client-secret
+    - client_secret
   templates:
     realm-export.json: |
       {
