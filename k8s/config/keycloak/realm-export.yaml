@@ -729,7 +729,7 @@ spec:
             "enabled": true,
             "alwaysDisplayInConsole": false,
             "clientAuthenticatorType": "client-secret",
-            "secret": "{% .Secrets.client-secret %}"
+            "secret": "{% .Secrets.client-secret %}",
             "redirectUris": [
               "/*"
             ],
@@ -2467,3 +2467,4 @@ spec:
           "policies": []
         }
       }
+  type: Opaque

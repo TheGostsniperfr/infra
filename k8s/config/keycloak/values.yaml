@@ -24,7 +24,7 @@ service:
 extraVolumes:
   - name: realm-export-volume
     secret:
-      name: keycloak-realm-secret
+      secretName: keycloak-realm-secret
 
 extraVolumeMounts:
   - name: realm-export-volume
