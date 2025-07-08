@@ -62,8 +62,29 @@ extraEnv:
 
   - name: NEXTCLOUD_INSTALL_APPS
     value: "files_external" # comma separated
+  - name: PHP_MEMORY_LIMIT
+    value: "512M"
+  - name: PHP_FPM_PM
+    value: "dynamic"
+  - name: PHP_FPM_PM_MAX_CHILDREN
+    value: "4"
+  - name: PHP_FPM_PM_START_SERVERS
+    value: "2"
+  - name: PHP_FPM_PM_MIN_SPARE_SERVERS
+    value: "1"
+  - name: PHP_FPM_PM_MAX_SPARE_SERVERS
+    value: "3"
 
 phpClientHttpsFix:
   enabled: true
   protocol: https
+
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+  limits:
+    memory: "2Gi"
+    cpu: "500m"
   
