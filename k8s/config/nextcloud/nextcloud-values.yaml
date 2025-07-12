@@ -2,6 +2,12 @@
 
 replicaCount: 1
 
+persistence:
+  enabled: true
+  storageClass: "longhorn"
+  accessMode: ReadWriteOnce
+  size: 8Gi
+
 image:
   repository: nextcloud
   tag: latest
