@@ -10,6 +10,7 @@ spec:
     nextcloud: nextcloud
     ping: ping
     keycloak: keycloak
+    vaultwarden: vaultwarden
   enableConnectionPooler: true
   enableReplicaConnectionPooler: true
   enableReplicaLoadBalancer: true
@@ -29,6 +30,7 @@ spec:
     nextcloud: []
     ping: []
     keycloak: []
+    vaultwarden: []
   volume:
     size: 10Gi
     storageClass: longhorn
