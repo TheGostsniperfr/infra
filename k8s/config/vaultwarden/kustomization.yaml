@@ -10,7 +10,7 @@ resources:
 
 helmCharts:
   - name: vaultwarden
-    repo: oci://guerzon.github.io/vaultwarden
+    repo: https://guerzon.github.io/vaultwarden
     version: "0.32.1"
     releaseName: vaultwarden
     namespace: vaultwarden
