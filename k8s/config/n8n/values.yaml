@@ -78,17 +78,19 @@ main:
 
   # Extra environmental variables, so you can reference other configmaps and secrets into n8n as env vars.
   extraEnv:
-    - name: N8N_ENCRYPTION_KEY
+    N8N_ENCRYPTION_KEY:
       valueFrom:
         secretKeyRef:
           name: n8n-encryption-secret
           key: key
-    - name: DB_POSTGRESDB_USER
+
+    DB_POSTGRESDB_USER:
       valueFrom:
         secretKeyRef:
           name: n8n-db-secret
           key: username
-    - name: DB_POSTGRESDB_PASSWORD
+
+    DB_POSTGRESDB_PASSWORD:
       valueFrom:
         secretKeyRef:
           name: n8n-db-secret
