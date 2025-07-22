@@ -55,13 +55,14 @@ main:
       host: "n8n.arffornia.com"
       protocol: "https"
       telemetry_enabled: false
+      port: 5678
     db:
       type: "postgresdb"
       postgresdb:
         host: "postgres-cluster.postgres.svc.cluster.local"
         port: 5432
         database: "n8n"
-        ssl: false
+        ssl: true
 
   # Dictionary for secrets, unlike config:, the values here will end up in the secret file.
   # The YAML entry db.postgresdb.password: my_secret is transformed DB_POSTGRESDB_password=bXlfc2VjcmV0
