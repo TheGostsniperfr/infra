@@ -40,8 +40,7 @@ ingress:
   hosts:
     - host: n8n.arffornia.com
       paths:
-        - path: /
-          pathType: Prefix
+        - "/"
   tls:
     - hosts:
         - n8n.arffornia.com
