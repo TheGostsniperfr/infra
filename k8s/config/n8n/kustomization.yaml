@@ -11,7 +11,7 @@ resources:
 helmCharts:
   - name: n8n
     repo: oci://8gears.container-registry.com/library
-    version: "1.0.11"
+    version: "1.0.10"
     releaseName: n8n
     namespace: n8n
     valuesFile: values.yaml
