@@ -21,3 +21,4 @@ resources:
   - keycloak.yaml 
   - adminer.yaml
   - vaultwarden.yaml
+  - n8n.yaml

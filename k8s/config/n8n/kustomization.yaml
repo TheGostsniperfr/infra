@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: n8n
+
+resources:
+  - namespace.yaml
+  - certificate.yaml
+  - secret.yaml
+
+helmCharts:
+  - name: n8n
+    repo: oci://8gears.container-registry.com/library
+    version: "1.0.11"
+    releaseName: n8n
+    namespace: n8n
+    valuesFile: values.yaml
