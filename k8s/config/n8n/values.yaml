@@ -95,6 +95,9 @@ main:
         secretKeyRef:
           name: n8n-db-secret
           key: password
+
+    DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED:
+      value: "false"
   #
   # N8n Kubernetes specific settings
   #
