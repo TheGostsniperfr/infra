@@ -20,3 +20,4 @@ resources:
   - laguedro.yaml
   - keycloak.yaml 
   - adminer.yaml
+  - vaultwarden.yaml
