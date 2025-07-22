@@ -11,6 +11,7 @@ spec:
     ping: ping
     keycloak: keycloak
     vaultwarden: vaultwarden
+    n8n: n8n
   enableConnectionPooler: true
   enableReplicaConnectionPooler: true
   enableReplicaLoadBalancer: true
@@ -31,6 +32,7 @@ spec:
     ping: []
     keycloak: []
     vaultwarden: []
+    n8n: []
   volume:
     size: 10Gi
     storageClass: longhorn
