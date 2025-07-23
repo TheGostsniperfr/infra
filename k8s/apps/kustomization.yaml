@@ -22,3 +22,4 @@ resources:
   - adminer.yaml
   - vaultwarden.yaml
   - n8n.yaml
+  - ollama.yaml
