@@ -8,7 +8,7 @@ image:
 
 imagePullSecret: ""
 
-replicaCount: 0
+replicaCount: 1
 
 ## Configure resource requests and limits
 ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
