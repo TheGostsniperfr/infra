@@ -264,14 +264,38 @@ minecraftProxy:
 ## Values can be either variable values or `valueFrom` yaml
 ##
 extraEnv:
-  - configMapRef:
-      name: arffornia-proxy-config
+  REPLACE_ENV_VARIABLES:
+    valueFrom:
+      configMapKeyRef:
+        name: arffornia-proxy-config
+        key: REPLACE_ENV_VARIABLES
+  REPLACE_ENV_DURING_SYNC:
+    valueFrom:
+      configMapKeyRef:
+        name: arffornia-proxy-config
+        key: REPLACE_ENV_DURING_SYNC
+  REPLACE_ENV_VARIABLE_PREFIX:
+    valueFrom:
+      configMapKeyRef:
+        name: arffornia-proxy-config
+        key: REPLACE_ENV_VARIABLE_PREFIX
 
-  - secretRef:
-      name: arffornia-proxy-secret
+  CFG_LUCKPERMS_USER:
+    valueFrom:
+      secretKeyRef:
+        name: luckperms-db-secret
+        key: CFG_LUCKPERMS_USER
+  CFG_LUCKPERMS_PASS:
+    valueFrom:
+      secretKeyRef:
+        name: luckperms-db-secret
+        key: CFG_LUCKPERMS_PASS
 
-  - secretRef:
-      name: luckperms-db-secret
+  CFG_FORWARDING_SECRET:
+    valueFrom:
+      secretKeyRef:
+        name: arffornia-proxy-secret
+        key: CFG_FORWARDING_SECRET
 
 persistence:
   ## minecraft data Persistent Volume Storage Class
