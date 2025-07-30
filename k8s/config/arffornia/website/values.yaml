@@ -33,6 +33,8 @@ envFrom:
       name: arffornia-website-secret-template
   - secretRef:
       name: arffornia-db-secret
+  - secretRef:
+      name: arffornia-svc-secret
       
   - configMapRef:
       name: arffornia-website-config

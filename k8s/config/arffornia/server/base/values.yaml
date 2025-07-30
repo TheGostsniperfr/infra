@@ -438,6 +438,9 @@ envFrom:
   - secretRef:
       name: arffornia-proxy-secret
 
+  - secretRef:
+      name: arffornia-svc-secret
+
 persistence:
   labels: {}
   annotations: {}
