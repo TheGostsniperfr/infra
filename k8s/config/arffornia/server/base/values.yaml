@@ -440,6 +440,9 @@ envFrom:
 
   - secretRef:
       name: arffornia-svc-secret
+  
+  - secretRef:
+      name: luckperms-db-secret
 
 persistence:
   labels: {}

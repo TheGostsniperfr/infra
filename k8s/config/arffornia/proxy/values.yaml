@@ -269,6 +269,9 @@ envFrom:
 
   - secretRef:
       name: arffornia-proxy-secret
+      
+  - secretRef:
+      name: luckperms-db-secret
 
 persistence:
   ## minecraft data Persistent Volume Storage Class
