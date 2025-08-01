@@ -422,6 +422,7 @@ minecraftServer:
 ##
 extraEnv:
   NEOFORGE_VERSION: "21.1.172"
+  CREATE_CONSOLE_IN_PIPE: true
 
 ## Additional environment variables to add to the minecraft container from
 ## ConfigMaps and Secrets
