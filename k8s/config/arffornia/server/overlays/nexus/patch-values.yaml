@@ -1,3 +1,2 @@
 minecraftServer:
   motd: "Welcome to Minecraft on Kubernetes nexus!"
-  worldSaveName: nexus-world

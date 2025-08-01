@@ -1,10 +1,2 @@
 minecraftServer:
   motd: "Welcome to Minecraft on Kubernetes arcane!"
-  worldSaveName: arcane-world
-
-  # For testing purpose (no proxy connection)
-  serviceType: LoadBalancer  
-  servicePort: 25565
-
-serviceAnnotations:
-  external-dns.alpha.kubernetes.io/hostname: "noproxy.arffornia.com"
