@@ -421,12 +421,7 @@ minecraftServer:
 ## Values can be either variable values or `valueFrom` yaml
 ##
 extraEnv:
-  {}
-  # some_variable: some value
-  # another_variable:
-  #   valueFrom:
-  #     fieldRef:
-  #       fieldPath: status.hostIP
+  NEOFORGE_VERSION: "21.1.172"
 
 ## Additional environment variables to add to the minecraft container from
 ## ConfigMaps and Secrets
