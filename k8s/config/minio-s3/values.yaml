@@ -46,9 +46,9 @@ resources:
 
 securityContext:
   enabled: true
-  runAsUser: 1000
-  runAsGroup: 1000
-  fsGroup: 1000
+  runAsUser: 33  
+  runAsGroup: 33  
+  fsGroup: 33
 
 ingress:
   enabled: false
