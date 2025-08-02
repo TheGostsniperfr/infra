@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: minio-s3-tls
+  namespace: minio-s3
+spec:
+  secretName: minio-s3-tls 
+  dnsNames:
+    - s3.arffornia.com
+  issuerRef:
+    name: default-issuer
+    kind: ClusterIssuer

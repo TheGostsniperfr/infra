@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: minio-s3
+  namespace: argocd
+  labels:
+    app: minio-s3
+spec:
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      prune: true
+  project: default
+  source:
+    repoURL: https://github.com/TheGostsniperfr/infra.git 
+    targetRevision: HEAD
+    path: k8s/config/minio-s3
+  destination:
+    name: in-cluster
+    namespace: minio-s3
