@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: minio-s3
+
+resources:
+  - secret.yaml
+  - certificate.yaml
+
+helmCharts:
+  - name: minio
+    repo: https://charts.min.io/
+    version: "5.4.0" 
+    releaseName: minio-s3
+    namespace: minio-s3
+    valuesFile: values.yaml

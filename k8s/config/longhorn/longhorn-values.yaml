@@ -3,3 +3,7 @@ preUpgradeChecker:
 
 longhornUI:
   replicas: 1
+
+defaultBackupStore:
+  backupTarget: "s3://longhorn@minio-s3.minio-s3.svc.cluster.local:9000/"
+  backupTargetCredentialSecret: "longhorn-s3-secret"
