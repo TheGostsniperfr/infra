@@ -24,3 +24,4 @@ resources:
   - n8n.yaml
   - ollama.yaml
   - minio-s3.yaml
+  - monitoring.yaml

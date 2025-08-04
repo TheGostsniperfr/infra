@@ -1,0 +1,39 @@
+# Doc: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
+
+grafana:
+  admin:
+    existingSecret: "grafana-admin-creds"
+    userKey: "admin-user"                         
+    passwordKey: "admin-password"
+
+  persistence:
+    enabled: true
+    storageClassName: "longhorn"
+    size: 5Gi
+
+  ingress:
+    enabled: true
+    ingressClassName: public
+    hosts:
+      - grafana.arffornia.com
+    path: /
+    tls:
+      - secretName: grafana-tls
+        hosts:
+          - grafana.arffornia.com
+    annotations:
+      cert-manager.io/cluster-issuer: default-issuer
+
+prometheus:
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 20Gi
+    
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
