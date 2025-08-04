@@ -19,6 +19,9 @@ spec:
   numberOfInstances: 3
   postgresql:
     version: '17'
+    pg_hba:
+      - hostnossl nextcloud nextcloud 0.0.0.0/0 md5
+      - hostssl all all 0.0.0.0/0 md5
   resources:
     limits:
       cpu: 500m
