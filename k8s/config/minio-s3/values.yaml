@@ -9,9 +9,10 @@ drivesPerNode: 1
 
 existingSecret: "minio-credentials" 
 
+
 persistence:
   enabled: true
-  storageClass: "smb-nas" 
+  existingClaim: "minio-nas-pvc" 
   accessMode: ReadWriteMany 
   size: 300Gi 
 

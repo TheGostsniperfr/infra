@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - smb-storageclass.yaml
   - secret.yaml
+  - nas-pvs.yaml
   
 helmCharts:
   - name: csi-driver-smb

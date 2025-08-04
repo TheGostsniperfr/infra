@@ -6,6 +6,7 @@ namespace: minio-s3
 resources:
   - secret.yaml
   - certificate.yaml
+  - pvc.yaml
 
 helmCharts:
   - name: minio
