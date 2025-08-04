@@ -8,3 +8,4 @@ resources:
   - service.yaml
   - postgres-cluster.yaml
   - postgres-pvc.yaml
+  - s3-secret.yaml
