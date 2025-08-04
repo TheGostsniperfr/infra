@@ -71,11 +71,11 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: smb-nas 
   mountOptions:
-    - "uid=33"
-    - "gid=33"
+    - "uid=1000"
+    - "gid=2000"
     - "vers=3.0"
-    - "dir_mode=0770"
-    - "file_mode=0660"
+    - "dir_mode=0775"
+    - "file_mode=0664"
     - "cache=strict"
     - "noserverino"
   csi:
