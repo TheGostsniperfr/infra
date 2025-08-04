@@ -39,17 +39,7 @@ nextcloud:
     secretName: nextcloud-admin-secret
     usernameKey: username
     passwordKey: password
-
-  database:
-    type: postgresql
-    host: postgres-cluster.postgres.svc.cluster.local
-    database: nextcloud
-    existingSecret:
-      enabled: true
-      secretName: nextcloud-db-secret
-      usernameKey: username
-      passwordKey: password
-
+    
   extraVolumes:
     - name: nextcloud-nas-data
       persistentVolumeClaim:
@@ -58,6 +48,20 @@ nextcloud:
   extraVolumeMounts:
     - name: nextcloud-nas-data
       mountPath: /mnt/nas
+
+internalDatabase:
+  enabled: false 
+
+externalDatabase:
+  enabled: true 
+  type: postgresql
+  host: "postgres-cluster.postgres.svc.cluster.local"
+  database: "nextcloud"
+  existingSecret:
+    enabled: true
+    secretName: "nextcloud-db-secret"
+    usernameKey: "username"
+    passwordKey: "password"
 
 redis:
   enabled: true
@@ -69,7 +73,7 @@ extraEnv:
   - name: NEXTCLOUD_INSTALL_APPS
     value: "files_external" # comma separated
   - name: PHP_MEMORY_LIMIT
-    value: "512M"
+    value: "2048M"
   - name: PHP_FPM_PM
     value: "dynamic"
   - name: PHP_FPM_PM_MAX_CHILDREN
