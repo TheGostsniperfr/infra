@@ -6,6 +6,7 @@ namespace: arffornia-server-arcane
 resources:
   - ../../base/
   - namespace.yaml
+  - pvc.yaml
 
 helmCharts:
   - name: minecraft

@@ -355,7 +355,7 @@ minecraftServer:
 
   rcon:
     # If you enable this, make SURE to change your password below.
-    enabled: false
+    enabled: true
     # By default, the container will generate a random password at startup
     # to ensure internal RCON tooling, including a backup container,
     # can be used, but the password is secure.
@@ -363,7 +363,7 @@ minecraftServer:
     port: 25575
     password: "CHANGEME!"
     existingSecret: arffornia-server-secret
-    secretKey: RCON_PASSWORD
+    secretKey: CFG_RCON_PASSWORD
     serviceType: ClusterIP
     ## Set the external port if the rcon serviceType is NodePort
     nodePort:
@@ -493,13 +493,13 @@ mcbackup:
   # ***set to 0 or smaller, script will run once and exit.  DO NOT SET TO 0 or smaller, this will cause K8s to kill your pod!***
   # backupInterval="1.5d" -> backup every one and a half days (36 hours)
   # backupInterval="2h 30m" -> backup every two and a half hours
-  backupInterval: 24h
+  backupInterval: 1h
 
   # option lets you pause backups if no players are online.
-  pauseIfNoPlayers: "false"
+  pauseIfNoPlayers: "true"
 
   # is set to a positive number, it'll delete old .tgz backup files from DEST_DIR. By default deletes backups older than a week.
-  pruneBackupsDays: 7
+  pruneBackupsDays: 14
 
   # Set to a negative value to retry indefinitely
   rconRetries: 5

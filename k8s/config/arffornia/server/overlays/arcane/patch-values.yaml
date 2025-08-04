@@ -1,2 +1,13 @@
 minecraftServer:
   motd: "Welcome to Minecraft on Kubernetes arcane!"
+
+mcbackup:
+  enabled: true
+  
+  persistence:
+    backupDir:
+      enabled: true
+      existingClaim: "arffornia-backup-arcane-pvc"
+      Size: 100Gi
+      accessModes:
+        - ReadWriteOnce
