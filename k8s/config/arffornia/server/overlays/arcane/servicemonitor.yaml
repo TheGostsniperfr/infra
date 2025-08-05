@@ -1,0 +1,20 @@
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: arffornia-server-arcane-monitor
+  namespace: arffornia-server-arcane 
+  labels:
+    release: monitoring-stack 
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: arffornia-server-arcane
+      app.kubernetes.io/name: minecraft
+  namespaceSelector:
+    matchNames:
+      - arffornia-server-arcane
+  endpoints:
+  - port: http-metrics 
+    path: /metrics
+    interval: 5s
