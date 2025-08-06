@@ -17,8 +17,8 @@ resources:
   - nextcloud.yaml
   - arffornia/
   - csi-driver-smb.yaml
-  - laguedro.yaml
-  - keycloak.yaml 
+  # - laguedro.yaml
+  # - keycloak.yaml 
   - adminer.yaml
   - vaultwarden.yaml
   - n8n.yaml
