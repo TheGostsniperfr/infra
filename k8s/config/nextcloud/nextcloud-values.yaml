@@ -10,7 +10,7 @@ persistence:
 
 image:
   repository: nextcloud
-  tag: latest
+  tag: "31.0.7"
   pullPolicy: IfNotPresent
 
 ingress:
