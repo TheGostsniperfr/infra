@@ -132,7 +132,7 @@ minecraftProxy:
   # If you adjust this, you may need to adjust resources.requests above to match.
   memory: 512M
   # General JVM options to be passed to the Minecraft server invocation
-  jvmOpts: ""
+  jvmOpts: "-Dvelocity.packet-decode-logging=true -Dvelocity.max-known-packs=512"
   # Options like -X that need to proceed general JVM options
   jvmXXOpts: ""
   # DEPRECATED: use top-level rconServiceAnnotations instead
