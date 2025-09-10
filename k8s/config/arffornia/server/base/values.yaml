@@ -206,7 +206,7 @@ minecraftServer:
   # Set to true if running Feed The Beast and get an error like "unable to launch forgemodloader"
   ftbLegacyJavaFixer: default
   # One of: peaceful, easy, normal, and hard
-  difficulty: normal
+  difficulty: hard
   # A comma-separated list of player names to whitelist.
   whitelist:
   # A comma-separated list of player names who should be admins.
@@ -214,7 +214,7 @@ minecraftServer:
   # A server icon URL for server listings. Auto-scaled and transcoded.
   icon:
   # Max connected players.
-  maxPlayers: default
+  maxPlayers: 100
   # This sets the maximum possible size in blocks, expressed as a radius, that the world border can obtain.
   maxWorldSize: default
   # Allows players to travel to the Nether.
@@ -222,13 +222,13 @@ minecraftServer:
   # Allows server to announce when a player gets an achievement.
   announcePlayerAchievements: default
   # Enables command blocks.
-  enableCommandBlock: default
+  enableCommandBlock: true
   # If true, players will always join in the default gameMode even if they were previously set to something else.
   forcegameMode: default
   # Defines whether structures (such as villages) will be generated.
   generateStructures: default
   # If set to true, players will be set to spectator mode if they die.
-  hardcore: default
+  hardcore: false
   # The maximum height in which building is allowed.
   maxBuildHeight: default
   # The maximum number of milliseconds a single tick may take before the server watchdog stops the server with the message. -1 disables this entirely.
@@ -426,9 +426,7 @@ minecraftServer:
 ## Additional minecraft container environment variables
 ## Values can be either variable values or `valueFrom` yaml
 ##
-extraEnv:
-  NEOFORGE_VERSION: "21.1.172"
-  CREATE_CONSOLE_IN_PIPE: true
+extraEnv: []
 
 ## Additional environment variables to add to the minecraft container from
 ## ConfigMaps and Secrets
