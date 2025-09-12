@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: bluemap-web-tls
+  namespace: arffornia-bluemap-web
+spec:
+  secretName: bluemap-web-tls
+  dnsNames:
+    - map.arffornia.com
+  issuerRef:
+    name: default-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io

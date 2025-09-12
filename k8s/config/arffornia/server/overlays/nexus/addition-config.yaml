@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: arffornia-server-nexus-addition-config
+  namespace: arffornia-server-nexus
+data:
+  CFG_SERVER_DISPLAY_NAME: "Nexus"
+  CFG_SERVER_ID: "nexus"

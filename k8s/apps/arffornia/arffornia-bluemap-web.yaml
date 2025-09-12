@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: arffornia-bluemap-web
+  namespace: argocd
+  labels:
+    app: arffornia-bluemap-web
+spec:
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      prune: true
+  project: default
+  source:
+    repoURL: https://github.com/TheGostsniperfr/infra.git 
+    targetRevision: HEAD
+    path: k8s/config/arffornia/bluemap-web
+  destination:
+    name: in-cluster
+    namespace: arffornia-bluemap-web

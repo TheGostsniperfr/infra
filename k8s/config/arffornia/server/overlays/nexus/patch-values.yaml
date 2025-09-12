@@ -1,2 +1,15 @@
 minecraftServer:
-  motd: "Welcome to Minecraft on Kubernetes nexus!"
+  motd: "Welcome to Minecraft on Kubernetes Nexus!"
+
+extraVolumes:
+  - volumeMounts:
+      - name: bluemap-data
+        mountPath: /data/bluemap-web
+    volumes:
+      - name: bluemap-data
+        persistentVolumeClaim:
+          claimName: arffornia-bluemap-pvc
+
+envFrom:
+  - configMapRef:
+      name: arffornia-server-nexus-addition-config

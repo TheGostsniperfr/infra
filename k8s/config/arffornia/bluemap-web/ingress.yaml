@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bluemap-web-ingress
+  namespace: arffornia-bluemap-web
+  annotations:
+    cert-manager.io/cluster-issuer: default-issuer
+spec:
+  ingressClassName: public
+  rules:
+  - host: map.arffornia.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: bluemap-web-service
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - map.arffornia.com
+    secretName: bluemap-web-tls

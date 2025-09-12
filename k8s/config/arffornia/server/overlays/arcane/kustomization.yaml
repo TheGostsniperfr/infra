@@ -8,6 +8,7 @@ resources:
   - namespace.yaml
   - pvc.yaml
   - servicemonitor.yaml
+  - addition-config.yaml
 
 helmCharts:
   - name: minecraft

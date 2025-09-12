@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: arffornia-bluemap-pvc
+  namespace: arffornia-bluemap-web
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi 
+  storageClassName: smb-nas
+  volumeName: pv-arffornia-bluemap

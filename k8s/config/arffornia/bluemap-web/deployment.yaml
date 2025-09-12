@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bluemap-web
+  namespace: arffornia-bluemap-web
+  labels:
+    app: bluemap-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bluemap-web
+  template:
+    metadata:
+      labels:
+        app: bluemap-web
+    spec:
+      containers:
+        - name: bluemap
+          image: bluecolored/bluemap:latest
+          ports:
+            - containerPort: 8100
+              name: http
+          volumeMounts:
+            - name: bluemap-data
+              mountPath: /bluemap/web 
+              readOnly: true 
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+      volumes:
+        - name: bluemap-data
+          persistentVolumeClaim:
+            claimName: arffornia-bluemap-pvc

@@ -6,6 +6,7 @@ namespace: arffornia-server-nexus
 resources:
   - ../../base/
   - namespace.yaml
+  - addition-config.yaml
 
 helmCharts:
   - name: minecraft
