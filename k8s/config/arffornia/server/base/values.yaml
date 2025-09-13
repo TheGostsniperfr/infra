@@ -6,7 +6,7 @@
 # ref: https://hub.docker.com/r/itzg/minecraft-server/
 image:
   repository: itzg/minecraft-server
-  tag: latest
+  tag: 2025.9.1-java21
   pullPolicy: Always
   pullSecret: ""
 
