@@ -7,6 +7,7 @@ resources:
   - ../../base/
   - namespace.yaml
   - addition-config.yaml
+  - pvc.yaml
 
 helmCharts:
   - name: minecraft

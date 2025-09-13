@@ -11,3 +11,17 @@ spec:
       storage: 100Gi
   storageClassName: smb-nas
   volumeName: pv-arffornia-backup-arcane
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: arffornia-bluemap-pvc  
+  namespace: arffornia-server-arcane
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: smb-nas
+  volumeName: pv-arffornia-bluemap 
