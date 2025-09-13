@@ -6,11 +6,10 @@ metadata:
 data:
   default.conf: |
     server {
-        listen 80;
+        listen 8080;
         server_name map.arffornia.com;
 
         root /data/bluemap-web;
-
         gzip_static always;
 
         location ~* ^/maps/[^/]*/tiles/ {
