@@ -13,11 +13,11 @@ data:
         gzip_static always;
 
         location ~* ^/maps/[^/]*/tiles/ {
-          try_files $uri @empty;
+            try_files $uri @empty;
         }
         
         location @empty {
-          return 204;
+            return 204;
         }
 
         location ~* ^/maps/.*/live/ {
@@ -28,6 +28,12 @@ data:
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        location ~ \.json$ {
+            gzip_static always;
+            default_type application/json;
+            add_header Content-Encoding gzip;
         }
 
         location / {
