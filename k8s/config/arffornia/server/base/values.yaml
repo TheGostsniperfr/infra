@@ -386,6 +386,14 @@ minecraftServer:
         type: ClusterIP
         port: 19565
 
+    - name: bluemap-live
+      containerPort: 8100
+      protocol: TCP
+      service:
+        enabled: true
+        type: ClusterIP
+        port: 8100
+
     # These options allow you to expose another port from the Minecraft server, plugins such
     # as dynmap (8123) and bluemap (8100) will require this for access to their web interfaces
     #

@@ -20,37 +20,29 @@ spec:
         runAsGroup: 3000
         fsGroup: 3000
       containers:
-        - name: bluemap
-          image: ghcr.io/bluemap-minecraft/bluemap:v5.7
-          args:
-            - "-w"
-            - "--verbose"
-            - "-c"
-            - "/app/config"
+        - name: nginx
+          image: nginx:1.27.0-alpine
           ports:
-            - containerPort: 8100
+            - containerPort: 80
               name: http
           volumeMounts:
             - name: bluemap-data
-              mountPath: /app/web
+              mountPath: /data/bluemap-web
               readOnly: true
-            - name: bluemap-configs
-              mountPath: /app/config/core.conf
-              subPath: core.conf
-            - name: bluemap-configs
-              mountPath: /app/config/storages/file.conf
-              subPath: file.conf
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "250m"
+              memory: "64Mi"
+              cpu: "50m"
             limits:
-              memory: "1Gi"
-              cpu: "500m"
+              memory: "128Mi"
+              cpu: "250m"
       volumes:
         - name: bluemap-data
           persistentVolumeClaim:
             claimName: arffornia-bluemap-pvc
-        - name: bluemap-configs
+        - name: nginx-config
           configMap:
-            name: bluemap-web-configs
+            name: bluemap-nginx-config

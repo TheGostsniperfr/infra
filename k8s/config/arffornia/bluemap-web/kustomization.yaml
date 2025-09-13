@@ -8,4 +8,4 @@ resources:
   - service.yaml
   - certificate.yaml
   - ingress.yaml
-  - bluemap-configs.yaml
+  - nginx-config.yaml
