@@ -21,6 +21,8 @@ spec:
           args:
             - "-w"
             - "--verbose"
+            - "-c"
+            - "/app/config"
           ports:
             - containerPort: 8100
               name: http
@@ -28,6 +30,12 @@ spec:
             - name: bluemap-data
               mountPath: /app/web
               readOnly: true
+            - name: bluemap-configs
+              mountPath: /app/config/core.conf
+              subPath: core.conf
+            - name: bluemap-configs
+              mountPath: /app/config/storages/file.conf
+              subPath: file.conf
           resources:
             requests:
               memory: "256Mi"
@@ -39,3 +47,6 @@ spec:
         - name: bluemap-data
           persistentVolumeClaim:
             claimName: arffornia-bluemap-pvc
+        - name: bluemap-configs
+          configMap:
+            name: bluemap-web-configs
