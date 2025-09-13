@@ -24,4 +24,4 @@ spec:
     requests:
       storage: 50Gi
   storageClassName: smb-nas
-  volumeName: pv-arffornia-bluemap 
+  volumeName: pv-arffornia-bluemap-arcan

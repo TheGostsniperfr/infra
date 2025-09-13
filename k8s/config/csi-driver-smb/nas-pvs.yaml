@@ -87,11 +87,12 @@ spec:
     nodeStageSecretRef:
       name: smb-nas-credentials
       namespace: default
+
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: pv-arffornia-bluemap
+  name: pv-arffornia-bluemap-web
 spec:
   capacity:
     storage: 50Gi
@@ -111,7 +112,67 @@ spec:
   csi:
     driver: smb.csi.k8s.io
     readOnly: false
-    volumeHandle: pv-arffornia-bluemap-handle
+    volumeHandle: pv-arffornia-bluemap-web-handle
+    volumeAttributes:
+      source: "//192.168.1.49/raid5_proxmox/arffornia/bluemap"
+    nodeStageSecretRef:
+      name: smb-nas-credentials
+      namespace: default
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-arffornia-bluemap-arcane
+spec:
+  capacity:
+    storage: 50Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: smb-nas
+  mountOptions:
+    - "uid=1000"
+    - "gid=3000"
+    - "vers=3.0"
+    - "dir_mode=0775"
+    - "file_mode=0664"
+    - "cache=strict"
+    - "noserverino"
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: false
+    volumeHandle: pv-arffornia-bluemap-arcane-handle
+    volumeAttributes:
+      source: "//192.168.1.49/raid5_proxmox/arffornia/bluemap"
+    nodeStageSecretRef:
+      name: smb-nas-credentials
+      namespace: default
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-arffornia-bluemap-nexus
+spec:
+  capacity:
+    storage: 50Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: smb-nas
+  mountOptions:
+    - "uid=1000"
+    - "gid=3000"
+    - "vers=3.0"
+    - "dir_mode=0775"
+    - "file_mode=0664"
+    - "cache=strict"
+    - "noserverino"
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: false
+    volumeHandle: pv-arffornia-bluemap-nexus-handle
     volumeAttributes:
       source: "//192.168.1.49/raid5_proxmox/arffornia/bluemap"
     nodeStageSecretRef:
