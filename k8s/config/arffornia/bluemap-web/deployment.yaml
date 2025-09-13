@@ -25,7 +25,7 @@ spec:
               name: http
           volumeMounts:
             - name: bluemap-data
-              mountPath: /app/web
+              mountPath: /data/bluemap-web
               readOnly: true
           resources:
             requests:
