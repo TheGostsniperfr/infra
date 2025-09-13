@@ -20,6 +20,7 @@ spec:
           image: ghcr.io/bluemap-minecraft/bluemap:v5.11
           args:
             - "-w"
+            - "--verbose"
           ports:
             - containerPort: 8100
               name: http
