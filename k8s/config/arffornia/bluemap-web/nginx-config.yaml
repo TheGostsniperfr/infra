@@ -5,6 +5,8 @@ metadata:
   namespace: arffornia-bluemap-web
 data:
   default.conf: |
+    pid /var/run/nginx.pid;
+
     server {
         listen 8080;
         server_name map.arffornia.com;
