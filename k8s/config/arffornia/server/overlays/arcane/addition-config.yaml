@@ -1,8 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: arffornia-server-arcane-addition-config
-  namespace: arffornia-server-arcane
+  name: arffornia-server-addition-config
 data:
   CFG_SERVER_DISPLAY_NAME: "Arcane"
   CFG_SERVER_ID: "arcane"

@@ -434,6 +434,9 @@ extraEnv: []
 envFrom:
   - configMapRef:
       name: arffornia-server-config
+      
+  - configMapRef:
+      name: arffornia-server-addition-config
 
   - secretRef:
       name: arffornia-proxy-secret

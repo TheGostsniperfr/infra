@@ -9,7 +9,3 @@ extraVolumes:
       - name: bluemap-data
         persistentVolumeClaim:
           claimName: arffornia-bluemap-pvc
-
-envFrom:
-  - configMapRef:
-      name: arffornia-server-nexus-addition-config
