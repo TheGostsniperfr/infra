@@ -18,13 +18,15 @@ spec:
       containers:
         - name: bluemap
           image: ghcr.io/bluemap-minecraft/bluemap:v5.11
+          args:
+            - "-w"
           ports:
             - containerPort: 8100
               name: http
           volumeMounts:
             - name: bluemap-data
-              mountPath: /bluemap/web 
-              readOnly: true 
+              mountPath: /app/web
+              readOnly: true
           resources:
             requests:
               memory: "256Mi"
