@@ -6,3 +6,4 @@ metadata:
 data:
   CFG_SERVER_DISPLAY_NAME: "Nexus"
   CFG_SERVER_ID: "nexus"
+  CFG_BLUEMAP_WEBAPP_ENABLED: "false"
