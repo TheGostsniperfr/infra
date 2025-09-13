@@ -10,7 +10,7 @@ data:
         server_name map.arffornia.com;
 
         root /data/bluemap-web;
-        gzip_static always;
+        gzip_static on;
 
         location ~* ^/maps/[^/]*/tiles/ {
             try_files $uri @empty;
@@ -31,9 +31,7 @@ data:
         }
 
         location ~ \.json$ {
-            gzip_static always;
             default_type application/json;
-            add_header Content-Encoding gzip;
         }
 
         location / {
