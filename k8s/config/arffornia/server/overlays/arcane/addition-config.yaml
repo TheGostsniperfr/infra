@@ -7,4 +7,4 @@ data:
   CFG_SERVER_ID: "arcane"
   CFG_BLUEMAP_WEBAPP_ENABLED: "true"
 
-  NM_SERVER_ID_: "arcane"
+  NM_SERVER_ID: "arcane"
