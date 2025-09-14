@@ -6,3 +6,5 @@ data:
   CFG_SERVER_DISPLAY_NAME: "Arcane"
   CFG_SERVER_ID: "arcane"
   CFG_BLUEMAP_WEBAPP_ENABLED: "true"
+
+  NM_SERVER_ID_: "arcane"
