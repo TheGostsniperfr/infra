@@ -7,4 +7,4 @@ data:
   CFG_SERVER_ID: "nexus"
   CFG_BLUEMAP_WEBAPP_ENABLED: "false"
 
-  NM_SERVER_ID_: "nexus"
+  NM_SERVER_ID: "nexus"
