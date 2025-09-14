@@ -91,12 +91,17 @@ startupProbe:
   failureThreshold: 30
   periodSeconds: 10
 
-initContainers: 
+initContainers:
   - name: config-updater
     image: ghcr.io/arffornia/config-updater:latest
     env:
       - name: KIND
         value: server
+    envFrom:
+      - configMapRef:
+          name: arffornia-server-config
+      - configMapRef:
+          name: arffornia-server-addition-config
     volumeMounts:
       - name: datadir
         mountPath: /data
