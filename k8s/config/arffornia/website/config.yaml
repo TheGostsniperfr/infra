@@ -51,7 +51,7 @@ data:
 
   # AZURE_OAUTH_CLIENT_ID:
   # AZURE_OAUTH_CLIENT_SECRET:
-  AZURE_OAUTH_REDIRECT_URI: "https://arffornia.com/login"
+  AZURE_OAUTH_REDIRECT_URI: "https://arffornia.com/login/connect"
 
   # PUSHER_APP_ID:
   # PUSHER_APP_KEY:
