@@ -227,7 +227,15 @@ minecraftProxy:
     ## Set the ipFamilyPolicy in the service to SingleStack, PreferDualStack, RequireDualStack
     # ipFamilyPolicy: SingleStack
 
-  extraPorts: []
+  extraPorts:
+    - name: nuvotifier
+      containerPort: 8192
+      protocol: TCP
+      service:
+        enabled: true
+        type: LoadBalancer
+        port: 8192 
+        
   # These options allow you to expose another port from the Minecraft proxy, plugins such
   # as NuVotifier (8192) will require this for incoming webhooks
   #
