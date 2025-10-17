@@ -304,6 +304,35 @@ extraEnv:
       secretKeyRef:
         name: arffornia-proxy-secret
         key: CFG_FORWARDING_SECRET
+  
+  CFG_NUVOTIFIER_TOKEN:
+    valueFrom:
+      secretKeyRef:
+        name: arffornia-proxy-secret
+        key: CFG_NUVOTIFIER_TOKEN
+
+  CFG_NUVOTIFIER_PRIVATE_KEY:
+    valueFrom:
+      secretKeyRef:
+        name: arffornia-proxy-secret
+        key: CFG_NUVOTIFIER_PRIVATE_KEY
+  CFG_NUVOTIFIER_PUBLIC_KEY:
+    valueFrom:
+      secretKeyRef:
+        name: arffornia-proxy-secret
+        key: CFG_NUVOTIFIER_PUBLIC_KEY
+
+  CFG_SVC_PROXY_CLIENT_ID:
+    valueFrom:
+      secretKeyRef:
+        name: arffornia-svc-proxy-secret
+        key: CFG_SVC_PROXY_CLIENT_ID
+
+  CFG_SVC_PROXY_CLIENT_SECRET:
+    valueFrom:
+      secretKeyRef:
+        name: arffornia-svc-proxy-secret 
+        key: CFG_SVC_PROXY_CLIENT_SECRET
 
 persistence:
   ## minecraft data Persistent Volume Storage Class

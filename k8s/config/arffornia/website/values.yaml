@@ -30,6 +30,8 @@ envFrom:
       name: arffornia-db-secret
   - secretRef:
       name: arffornia-svc-secret
+  - secretRef:
+      name: arffornia-svc-proxy-secret
       
   - configMapRef:
       name: arffornia-website-config
