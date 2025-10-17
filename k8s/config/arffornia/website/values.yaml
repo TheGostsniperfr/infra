@@ -15,16 +15,11 @@ images:
     port: 9000
     host: "127.0.0.1"
 
-initContainers:
-  enabled: false
+syncServiceAccounts:
+  enabled: true
 
-  command:
-    - "php"
-  args:
-    - "artisan"
-    - "migrate:fresh"
-    - "--seed"
-    - "--force"
+migrateAndSeedDB:
+  enabled: false
 
 envFrom:
   - secretRef:
