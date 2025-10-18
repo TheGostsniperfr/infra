@@ -10,8 +10,8 @@ resources:
 
 helmCharts:
   - name: minecraft-proxy
-    repo: oci://ghcr.io/itzg/minecraft-server-charts
-    version: 3.9.0
+    repo: oci://ghcr.io/arffornia
+    version: 3.9.1
     releaseName: arffornia-proxy-velocity
     namespace: arffornia-proxy-velocity
     valuesFile: values.yaml
