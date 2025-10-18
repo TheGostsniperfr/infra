@@ -235,6 +235,9 @@ minecraftProxy:
         enabled: true
         type: LoadBalancer
         port: 8192 
+
+      ingress:
+        enabled: false
         
   # These options allow you to expose another port from the Minecraft proxy, plugins such
   # as NuVotifier (8192) will require this for incoming webhooks
