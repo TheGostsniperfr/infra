@@ -290,6 +290,11 @@ extraEnv:
       configMapKeyRef:
         name: arffornia-proxy-config
         key: REPLACE_ENV_VARIABLE_PREFIX
+  REPLACE_ENV_SUFFIXES:
+    valueFrom:
+      configMapKeyRef:
+        name: arffornia-proxy-config
+        key: REPLACE_ENV_SUFFIXES
 
   CFG_LUCKPERMS_USER:
     valueFrom:
