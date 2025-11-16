@@ -1,3 +1,6 @@
+# Default values: https://github.com/plexinc/pms-docker/blob/master/charts/plex-media-server/values.yaml
+# Doc: https://www.plex.tv/blog/plex-pro-week-23-a-z-on-k8s-for-plex-media-server/
+
 image:
   # -- The public dockerhub registry
   registry: index.docker.io
@@ -21,6 +24,11 @@ ingress:
        - plex.arffornia.com
 
 pms:
+  # Get token: https://www.plex.tv/claim/
+  claimSecret:
+    name: "plex-claim-secret"
+    key: "token"
+
   config:
     existingClaim: "plex-config-pvc"
   extraVolumes:
@@ -30,14 +38,6 @@ pms:
   extraVolumeMounts:
     - name: media
       mountPath: /data/media
-
-# Get token: https://www.plex.tv/claim/
-extraEnv:
-  PLEX_CLAIM:
-    valueFrom:
-      secretKeyRef:
-        name: plex-claim-secret
-        key: token
 
 service:
   type: ClusterIP
