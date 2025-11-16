@@ -12,11 +12,9 @@ ingress:
   ingressClassName: "public"
   annotations:
     cert-manager.io/cluster-issuer: default-issuer
-  hosts:
-    - host: plex.arffornia.com
-      paths:
-        - path: /
-          pathType: Prefix
+
+  url: "plex.arffornia.com"
+  
   tls:
    - secretName: plex-tls
      hosts:
