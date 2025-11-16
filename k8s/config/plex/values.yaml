@@ -31,13 +31,15 @@ pms:
 
   config:
     existingClaim: "plex-config-pvc"
-  extraVolumes:
-    - name: media
-      persistentVolumeClaim:
-        claimName: plex-nas-pvc
-  extraVolumeMounts:
-    - name: media
-      mountPath: /data/media
 
 service:
   type: ClusterIP
+
+extraVolumes:
+  - name: media
+    persistentVolumeClaim:
+      claimName: plex-nas-pvc
+
+extraVolumeMounts:
+  - name: media
+    mountPath: /data/media
