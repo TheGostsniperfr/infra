@@ -1,0 +1,45 @@
+image:
+  # -- The public dockerhub registry
+  registry: index.docker.io
+  repository: plexinc/pms-docker
+  # renovate: datasource=custom.plex depName=plex versioning=loose
+  tag: "1.42.2.10156-f737b826c"
+  sha: ""
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  ingressClassName: "public"
+  annotations:
+    cert-manager.io/cluster-issuer: default-issuer
+  hosts:
+    - host: plex.arffornia.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+   - secretName: plex-tls
+     hosts:
+       - plex.arffornia.com
+
+pms:
+  config:
+    existingClaim: "plex-config-pvc"
+  extraVolumes:
+    - name: media
+      persistentVolumeClaim:
+        claimName: plex-nas-pvc
+  extraVolumeMounts:
+    - name: media
+      mountPath: /data/media
+
+# Get token: https://www.plex.tv/claim/
+extraEnv:
+  PLEX_CLAIM:
+    valueFrom:
+      secretKeyRef:
+        name: plex-claim-secret
+        key: token
+
+service:
+  type: ClusterIP
