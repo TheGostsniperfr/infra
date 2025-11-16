@@ -41,8 +41,8 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: smb-nas 
   mountOptions:
-    - "uid=33"
-    - "gid=33"
+    - "uid=1000"
+    - "gid=1000"
     - "vers=3.0"
     - "dir_mode=0770"
     - "file_mode=0660"
