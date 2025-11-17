@@ -1,6 +1,11 @@
 # Doc: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
 
 grafana:
+  grafana.ini:
+    server:
+      root_url: "https://grafana.arffornia.com"
+      serve_from_sub_path: false
+
   admin:
     existingSecret: "grafana-admin-creds"
     userKey: "admin-user"                         
