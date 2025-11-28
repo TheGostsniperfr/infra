@@ -9,7 +9,7 @@ data:
   REPLACE_ENV_DURING_SYNC: "true"
   REPLACE_ENV_VARIABLE_PREFIX: "CFG_"
 
-  REPLACE_ENV_VARIABLES_EXCLUDE_PATHS: "/data/bluemap-web"
+  REPLACE_ENV_VARIABLES_EXCLUDE_PATHS: "/data/bluemap-web /data/logs /data/mods /data/defaultconfigs /data/kubejs /data/local /backups"
   
   NM_REPLACE_ENV_VARIABLES: "true"
   NM_REPLACE_ENV_VARIABLE_PREFIX: "NM_"
