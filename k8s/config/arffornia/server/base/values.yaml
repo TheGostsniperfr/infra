@@ -463,6 +463,9 @@ envFrom:
   - secretRef:
       name: arffornia-db-secret
 
+  - secretRef:
+      name: arffornia-discord-bot-secret
+
 persistence:
   labels: {}
   annotations: {}
