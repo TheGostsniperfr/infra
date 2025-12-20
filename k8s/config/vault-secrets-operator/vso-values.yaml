@@ -10,23 +10,6 @@ image:
 
 vault:
   authMethod: kubernetes
-  # appRolePath: auth/approle
   reconciliationTime: 60
   address: https://vault.arffornia.com
   kubernetesRole: "vault-secrets-operator-role"
-# environmentVars:
-#   - name: VAULT_ROLE_ID
-#     valueFrom:
-#       secretKeyRef:
-#         name: vault-approle
-#         key: VAULT_ROLE_ID
-#   - name: VAULT_SECRET_ID
-#     valueFrom:
-#       secretKeyRef:
-#         name: vault-approle
-#         key: VAULT_SECRET_ID
-#   - name: VAULT_TOKEN_MAX_TTL
-#     valueFrom:
-#       secretKeyRef:
-#         name: vault-approle
-#         key: VAULT_TOKEN_MAX_TTL

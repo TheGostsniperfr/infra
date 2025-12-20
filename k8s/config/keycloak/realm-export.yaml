@@ -4,7 +4,8 @@ metadata:
   name: keycloak-realm-secret
   namespace: keycloak
 spec:
-  path: secret/keycloak/epinaloa-realm-secret
+  path: kvv2/keycloak/epinaloa-realm-secret
+  vaultRole: keycloak-role
   keys:
     - client_secret
   templates:
