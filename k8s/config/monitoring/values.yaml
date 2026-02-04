@@ -63,5 +63,12 @@ prometheusOperator:
       annotations:
         argocd.argoproj.io/hook: PreSync
 
-    # serviceMonitorSelectorNilUsesHelmValues: false
-    # podMonitorSelectorNilUsesHelmValues: false
+prometheus-node-exporter:
+  serviceMonitor:
+    selector:
+      matchLabels:
+        release: kube-prometheus-stack
+        app.kubernetes.io/name: prometheus-node-exporter
+
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
