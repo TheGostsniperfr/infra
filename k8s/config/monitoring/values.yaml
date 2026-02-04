@@ -29,6 +29,18 @@ grafana:
     annotations:
       cert-manager.io/cluster-issuer: default-issuer
 
+  resources:
+    limits:
+      memory: 512Mi
+    requests:
+      memory: 256Mi
+      cpu: 100m
+  plugins: []
+  datasources: {}
+  defaultDashboardsTimezone: "Europe/Paris"
+  forceDeployDatasources: true
+  forceDeployDashboards: true
+
 prometheus:
   prometheusSpec:
     storageSpec:
@@ -40,35 +52,9 @@ prometheus:
             requests:
               storage: 20Gi
 
-# ArgoCD Application issye on syncs
-# issue: https://github.com/prometheus-community/helm-charts/issues/4500#issuecomment-2693911587
-prometheusOperator:
-  admissionWebhooks:
-    enabled: true
-
-    annotations:
-      argocd.argoproj.io/hook: PreSync
-      argocd.argoproj.io/hook-delete-policy: HookSucceeded
-
-    patch:
-      annotations:
-        argocd.argoproj.io/hook: PreSync
-        argocd.argoproj.io/hook-delete-policy: HookSucceeded
-
-    mutatingWebhookConfiguration:
-      annotations:
-        argocd.argoproj.io/hook: PreSync
-
-    validatingWebhookConfiguration:
-      annotations:
-        argocd.argoproj.io/hook: PreSync
-
-prometheus-node-exporter:
-  serviceMonitor:
-    selector:
-      matchLabels:
-        release: kube-prometheus-stack
-        app.kubernetes.io/name: prometheus-node-exporter
-
     serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorNamespaceSelector: {}
     podMonitorSelectorNilUsesHelmValues: false
+    podMonitorNamespaceSelector: {}
+    probeSelectorNilUsesHelmValues: false
+    probeNamespaceSelector: {}
