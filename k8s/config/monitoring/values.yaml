@@ -8,7 +8,7 @@ grafana:
 
   admin:
     existingSecret: "grafana-admin-creds"
-    userKey: "admin-user"                         
+    userKey: "admin-user"
     passwordKey: "admin-password"
 
   persistence:
@@ -39,6 +39,29 @@ prometheus:
           resources:
             requests:
               storage: 20Gi
-    
+
+# ArgoCD Application issye on syncs
+# issue: https://github.com/prometheus-community/helm-charts/issues/4500#issuecomment-2693911587
+prometheusOperator:
+  admissionWebhooks:
+    enabled: true
+
+    annotations:
+      argocd.argoproj.io/hook: PreSync
+      argocd.argoproj.io/hook-delete-policy: HookSucceeded
+
+    patch:
+      annotations:
+        argocd.argoproj.io/hook: PreSync
+        argocd.argoproj.io/hook-delete-policy: HookSucceeded
+
+    mutatingWebhookConfiguration:
+      annotations:
+        argocd.argoproj.io/hook: PreSync
+
+    validatingWebhookConfiguration:
+      annotations:
+        argocd.argoproj.io/hook: PreSync
+
     # serviceMonitorSelectorNilUsesHelmValues: false
     # podMonitorSelectorNilUsesHelmValues: false
