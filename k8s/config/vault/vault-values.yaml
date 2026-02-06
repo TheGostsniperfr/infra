@@ -10,9 +10,9 @@ global:
 server:
   standalone:
     enabled: true
-    config : |
+    config: |
       ui = true
-      
+
       listener "tcp" {
         address = "[::]:8200"
         cluster_address = "[::]:8201"
@@ -22,6 +22,14 @@ server:
       storage "raft" {
         path = "/vault/data"
       }
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
 
   volumes:
     - name: tls
@@ -34,12 +42,12 @@ server:
 
   dataStorage:
     enabled: true
-    storageClass: "longhorn" 
+    storageClass: "longhorn"
     size: 10Gi
 
   auditStorage:
     enabled: true
-    storageClass: "longhorn" 
+    storageClass: "longhorn"
     size: 10Gi
 
   ingress:

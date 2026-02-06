@@ -15,11 +15,10 @@ replicaCount: 1
 ##
 resources:
   requests:
-    memory: 0.5Gi
-    cpu: "0.5"
+    cpu: 250m
+    memory: 256Mi
   limits:
-    memory: 2Gi
-    cpu: "1"
+    memory: 512Mi
 
 podSecurityContext:
   runAsUser: 1000
@@ -55,7 +54,7 @@ startupProbe:
   failureThreshold: 30
   periodSeconds: 10
 
-initContainers: 
+initContainers:
   - name: config-updater
     image: ghcr.io/arffornia/config-updater:latest
     env:
@@ -64,10 +63,10 @@ initContainers:
 
       - name: INSTALL_BASE_PATH
         value: /server
-        
+
       - name: MODS_DIR_NAME
         value: plugins
-    
+
     volumeMounts:
       - name: datadir
         mountPath: /server
@@ -234,11 +233,11 @@ minecraftProxy:
       service:
         enabled: true
         type: LoadBalancer
-        port: 8192 
+        port: 8192
 
       ingress:
         enabled: false
-        
+
   # These options allow you to expose another port from the Minecraft proxy, plugins such
   # as NuVotifier (8192) will require this for incoming webhooks
   #
@@ -312,7 +311,7 @@ extraEnv:
       secretKeyRef:
         name: arffornia-proxy-secret
         key: CFG_FORWARDING_SECRET
-  
+
   CFG_NUVOTIFIER_TOKEN:
     valueFrom:
       secretKeyRef:
@@ -339,7 +338,7 @@ extraEnv:
   CFG_SVC_PROXY_CLIENT_SECRET:
     valueFrom:
       secretKeyRef:
-        name: arffornia-svc-proxy-secret 
+        name: arffornia-svc-proxy-secret
         key: CFG_SVC_PROXY_CLIENT_SECRET
 
 persistence:

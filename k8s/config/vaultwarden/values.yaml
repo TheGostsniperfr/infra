@@ -227,10 +227,9 @@ resources:
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   limits:
-    cpu: 300m
-    memory: 1Gi
+    memory: 256Mi
   requests:
-    cpu: 50m
+    cpu: 100m
     memory: 256Mi
 
 ## @param strategy Resource configurations
@@ -272,7 +271,7 @@ storage:
   data:
     name: "vaultwarden-data"
     size: "5Gi"
-    class: "longhorn" 
+    class: "longhorn"
     accessMode: "ReadWriteOnce"
     keepPvc: true
 

@@ -144,9 +144,8 @@ main:
   #      mountPath: /etc/ssl/certs/postgresql
   #      readOnly: true
 
-
   # Number of desired pods. More than one pod is supported in n8n enterprise.
-  replicaCount: 1
+  replicaCount: 0
 
   # here you can specify the deployment strategy as Recreate or RollingUpdate with optional maxSurge and maxUnavailable
   # If these options are not set, default values are 25%
@@ -251,7 +250,6 @@ main:
   #        - name: data
   #          mountPath: /home/node/.n8n
 
-
   service:
     enabled: true
     annotations: {}
@@ -260,14 +258,13 @@ main:
     type: ClusterIP
     # -- Service port
     port: 80
-    
+
   resources:
     requests:
       cpu: 250m
-      memory: 512Mi
+      memory: 256Mi
     limits:
-      cpu: "1"
-      memory: 1Gi
+      memory: 512Mi
 
   autoscaling:
     enabled: false
@@ -332,7 +329,7 @@ worker:
     # existingClaim:
 
   # Number of desired pods.
-  replicaCount: 1
+  replicaCount: 0
 
   # here you can specify the deployment strategy as Recreate or RollingUpdate with optional maxSurge and maxUnavailable
   # If these options are not set, default values are 25%
@@ -480,7 +477,6 @@ webhook:
   extraEnv: {}
   #   WEBHOOK_URL:
   #   value: "http://webhook.domain.tld"
-
 
   #
   # Webhook Kubernetes specific settings

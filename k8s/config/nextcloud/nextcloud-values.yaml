@@ -39,7 +39,7 @@ nextcloud:
     secretName: nextcloud-admin-secret
     usernameKey: username
     passwordKey: password
-    
+
   extraVolumes:
     - name: nextcloud-nas-data
       persistentVolumeClaim:
@@ -50,10 +50,10 @@ nextcloud:
       mountPath: /mnt/nas
 
 internalDatabase:
-  enabled: false 
+  enabled: false
 
 externalDatabase:
-  enabled: true 
+  enabled: true
   type: postgresql
   host: "postgres-cluster.postgres.svc.cluster.local"
   database: "nextcloud"
@@ -89,12 +89,9 @@ phpClientHttpsFix:
   enabled: true
   protocol: https
 
-
 resources:
   requests:
     memory: "512Mi"
     cpu: "250m"
   limits:
-    memory: "6Gi"
-    cpu: "2000m"
-  
+    memory: "2Gi"

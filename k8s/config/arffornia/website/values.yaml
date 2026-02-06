@@ -32,7 +32,7 @@ envFrom:
       name: arffornia-svc-secret
   - secretRef:
       name: arffornia-svc-proxy-secret
-      
+
   - configMapRef:
       name: arffornia-website-config
 
@@ -48,12 +48,14 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
-  tls: 
-   - secretName: arffornia-website-tls 
-     hosts:
-       - arffornia.com
+  tls:
+    - secretName: arffornia-website-tls
+      hosts:
+        - arffornia.com
 
 resources:
   requests:
-    cpu: 100m
+    cpu: 250m
     memory: 256Mi
+  limits:
+    memory: 512Mi

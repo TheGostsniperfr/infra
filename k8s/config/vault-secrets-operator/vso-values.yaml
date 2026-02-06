@@ -13,3 +13,10 @@ vault:
   reconciliationTime: 60
   address: https://vault.arffornia.com
   kubernetesRole: "vault-secrets-operator-role"
+
+resources:
+  limits:
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
