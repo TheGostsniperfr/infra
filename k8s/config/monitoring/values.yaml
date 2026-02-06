@@ -1,17 +1,6 @@
 # Doc: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
 
-global:
-  rbac:
-    pspEnabled: false
-
-prometheus-node-exporter:
-  rbac:
-    pspEnabled: false
-
 grafana:
-  rbac:
-    pspEnabled: false
-
   grafana.ini:
     server:
       root_url: "https://grafana.arffornia.com"
@@ -70,9 +59,3 @@ prometheus:
     podMonitorNamespaceSelector: {}
     probeSelectorNilUsesHelmValues: false
     probeNamespaceSelector: {}
-
-prometheusOperator:
-  enabled: true
-  createCustomResource: true
-  admissionWebhooks:
-    enabled: false
