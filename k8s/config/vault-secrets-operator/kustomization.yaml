@@ -5,8 +5,7 @@ namespace: vault-secrets-operator
 
 resources:
   - namespace.yaml
-  - secret.yaml
-  
+
 helmCharts:
   - name: vault-secrets-operator
     repo: oci://ghcr.io/ricoberger/charts
