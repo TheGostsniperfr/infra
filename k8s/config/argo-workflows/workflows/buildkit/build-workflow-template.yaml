@@ -1,0 +1,77 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: buildkit-template
+spec:
+  entrypoint: pipeline
+  templates:
+    - name: pipeline
+      inputs:
+        parameters:
+          - name: repo-url # ex: "https://github.com/argoproj/argo-workflows.git"
+          - name: git-revision # ex: "main"
+          - name: context-path # ex: "./apps/backend"
+          - name: image-name # ex: "mon-projet/backend"
+          - name: image-tag # ex: "v1.0.0" (ou commit sha)
+
+      volumes:
+        - name: workdir
+          emptyDir: {}
+        - name: docker-config
+          secret:
+            secretName: docker-config-secret
+            items:
+              - key: .dockerconfigjson
+                path: config.json
+
+      initContainers:
+        - name: git-clone
+          image: alpine/git:latest
+          env:
+            - name: GIT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: git-creds
+                  key: token
+          command: ["/bin/sh", "-c"]
+          args: # TODO Add auth method using CI_TOKEN
+            - |
+              git -c  \
+              clone --depth=1 --branch {{inputs.parameters.git-revision}} \
+              {{inputs.parameters.repo-url}} /workdir/src
+          volumeMounts:
+            - name: workdir
+              mountPath: /workdir
+
+      container:
+        image: moby/buildkit:v0.12.5-rootless
+        env:
+          - name: BUILDKITD_FLAGS
+            value: --oci-worker-no-process-sandbox
+        command: [buildctl-daemonless.sh]
+        args:
+          [
+            "build",
+            "--frontend",
+            "dockerfile.v0",
+            "--local",
+            "context=/workdir/src/{{inputs.parameters.context-path}}",
+            "--local",
+            "dockerfile=/workdir/src/{{inputs.parameters.context-path}}",
+            "--output",
+            "type=image,name=harbor.arffornia.com/{{inputs.parameters.image-name}}:{{inputs.parameters.image-tag}},push=true",
+            "--import-cache",
+            "type=registry,ref=harbor.arffornia.com/{{inputs.parameters.image-name}}:buildcache",
+            "--export-cache",
+            "type=registry,ref=harbor.arffornia.com/{{inputs.parameters.image-name}}:buildcache,mode=max",
+          ]
+
+        volumeMounts:
+          - name: docker-config
+            mountPath: /home/user/.docker/config.json
+            subPath: config.json
+          - name: workdir
+            mountPath: /workdir
+        securityContext:
+          privileged: true
+          hostUsers: false

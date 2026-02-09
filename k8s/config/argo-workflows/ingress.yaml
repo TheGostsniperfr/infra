@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argo-workflows-ingress
+  namespace: argo-workflows
+  annotations:
+    cert-manager.io/cluster-issuer: default-issuer
+    # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required'
+spec:
+  ingressClassName: public
+  rules:
+  - host: argo-workflows.arffornia.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argo-workflows-server
+            port:
+              number: 2746
+  tls:
+  - hosts:
+      - argo-workflows.arffornia.com
+    secretName: argo-workflows-server-tls 
