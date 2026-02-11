@@ -17,8 +17,19 @@
 #   })
 # }
 
+
 # -----------------------------------------------------------------------------
-# Arffornia Secrets (Grouped)
+# Cloudflare Secrets
+# -----------------------------------------------------------------------------
+
+variable "cloudflare_api_token_secret_var" {
+  description = "Cloudflare API token with permissions to manage DNS records."
+  type        = string
+  sensitive   = true
+}
+
+# -----------------------------------------------------------------------------
+# Arffornia K8s Cluster Secrets
 # -----------------------------------------------------------------------------
 
 # --- Arffornia Proxy ---
@@ -495,5 +506,17 @@ resource "vault_kv_secret_v2" "postgres_vaultwarden_secret" {
   data_json = jsonencode({
     username = var.postgres_vaultwarden_user_var
     password = var.postgres_vaultwarden_password_var
+  })
+}
+
+# -----------------------------------------------------------------------------
+# Cert-Manager Secrets
+# -----------------------------------------------------------------------------
+
+resource "vault_kv_secret_v2" "cert_manager_cloudflare_api_token_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "cert-manager/cloudflare-api-token"
+  data_json = jsonencode({
+    api-token = var.cloudflare_api_token_secret_var
   })
 }

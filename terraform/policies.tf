@@ -162,3 +162,14 @@ resource "vault_policy" "vault_secrets_operator_policy" {
     mount_path = vault_mount.kvv2.path
   })
 }
+
+# -----------------------------------------------------------------------------
+# Cert-Manager Policies
+# -----------------------------------------------------------------------------
+
+resource "vault_policy" "cert_manager_policy" {
+  name = "cert-manager-policy"
+  policy = templatefile("${path.module}/policies/cert_manager.hcl", {
+    mount_path = vault_mount.kvv2.path
+  })
+}

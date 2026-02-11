@@ -25,6 +25,13 @@ To provision the vault using terraform you need to setup the vault connection us
 - `VAULT_TOKEN` environment variable (containing a valid token)
 - `~/.vault-token` file (containing a valid token)
 
+### Setup Cloudflare connection
+To provision the cloudflare resources using terraform you need to use the `CLOUDFLARE_API_TOKEN` environment variable with edit zone scope.
+
+```sh
+export CLOUDFLARE_API_TOKEN="token"
+```
+
 ### Plan your changes
 
 ```sh
