@@ -109,11 +109,12 @@ alertmanager:
         - receiver: "discord-critical"
           matchers:
             - severity = critical
+            - app != minecraft
           continue: false
 
         - receiver: "discord-arffornia"
           matchers:
-            - namespace =~ "^arffornia.*"
+            - app = minecraft
           continue: false
 
     templates:
@@ -155,7 +156,7 @@ additionalPrometheusRulesMap:
               severity: critical
               app: minecraft
             annotations:
-              summary: "MC Server: {{ $labels.namespace }} is DOWN"
+              summary: "MC Server: {{ $labels.instance }} is DOWN"
               description: "Server in namespace {{ $labels.namespace }} is unreachable."
 
           # Alert: TPS < 15 (Performance Issue)
