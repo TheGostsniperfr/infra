@@ -59,3 +59,154 @@ prometheus:
     podMonitorNamespaceSelector: {}
     probeSelectorNilUsesHelmValues: false
     probeNamespaceSelector: {}
+
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    secrets:
+      - alertmanager-discord-secret
+
+  config:
+    global:
+      resolve_timeout: 5m
+    receivers:
+      - name: "null"
+
+      # Doc: https://prometheus.io/docs/alerting/latest/configuration/#discord_config
+      - name: "discord-default"
+        discord_configs:
+          - webhook_url_file: "/etc/alertmanager/secrets/alertmanager-discord-secret/webhook_general"
+            username: "Infra-Alert"
+            avatar_url: "https://cdn-icons-png.flaticon.com/512/2014/2014952.png"
+            send_resolved: true
+            title: '{{ template "discord.title" . }}'
+            message: '{{ template "discord.message" . }}'
+
+      - name: "discord-critical"
+        discord_configs:
+          - webhook_url_file: "/etc/alertmanager/secrets/alertmanager-discord-secret/webhook_critical"
+            username: "Infra-Critical-Alert"
+            avatar_url: "https://cdn-icons-png.flaticon.com/512/2014/2014952.png"
+            send_resolved: true
+            title: "🔥 Critical Alert System"
+            message: '{{ template "discord.message" . }}'
+
+      - name: "discord-arffornia"
+        discord_configs:
+          - webhook_url_file: "/etc/alertmanager/secrets/alertmanager-discord-secret/webhook_arffornia"
+            username: "Infra-Arffornia-Alert"
+            avatar_url: "https://cdn-icons-png.flaticon.com/512/2014/2014952.png"
+            send_resolved: true
+            title: "🎮 Arffornia Infra"
+            message: '{{ template "discord.message" . }}'
+    route:
+      group_by: ["alertname", "job", "namespace"]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: "discord-default"
+      routes:
+        - receiver: "discord-critical"
+          matchers:
+            - severity = critical
+          continue: false
+
+        - receiver: "discord-arffornia"
+          matchers:
+            - namespace =~ "^arffornia.*"
+          continue: false
+
+    templates:
+      - "/etc/alertmanager/config/*.tmpl"
+
+  templateFiles:
+    discord.tmpl: |-
+      {{ define "discord.title" }}
+      {{ if eq .Status "firing" }}
+        {{ if eq .CommonLabels.severity "critical" }}🛑 [CRITICAL] {{ else if eq .CommonLabels.severity "warning" }}⚠️ [WARNING] {{ else }}ℹ️ [INFO] {{ end }}
+      {{ else }}
+        ✅ [RESOLVED]
+      {{ end }}
+      {{ .GroupLabels.alertname }}
+      {{ end }}
+
+      {{ define "discord.message" }}
+      {{ range .Alerts }}
+      **Alert:** {{ .Annotations.summary }}
+      **Description:** {{ .Annotations.description }}
+      **Severity:** `{{ .Labels.severity }}`
+      **Namespace:** `{{ .Labels.namespace }}`
+      **Pod:** `{{ .Labels.pod }}`
+      **Node:** `{{ .Labels.instance }}`
+      --------------------------------
+      {{ end }}
+      {{ end }}
+
+additionalPrometheusRulesMap:
+  rule-name:
+    groups:
+      - name: arffornia.servers
+        rules:
+          # Alert: Minecraft Server Down
+          - alert: MinecraftServerDown
+            expr: up{namespace=~"arffornia-server-.*"} == 0
+            for: 1m
+            labels:
+              severity: critical
+              app: minecraft
+            annotations:
+              summary: "MC Server: {{ $labels.namespace }} is DOWN"
+              description: "Server in namespace {{ $labels.namespace }} is unreachable."
+
+          # Alert: TPS < 15 (Performance Issue)
+          - alert: MinecraftLowTPS
+            expr: rate(mc_server_tick_seconds_count[1m]) < 15
+            for: 2m
+            labels:
+              severity: warning
+              app: minecraft
+            annotations:
+              summary: "Low TPS on {{ $labels.namespace }}"
+              description: "Server {{ $labels.namespace }} is lagging. Current TPS: {{ $value }}."
+
+      - name: infra
+        rules:
+          # Alert: High Ping / Latency (Node Level)
+          - alert: HighNetworkLatency
+            expr: rate(node_network_receive_drop_total[5m]) > 0
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Network Packet Drop Detected"
+              description: "Node {{ $labels.instance }} is dropping packets, potential high latency."
+
+          # Alert: PVC > 75% Full
+          - alert: PersistentVolumeFillingUp
+            expr: kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes > 0.75
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "PVC {{ $labels.persistentvolumeclaim }} > 75% Full"
+              description: "Storage for {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is running low."
+
+          # Alert: Service/Proxy Down (General)
+          - alert: CriticalServiceDown
+            expr: up{job=~"arffornia-proxy-velocity|ingress-nginx.*|keycloak|vault"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Service {{ $labels.job }} is DOWN"
+              description: "Critical infrastructure service {{ $labels.job }} is not responding."
+
+          # Alert: Pod Crash Loop (Optimized generic rule)
+          - alert: PodCrashLooping
+            expr: increase(kube_pod_container_status_restarts_total[10m]) > 3
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Pod {{ $labels.pod }} is crash looping"
+              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted more than 3 times in the last 10 minutes."

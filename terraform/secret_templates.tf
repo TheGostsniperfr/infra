@@ -520,3 +520,34 @@ resource "vault_kv_secret_v2" "cert_manager_cloudflare_api_token_secret" {
     api-token = var.cloudflare_api_token_secret_var
   })
 }
+
+# -----------------------------------------------------------------------------
+# Monitoring Secrets (Discord)
+# -----------------------------------------------------------------------------
+variable "discord_webhook_general_var" {
+  description = "Discord Webhook URL for Alertmanager general alerts."
+  type        = string
+  sensitive   = true
+}
+
+variable "discord_webhook_critical_var" {
+  description = "Discord Webhook URL for Alertmanager critical alerts."
+  type        = string
+  sensitive   = true
+}
+
+variable "discord_webhook_arffornia_var" {
+  description = "Discord Webhook URL for Alertmanager Arffornia alerts."
+  type        = string
+  sensitive   = true
+}
+
+resource "vault_kv_secret_v2" "monitoring_discord_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "monitoring/discord"
+  data_json = jsonencode({
+    webhook_general   = var.discord_webhook_general_var
+    webhook_critical  = var.discord_webhook_critical_var
+    webhook_arffornia = var.discord_webhook_arffornia_var
+  })
+}
