@@ -1,6 +1,8 @@
 coder:
-  accessUrl: "https://coder.arffornia.com"
+  accessUrl: "https://coder.arffornia.com" # TODO Test and remove
   wildcardAccessUrl: "https://*.coder.arffornia.com"
+
+  envUseClusterAccessURL: false
 
   # https://coder.com/docs/admin/users/github-auth
   env:
@@ -30,6 +32,9 @@ coder:
 
     - name: CODER_WILDCARD_ACCESS_URL
       value: "*.coder.arffornia.com"
+
+    - name: CODER_ACCESS_URL
+      value: "https://coder.arffornia.com"
 
   service:
     type: ClusterIP
