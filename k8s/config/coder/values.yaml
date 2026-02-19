@@ -43,9 +43,9 @@ coder:
     host: "coder.arffornia.com"
     wildcardHost: "*.coder.arffornia.com"
     tls:
-      - secretName: coder-tls
-        wildcardSecretName: coder-tls
-        enable: true
+      enable: true
+      secretName: coder-tls
+      wildcardSecretName: coder-tls
 
   livenessProbe:
     enabled: true
