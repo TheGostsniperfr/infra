@@ -35,7 +35,7 @@ coder:
     type: ClusterIP
 
   ingress:
-    enabled: true
+    enable: true
     className: "public"
     annotations:
       cert-manager.io/cluster-issuer: default-issuer
