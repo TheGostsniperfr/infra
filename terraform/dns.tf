@@ -26,6 +26,7 @@ locals {
     "vaultwarden" = true
     "www"         = true
     "map"         = true
+    "coder"       = true
 
     # DNS Only (Grey Cloud)
     "auth"    = false
@@ -61,6 +62,16 @@ resource "cloudflare_dns_record" "about_dns_record" {
   content = "thegostsniperfr.github.io"
   ttl     = 1 # Auto
   proxied = false
+}
+
+# Coder wildcard
+resource "cloudflare_dns_record" "coder_wildcard_dns" {
+  zone_id = var.cloudflare_zone_id
+  name    = "*.coder"
+  type    = "CNAME"
+  content = var.domain_name
+  ttl     = 1
+  proxied = true
 }
 
 #########################################################################

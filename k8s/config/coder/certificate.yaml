@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: coder-tls
+  namespace: coder
+spec:
+  secretName: coder-tls
+  dnsNames:
+    - coder.arffornia.com
+    - "*.coder.arffornia.com"
+  issuerRef:
+    name: default-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io

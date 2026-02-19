@@ -13,12 +13,13 @@ spec:
     keycloak: keycloak
     vaultwarden: vaultwarden
     n8n: n8n
+    coder: coder
   enableConnectionPooler: true
   enableReplicaConnectionPooler: true
   enableReplicaLoadBalancer: true
   numberOfInstances: 3
   postgresql:
-    version: '17'
+    version: "17"
     pg_hba:
       - hostnossl nextcloud nextcloud 0.0.0.0/0 md5
       - hostssl all all 0.0.0.0/0 md5
@@ -38,66 +39,67 @@ spec:
     keycloak: []
     vaultwarden: []
     n8n: []
+    coder: []
   volume:
     size: 10Gi
     storageClass: longhorn
-  
+
   # See: https://thedatabaseme.de/2022/03/26/backup-to-s3-configure-zalando-postgres-operator-backup-with-wal-g/
 
   env:
-  - name: USE_WALG_BACKUP
-    value: "true" 
-    
-  - name: USE_WALG_RESTORE
-    value: "true" 
-  
-  - name: BACKUP_SCHEDULE
-    value: "00 01 * * *" 
-    
-  - name: BACKUP_NUM_TO_RETAIN
-    value: "90" 
-    
-  - name: WAL_S3_BUCKET
-    value: "postgres-backups" 
-    
-  - name: AWS_ENDPOINT
-    value: "http://minio-s3.minio-s3.svc.cluster.local:9000" 
-    
-  - name: AWS_S3_FORCE_PATH_STYLE
-    value: "true" 
-    
-  - name: AWS_ACCESS_KEY_ID
-    valueFrom:
-      secretKeyRef:
-        name: postgres-s3-credentials 
-        key: AWS_ACCESS_KEY_ID
-        
-  - name: AWS_SECRET_ACCESS_KEY
-    valueFrom:
-      secretKeyRef:
-        name: postgres-s3-credentials 
-        key: AWS_SECRET_ACCESS_KEY
-        
-  - name: CLONE_USE_WALG_RESTORE
-    value: "true"
-    
-  - name: CLONE_WAL_S3_BUCKET
-    value: "postgres-backups"
-    
-  - name: CLONE_AWS_ENDPOINT
-    value: "http://minio-s3.minio-s3.svc.cluster.local:9000"
-    
-  - name: CLONE_AWS_S3_FORCE_PATH_STYLE
-    value: "true"
-    
-  - name: CLONE_AWS_ACCESS_KEY_ID
-    valueFrom:
-      secretKeyRef:
-        name: postgres-s3-credentials
-        key: AWS_ACCESS_KEY_ID
-        
-  - name: CLONE_AWS_SECRET_ACCESS_KEY
-    valueFrom:
-      secretKeyRef:
-        name: postgres-s3-credentials
-        key: AWS_SECRET_ACCESS_KEY
+    - name: USE_WALG_BACKUP
+      value: "true"
+
+    - name: USE_WALG_RESTORE
+      value: "true"
+
+    - name: BACKUP_SCHEDULE
+      value: "00 01 * * *"
+
+    - name: BACKUP_NUM_TO_RETAIN
+      value: "90"
+
+    - name: WAL_S3_BUCKET
+      value: "postgres-backups"
+
+    - name: AWS_ENDPOINT
+      value: "http://minio-s3.minio-s3.svc.cluster.local:9000"
+
+    - name: AWS_S3_FORCE_PATH_STYLE
+      value: "true"
+
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: postgres-s3-credentials
+          key: AWS_ACCESS_KEY_ID
+
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: postgres-s3-credentials
+          key: AWS_SECRET_ACCESS_KEY
+
+    - name: CLONE_USE_WALG_RESTORE
+      value: "true"
+
+    - name: CLONE_WAL_S3_BUCKET
+      value: "postgres-backups"
+
+    - name: CLONE_AWS_ENDPOINT
+      value: "http://minio-s3.minio-s3.svc.cluster.local:9000"
+
+    - name: CLONE_AWS_S3_FORCE_PATH_STYLE
+      value: "true"
+
+    - name: CLONE_AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: postgres-s3-credentials
+          key: AWS_ACCESS_KEY_ID
+
+    - name: CLONE_AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: postgres-s3-credentials
+          key: AWS_SECRET_ACCESS_KEY

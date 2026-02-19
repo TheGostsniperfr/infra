@@ -18,7 +18,7 @@ resources:
   - arffornia/
   - csi-driver-smb.yaml
   # - laguedro.yaml
-  # - keycloak.yaml 
+  # - keycloak.yaml
   - adminer.yaml
   - vaultwarden.yaml
   - n8n.yaml
@@ -26,3 +26,4 @@ resources:
   - minio-s3.yaml
   - monitoring.yaml
   - plex.yaml
+  - coder.yaml

@@ -1,0 +1,46 @@
+coder:
+  accessUrl: "https://coder.arffornia.com"
+  wildcardAccessUrl: "https://*.coder.arffornia.com"
+
+  # https://coder.com/docs/admin/users/github-auth
+  env:
+    - name: CODER_PG_CONNECTION_URL
+      valueFrom:
+        secretKeyRef:
+          name: coder-db-secret
+          key: CODER_PG_CONNECTION_URL
+
+    - name: CODER_OAUTH2_GITHUB_CLIENT_ID
+      valueFrom:
+        secretKeyRef:
+          name: coder-github-oauth
+          key: CODER_OAUTH2_GITHUB_CLIENT_ID
+
+    - name: CODER_OAUTH2_GITHUB_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: coder-github-oauth
+          key: CODER_OAUTH2_GITHUB_CLIENT_SECRET
+
+    - name: CODER_OAUTH2_GITHUB_ALLOW_SIGNUPS
+      value: "true"
+
+    - name: CODER_OAUTH2_GITHUB_ALLOW_EVERYONE
+      value: "true"
+
+  service:
+    type: ClusterIP
+
+  ingress:
+    enabled: true
+    className: "public"
+    annotations:
+      cert-manager.io/cluster-issuer: default-issuer
+      nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
+    host: "coder.arffornia.com"
+    wildcardHost: "*.coder.arffornia.com"
+    tls:
+      - secretName: coder-tls
+        hosts:
+          - "coder.arffornia.com"
+          - "*.coder.arffornia.com"

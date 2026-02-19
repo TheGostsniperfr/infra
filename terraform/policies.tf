@@ -173,3 +173,14 @@ resource "vault_policy" "cert_manager_policy" {
     mount_path = vault_mount.kvv2.path
   })
 }
+
+# -----------------------------------------------------------------------------
+# Coder Policies
+# -----------------------------------------------------------------------------
+
+resource "vault_policy" "coder_policy" {
+  name = "coder-policy"
+  policy = templatefile("${path.module}/policies/coder.hcl", {
+    mount_path = vault_mount.kvv2.path
+  })
+}

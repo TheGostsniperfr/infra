@@ -551,3 +551,46 @@ resource "vault_kv_secret_v2" "monitoring_discord_secret" {
     webhook_arffornia = var.discord_webhook_arffornia_var
   })
 }
+
+# -----------------------------------------------------------------------------
+# Coder Secrets
+# -----------------------------------------------------------------------------
+
+variable "coder_github_client_id_var" {
+  description = "GitHub OAuth Client ID for Coder."
+  type        = string
+  sensitive   = true
+}
+variable "coder_github_client_secret_var" {
+  description = "GitHub OAuth Client Secret for Coder."
+  type        = string
+  sensitive   = true
+}
+variable "postgres_coder_user_var" {
+  description = "Postgres user for Coder."
+  type        = string
+  sensitive   = true
+}
+variable "postgres_coder_password_var" {
+  description = "Postgres password for Coder."
+  type        = string
+  sensitive   = true
+}
+
+resource "vault_kv_secret_v2" "coder_config_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "coder/config"
+  data_json = jsonencode({
+    CODER_OAUTH2_GITHUB_CLIENT_ID     = var.coder_github_client_id_var
+    CODER_OAUTH2_GITHUB_CLIENT_SECRET = var.coder_github_client_secret_var
+  })
+}
+
+resource "vault_kv_secret_v2" "postgres_coder_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "postgres/coder"
+  data_json = jsonencode({
+    username = var.postgres_coder_user_var
+    password = var.postgres_coder_password_var
+  })
+}
