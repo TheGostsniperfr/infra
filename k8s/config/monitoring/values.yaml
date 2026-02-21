@@ -66,6 +66,25 @@ alertmanager:
     secrets:
       - alertmanager-discord-secret
 
+    containers:
+      - name: alertmanager
+        env:
+          - name: DISCORD_WEBHOOK_GENERAL
+            valueFrom:
+              secretKeyRef:
+                name: alertmanager-discord-secret
+                key: webhook_general
+          - name: DISCORD_WEBHOOK_CRITICAL
+            valueFrom:
+              secretKeyRef:
+                name: alertmanager-discord-secret
+                key: webhook_critical
+          - name: DISCORD_WEBHOOK_ARFFORNIA
+            valueFrom:
+              secretKeyRef:
+                name: alertmanager-discord-secret
+                key: webhook_arffornia
+
   config:
     global:
       resolve_timeout: 5m
@@ -75,7 +94,7 @@ alertmanager:
       # Doc: https://prometheus.io/docs/alerting/latest/configuration/#discord_config
       - name: "discord-default"
         discord_configs:
-          - webhook_url_file: "/etc/alertmanager/secrets/alertmanager-discord-secret/webhook_general"
+          - webhook_url: "${DISCORD_WEBHOOK_GENERAL}"
             username: "Infra-Alert"
             avatar_url: "https://cdn-icons-png.flaticon.com/512/2014/2014952.png"
             send_resolved: true
@@ -84,7 +103,7 @@ alertmanager:
 
       - name: "discord-critical"
         discord_configs:
-          - webhook_url_file: "/etc/alertmanager/secrets/alertmanager-discord-secret/webhook_critical"
+          - webhook_url: "${DISCORD_WEBHOOK_CRITICAL}"
             username: "Infra-Critical-Alert"
             avatar_url: "https://cdn-icons-png.flaticon.com/512/2014/2014952.png"
             send_resolved: true
@@ -93,7 +112,7 @@ alertmanager:
 
       - name: "discord-arffornia"
         discord_configs:
-          - webhook_url_file: "/etc/alertmanager/secrets/alertmanager-discord-secret/webhook_arffornia"
+          - webhook_url: "${DISCORD_WEBHOOK_ARFFORNIA}"
             username: "Infra-Arffornia-Alert"
             avatar_url: "https://cdn-icons-png.flaticon.com/512/2014/2014952.png"
             send_resolved: true
