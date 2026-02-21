@@ -63,81 +63,22 @@ prometheus:
 alertmanager:
   enabled: true
   alertmanagerSpec:
-    secrets:
-      - alertmanager-discord-secret
-
-    containers:
-      - name: alertmanager
-        env:
-          - name: DISCORD_WEBHOOK_GENERAL
-            valueFrom:
-              secretKeyRef:
-                name: alertmanager-discord-secret
-                key: webhook_general
-          - name: DISCORD_WEBHOOK_CRITICAL
-            valueFrom:
-              secretKeyRef:
-                name: alertmanager-discord-secret
-                key: webhook_critical
-          - name: DISCORD_WEBHOOK_ARFFORNIA
-            valueFrom:
-              secretKeyRef:
-                name: alertmanager-discord-secret
-                key: webhook_arffornia
+    alertmanagerConfigSelector:
+      matchLabels:
+        release: kube-prometheus-stack
+    alertmanagerConfigNamespaceSelector: {}
 
   config:
     global:
       resolve_timeout: 5m
-    receivers:
-      - name: "null"
-
-      # Doc: https://prometheus.io/docs/alerting/latest/configuration/#discord_config
-      - name: "discord-default"
-        discord_configs:
-          - webhook_url: "${DISCORD_WEBHOOK_GENERAL}"
-            username: "Infra-Alert"
-            avatar_url: "https://cdn-icons-png.flaticon.com/512/2014/2014952.png"
-            send_resolved: true
-            title: '{{ template "discord.title" . }}'
-            message: '{{ template "discord.message" . }}'
-
-      - name: "discord-critical"
-        discord_configs:
-          - webhook_url: "${DISCORD_WEBHOOK_CRITICAL}"
-            username: "Infra-Critical-Alert"
-            avatar_url: "https://cdn-icons-png.flaticon.com/512/2014/2014952.png"
-            send_resolved: true
-            title: "🔥 Critical Alert System"
-            message: '{{ template "discord.message" . }}'
-
-      - name: "discord-arffornia"
-        discord_configs:
-          - webhook_url: "${DISCORD_WEBHOOK_ARFFORNIA}"
-            username: "Infra-Arffornia-Alert"
-            avatar_url: "https://cdn-icons-png.flaticon.com/512/2014/2014952.png"
-            send_resolved: true
-            title: "🎮 Arffornia Infra"
-            message: '{{ template "discord.message" . }}'
+    receivers: []
     route:
-      group_by: ["alertname", "job", "namespace"]
+      group_by: ["alertname"]
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 12h
-      receiver: "discord-default"
-      routes:
-        - receiver: "discord-critical"
-          matchers:
-            - severity = critical
-            - app != minecraft
-          continue: false
-
-        - receiver: "discord-arffornia"
-          matchers:
-            - app = minecraft
-          continue: false
-
-    templates:
-      - "/etc/alertmanager/config/*.tmpl"
+      receiver: "null"
+      routes: []
 
   templateFiles:
     discord.tmpl: |-
