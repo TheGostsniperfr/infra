@@ -139,13 +139,13 @@ additionalPrometheusRulesMap:
         rules:
           # Alert: High Ping / Latency (Node Level)
           - alert: HighNetworkLatency
-            expr: rate(node_network_receive_drop_total[5m]) > 0
+            expr: rate(node_network_receive_drop_total{device!~"veth.*|weave|vxlan.*|datapath|lo"}[5m]) > 0
             for: 5m
             labels:
               severity: warning
             annotations:
               summary: "Network Packet Drop Detected"
-              description: "Node {{ $labels.instance }} is dropping packets, potential high latency."
+              description: "Node {{ $labels.instance }} (interface {{ $labels.device }}) is dropping packets."
 
           # Alert: PVC > 75% Full
           - alert: PersistentVolumeFillingUp
