@@ -65,57 +65,22 @@ alertmanager:
   alertmanagerSpec:
     secrets:
       - alertmanager-discord-secret
+    alertmanagerConfigSelector:
+      matchLabels:
+        release: kube-prometheus-stack
 
   config:
     global:
       resolve_timeout: 5m
     receivers:
       - name: "null"
-
-      # Doc: https://prometheus.io/docs/alerting/latest/configuration/#discord_config
-      - name: "discord-default"
-        discord_configs:
-          - webhook_url_file: "/etc/alertmanager/secrets/alertmanager-discord-secret/webhook_general"
-            username: "Infra-Alert"
-            avatar_url: "https://cdn-icons-png.flaticon.com/512/2014/2014952.png"
-            send_resolved: true
-            title: '{{ template "discord.title" . }}'
-            message: '{{ template "discord.message" . }}'
-
-      - name: "discord-critical"
-        discord_configs:
-          - webhook_url_file: "/etc/alertmanager/secrets/alertmanager-discord-secret/webhook_critical"
-            username: "Infra-Critical-Alert"
-            avatar_url: "https://cdn-icons-png.flaticon.com/512/2014/2014952.png"
-            send_resolved: true
-            title: "🔥 Critical Alert System"
-            message: '{{ template "discord.message" . }}'
-
-      - name: "discord-arffornia"
-        discord_configs:
-          - webhook_url_file: "/etc/alertmanager/secrets/alertmanager-discord-secret/webhook_arffornia"
-            username: "Infra-Arffornia-Alert"
-            avatar_url: "https://cdn-icons-png.flaticon.com/512/2014/2014952.png"
-            send_resolved: true
-            title: "🎮 Arffornia Infra"
-            message: '{{ template "discord.message" . }}'
     route:
       group_by: ["alertname", "job", "namespace"]
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 12h
-      receiver: "discord-default"
-      routes:
-        - receiver: "discord-critical"
-          matchers:
-            - severity = critical
-            - app != minecraft
-          continue: false
-
-        - receiver: "discord-arffornia"
-          matchers:
-            - app = minecraft
-          continue: false
+      receiver: "null"
+      routes: []
 
     templates:
       - "/etc/alertmanager/config/*.tmpl"

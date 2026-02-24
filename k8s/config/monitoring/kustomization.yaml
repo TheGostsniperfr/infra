@@ -7,6 +7,7 @@ resources:
   - certificate.yaml
   - secret.yaml
   - namespace.yaml
+  - alertmanager-config.yaml
 
 helmCharts:
   - name: kube-prometheus-stack

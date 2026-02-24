@@ -1,0 +1,57 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: discord-config
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  route:
+    groupBy: ["alertname", "job", "namespace"]
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 12h
+    receiver: "discord-default"
+    routes:
+      - receiver: "discord-critical"
+        matchers:
+          - name: severity
+            value: critical
+          - name: app
+            matchType: "!="
+            value: minecraft
+        continue: false
+
+      - receiver: "discord-arffornia"
+        matchers:
+          - name: app
+            value: minecraft
+        continue: false
+
+  receivers:
+    - name: "discord-default"
+      discordConfigs:
+        - webhookURL:
+            key: webhook_general
+            name: alertmanager-discord-secret
+          sendResolved: true
+          title: '{{ template "discord.title" . }}'
+          message: '{{ template "discord.message" . }}'
+
+    - name: "discord-critical"
+      discordConfigs:
+        - webhookURL:
+            key: webhook_critical
+            name: alertmanager-discord-secret
+          sendResolved: true
+          title: "🔥 Critical Alert System"
+          message: '{{ template "discord.message" . }}'
+
+    - name: "discord-arffornia"
+      discordConfigs:
+        - webhookURL:
+            key: webhook_arffornia
+            name: alertmanager-discord-secret
+          sendResolved: true
+          title: "🎮 Arffornia Infra"
+          message: '{{ template "discord.message" . }}'
