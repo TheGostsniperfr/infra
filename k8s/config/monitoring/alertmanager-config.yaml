@@ -31,7 +31,7 @@ spec:
   receivers:
     - name: "discord-default"
       discordConfigs:
-        - webhookURL:
+        - apiURL:
             key: webhook_general
             name: alertmanager-discord-secret
           sendResolved: true
@@ -40,7 +40,7 @@ spec:
 
     - name: "discord-critical"
       discordConfigs:
-        - webhookURL:
+        - apiURL:
             key: webhook_critical
             name: alertmanager-discord-secret
           sendResolved: true
@@ -49,7 +49,7 @@ spec:
 
     - name: "discord-arffornia"
       discordConfigs:
-        - webhookURL:
+        - apiURL:
             key: webhook_arffornia
             name: alertmanager-discord-secret
           sendResolved: true
