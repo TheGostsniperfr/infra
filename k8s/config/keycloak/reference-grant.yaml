@@ -7,22 +7,10 @@ spec:
   from:
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy
-      namespace: arffornia-proxy-velocity
+      namespace: adminer
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy
-      namespace: arffornia-server-nexus
-    - group: gateway.envoyproxy.io
-      kind: SecurityPolicy
-      namespace: arffornia-server-arcane
-    - group: gateway.envoyproxy.io
-      kind: SecurityPolicy
-      namespace: arffornia-website
-    - group: gateway.envoyproxy.io
-      kind: SecurityPolicy
-      namespace: arffornia-bluemap-web
-    - group: gateway.envoyproxy.io
-      kind: SecurityPolicy
-      namespace: argocd
+      namespace: longhorn-system
   to:
     - group: ""
       kind: Service
