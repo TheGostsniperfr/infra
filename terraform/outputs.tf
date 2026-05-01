@@ -1,12 +1,12 @@
-output "openid_client_id" {
-  value       = keycloak_openid_client.openid_client.client_id
-  description = "Client ID for the Envoy Native OIDC"
+output "arffornia_openid_client_id" {
+  value       = keycloak_openid_client.arffornia_openid_client.client_id
+  description = "Client ID for the Arffornia Envoy OIDC"
 }
 
-output "openid_client_secret" {
-  value       = keycloak_openid_client.openid_client.client_secret
+output "arffornia_openid_client_secret" {
+  value       = keycloak_openid_client.arffornia_openid_client.client_secret
   sensitive   = true
-  description = "Client Secret for the Envoy Native OIDC"
+  description = "Client Secret for the Arffornia Envoy OIDC"
 }
 
 output "oidc_issuer_url" {
