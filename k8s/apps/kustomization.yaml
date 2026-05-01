@@ -13,7 +13,6 @@ resources:
   - envoy-gateway.yaml
   - gateway-infra.yaml
   - cert-manager.yaml
-  - default-issuer.yaml
   - metallb.yaml
 
   # Vault & Secrets
