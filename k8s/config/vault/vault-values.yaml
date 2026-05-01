@@ -49,16 +49,3 @@ server:
     enabled: true
     storageClass: "longhorn"
     size: 10Gi
-
-  ingress:
-    enabled: true
-    annotations:
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-      cert-manager.io/cluster-issuer: default-issuer
-    ingressClassName: public
-    hosts:
-      - host: vault.arffornia.com
-    tls:
-      - hosts:
-          - vault.arffornia.com
-        secretName: vault-tls
