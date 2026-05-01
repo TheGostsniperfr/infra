@@ -1,0 +1,12 @@
+routes:
+  vaultwarden:
+    hostnames:
+      - "vaultwarden.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: vaultwarden
+            port: 80
+    auth:
+      enabled: false
+    ipFilter:
+      enabled: false

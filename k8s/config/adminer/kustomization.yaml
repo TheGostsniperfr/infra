@@ -8,6 +8,13 @@ resources:
   - secret.yaml
   - deployment.yaml
   - service.yaml
-  - ingress.yaml
   - certificate.yaml
-  
+
+helmGlobals:
+  chartHome: ../../../charts
+
+helmCharts:
+  - name: secure-route
+    releaseName: adminer-routes
+    namespace: adminer
+    valuesFile: values-secure-route.yaml

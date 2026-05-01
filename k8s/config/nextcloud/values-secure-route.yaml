@@ -1,0 +1,12 @@
+routes:
+  nextcloud:
+    hostnames:
+      - "nextcloud.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: nextcloud
+            port: 8080
+    auth:
+      enabled: false
+    ipFilter:
+      enabled: false

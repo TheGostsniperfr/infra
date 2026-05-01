@@ -1,19 +1,15 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-
-namespace: ollama
+namespace: garage-s3
 
 resources:
   - namespace.yaml
-  - service.yaml
-  - endpoints.yaml
-  - certificate.yaml
 
 helmGlobals:
   chartHome: ../../../charts
 
 helmCharts:
   - name: secure-route
-    releaseName: ollama-routes
-    namespace: ollama
+    releaseName: garage-routes
+    namespace: garage-s3
     valuesFile: values-secure-route.yaml

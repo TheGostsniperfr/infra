@@ -8,6 +8,9 @@ resources:
   - certificate.yaml
   - secret.yaml
 
+helmGlobals:
+  chartHome: ../../../charts
+
 helmCharts:
   - name: vaultwarden
     repo: https://guerzon.github.io/vaultwarden
@@ -15,3 +18,8 @@ helmCharts:
     releaseName: vaultwarden
     namespace: vaultwarden
     valuesFile: values.yaml
+
+  - name: secure-route
+    releaseName: vaultwarden-routes
+    namespace: vaultwarden
+    valuesFile: values-secure-route.yaml

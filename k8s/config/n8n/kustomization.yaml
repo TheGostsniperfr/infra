@@ -8,6 +8,9 @@ resources:
   - certificate.yaml
   - secret.yaml
 
+helmGlobals:
+  chartHome: ../../../charts
+
 helmCharts:
   - name: n8n
     repo: oci://8gears.container-registry.com/library
@@ -15,3 +18,8 @@ helmCharts:
     releaseName: n8n
     namespace: n8n
     valuesFile: values.yaml
+
+  - name: secure-route
+    releaseName: n8n-routes
+    namespace: n8n
+    valuesFile: values-secure-route.yaml

@@ -5,10 +5,21 @@ namespace: argocd
 
 resources:
   - namespace.yaml
-  - argocd-server-certificate.yaml
-  - github.com/argoproj/argo-cd/manifests/cluster-install?ref=v2.13.2
-  - ingress.yaml
+  - github.com/argoproj/argo-cd/manifests/cluster-install?ref=v3.3.3
+  - https://raw.githubusercontent.com/argoproj-labs/argocd-image-updater/stable/config/install.yaml
   - apps.yaml
+  - secrets.yaml
 
 patches:
   - path: patch-argocd-cm.yaml
+  - path: argocd-cmd-params-cm-patch.yaml
+  - path: patch-argocd-rbac-cm.yaml
+
+helmGlobals:
+  chartHome: ../../../charts
+
+helmCharts:
+  - name: secure-route
+    releaseName: argocd-routes
+    namespace: argocd
+    valuesFile: values-secure-route.yaml

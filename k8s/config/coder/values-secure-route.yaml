@@ -1,0 +1,12 @@
+routes:
+  coder:
+    hostnames:
+      - "coder.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: coder
+            port: 80
+    auth:
+      enabled: false
+    ipFilter:
+      enabled: false

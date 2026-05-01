@@ -1,0 +1,12 @@
+routes:
+  n8n:
+    hostnames:
+      - "n8n.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: n8n
+            port: 80
+    auth:
+      enabled: false
+    ipFilter:
+      enabled: false

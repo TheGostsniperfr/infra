@@ -1,0 +1,12 @@
+routes:
+  ollama:
+    hostnames:
+      - "ollama.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: ollama
+            port: 11434
+    auth:
+      enabled: false
+    ipFilter:
+      enabled: false

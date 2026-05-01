@@ -1,0 +1,20 @@
+routes:
+  garage-s3-route:
+    hostnames:
+      - "s3.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: garage
+            port: 3900
+    auth:
+      enabled: false
+
+  garage-web-route:
+    hostnames:
+      - "avatars-s3.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: garage
+            port: 3902
+    auth:
+      enabled: false
