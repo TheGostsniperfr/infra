@@ -101,7 +101,7 @@ extraVolumeMounts: |
 
 extraInitContainers: |
   - name: theme-provider-init
-    image: ghcr.io/thegostsniperfr/keycloak-theme-arffornia:latest
+    image: ghcr.io/arffornia/keycloak-theme-arffornia:latest
     imagePullPolicy: Always
     volumeMounts:
       - name: theme-providers
