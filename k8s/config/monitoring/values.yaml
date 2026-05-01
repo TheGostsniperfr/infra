@@ -17,17 +17,7 @@ grafana:
     size: 5Gi
 
   ingress:
-    enabled: true
-    ingressClassName: public
-    hosts:
-      - grafana.arffornia.com
-    path: /
-    tls:
-      - secretName: grafana-tls
-        hosts:
-          - grafana.arffornia.com
-    annotations:
-      cert-manager.io/cluster-issuer: default-issuer
+    enabled: false
 
   resources:
     limits:
@@ -48,7 +38,7 @@ prometheus:
       volumeClaimTemplate:
         spec:
           storageClassName: longhorn
-          accessModes: ["ReadWriteOnce"]
+          accessModes: [ "ReadWriteOnce" ]
           resources:
             requests:
               storage: 20Gi
@@ -75,7 +65,7 @@ alertmanager:
     receivers:
       - name: "null"
     route:
-      group_by: ["alertname", "job", "namespace"]
+      group_by: [ "alertname", "job", "namespace" ]
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 12h
@@ -133,29 +123,34 @@ additionalPrometheusRulesMap:
               app: minecraft
             annotations:
               summary: "Low TPS on {{ $labels.namespace }}"
-              description: "Server {{ $labels.namespace }} is lagging. Current TPS: {{ $value }}."
+              description: "Server {{ $labels.namespace }} is lagging. Current TPS: {{ $value
+                }}."
 
       - name: infra
         rules:
           # Alert: High Ping / Latency (Node Level)
           - alert: HighNetworkLatency
-            expr: rate(node_network_receive_drop_total{device!~"veth.*|weave|vxlan.*|datapath|lo"}[5m]) > 0
+            expr: rate(node_network_receive_drop_total{device!~"veth.*|weave|vxlan.*|datapath|lo"}[5m])
+              > 0
             for: 5m
             labels:
               severity: warning
             annotations:
               summary: "Network Packet Drop Detected"
-              description: "Node {{ $labels.instance }} (interface {{ $labels.device }}) is dropping packets."
+              description: "Node {{ $labels.instance }} (interface {{ $labels.device }}) is
+                dropping packets."
 
           # Alert: PVC > 75% Full
           - alert: PersistentVolumeFillingUp
-            expr: kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes > 0.75
+            expr: kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes >
+              0.75
             for: 5m
             labels:
               severity: warning
             annotations:
               summary: "PVC {{ $labels.persistentvolumeclaim }} > 75% Full"
-              description: "Storage for {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is running low."
+              description: "Storage for {{ $labels.persistentvolumeclaim }} in namespace {{
+                $labels.namespace }} is running low."
 
           # Alert: Service/Proxy Down (General)
           - alert: CriticalServiceDown
@@ -165,7 +160,8 @@ additionalPrometheusRulesMap:
               severity: critical
             annotations:
               summary: "Service {{ $labels.job }} is DOWN"
-              description: "Critical infrastructure service {{ $labels.job }} is not responding."
+              description: "Critical infrastructure service {{ $labels.job }} is not
+                responding."
 
           # Alert: Pod Crash Loop (Optimized generic rule)
           - alert: PodCrashLooping
@@ -175,4 +171,5 @@ additionalPrometheusRulesMap:
               severity: warning
             annotations:
               summary: "Pod {{ $labels.pod }} is crash looping"
-              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted more than 3 times in the last 10 minutes."
+              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has
+                restarted more than 3 times in the last 10 minutes."

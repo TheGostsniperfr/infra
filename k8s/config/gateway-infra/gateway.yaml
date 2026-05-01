@@ -42,6 +42,7 @@ spec:
           selector:
             matchLabels:
               prod-gateway-access: "true"
+
     - name: https-wildcard
       protocol: HTTPS
       port: 443
@@ -51,6 +52,34 @@ spec:
         certificateRefs:
           - kind: Secret
             name: arffornia-wildcard-tls
+            namespace: gateway-infra
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              prod-gateway-access: "true"
+
+    - name: http-arffornia
+      protocol: HTTP
+      port: 80
+      hostname: "arffornia.com"
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              prod-gateway-access: "true"
+
+    - name: https-arffornia
+      protocol: HTTPS
+      port: 443
+      hostname: "arffornia.com"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: arffornia-tls
             namespace: gateway-infra
       allowedRoutes:
         namespaces:

@@ -5,7 +5,6 @@ namespace: n8n
 
 resources:
   - namespace.yaml
-  - certificate.yaml
   - secret.yaml
 
 helmGlobals:

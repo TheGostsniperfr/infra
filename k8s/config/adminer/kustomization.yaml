@@ -8,7 +8,6 @@ resources:
   - secret.yaml
   - deployment.yaml
   - service.yaml
-  - certificate.yaml
 
 helmGlobals:
   chartHome: ../../../charts

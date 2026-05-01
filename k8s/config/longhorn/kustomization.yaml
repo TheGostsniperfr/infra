@@ -5,7 +5,6 @@ namespace: longhorn-system
 
 resources:
   - namespace.yaml
-  - longhorn-frontend-certificate.yaml
   - secret.yaml
 
 helmGlobals:

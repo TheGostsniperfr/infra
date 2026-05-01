@@ -4,10 +4,12 @@ kind: Kustomization
 namespace: monitoring
 
 resources:
-  - certificate.yaml
   - secret.yaml
   - namespace.yaml
   - alertmanager-config.yaml
+
+helmGlobals:
+  chartHome: ../../../charts
 
 helmCharts:
   - name: kube-prometheus-stack
@@ -17,3 +19,8 @@ helmCharts:
     namespace: monitoring
     valuesFile: values.yaml
     includeCRDs: true
+
+  - name: secure-route
+    releaseName: monitoring-routes
+    namespace: monitoring
+    valuesFile: values-secure-route.yaml

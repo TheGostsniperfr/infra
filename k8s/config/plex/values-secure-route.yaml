@@ -1,12 +1,11 @@
 routes:
   coder:
     hostnames:
-      - "coder.arffornia.com"
-      - "*.coder.arffornia.com"
+      - "plex.arffornia.com"
     rules:
       - backendRefs:
-          - name: coder
-            port: 80
+          - name: plex-plex-media-server
+            port: 32400
     auth:
       enabled: false
     ipFilter:

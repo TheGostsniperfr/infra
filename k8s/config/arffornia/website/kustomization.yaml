@@ -6,14 +6,20 @@ namespace: arffornia-website
 resources:
   - namespace.yaml
   - secret.yaml
-  - certificate.yaml
   - config.yaml
+
+helmGlobals:
+  chartHome: ../../../../charts
 
 helmCharts:
   - name: arffornia-website-chart
     repo: oci://ghcr.io/arffornia
-    version: 0.0.13 
+    version: 0.0.13
     releaseName: arffornia-website
     namespace: arffornia-website
     valuesFile: values.yaml
 
+  - name: secure-route
+    releaseName: arffornia-website-routes
+    namespace: arffornia-website
+    valuesFile: values-secure-route.yaml

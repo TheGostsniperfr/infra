@@ -5,7 +5,6 @@ namespace: vaultwarden
 
 resources:
   - namespace.yaml
-  - certificate.yaml
   - secret.yaml
 
 helmGlobals:

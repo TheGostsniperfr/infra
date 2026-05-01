@@ -1,11 +1,10 @@
 routes:
   coder:
     hostnames:
-      - "coder.arffornia.com"
-      - "*.coder.arffornia.com"
+      - "grafana.arffornia.com"
     rules:
       - backendRefs:
-          - name: coder
+          - name: kube-prometheus-stack-grafana
             port: 80
     auth:
       enabled: false

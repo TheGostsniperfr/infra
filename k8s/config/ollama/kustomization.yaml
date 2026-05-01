@@ -7,7 +7,6 @@ resources:
   - namespace.yaml
   - service.yaml
   - endpoints.yaml
-  - certificate.yaml
 
 helmGlobals:
   chartHome: ../../../charts

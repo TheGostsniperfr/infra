@@ -5,13 +5,12 @@ namespace: minio-s3
 
 resources:
   - secret.yaml
-  - certificate.yaml
   - pvc.yaml
 
 helmCharts:
   - name: minio
     repo: https://charts.min.io/
-    version: "5.4.0" 
+    version: "5.4.0"
     releaseName: minio-s3
     namespace: minio-s3
     valuesFile: values.yaml

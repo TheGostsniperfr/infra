@@ -6,8 +6,10 @@ namespace: plex
 resources:
   - namespace.yaml
   - pvc.yaml
-  - certificate.yaml
   - secret.yaml
+
+helmGlobals:
+  chartHome: ../../../charts
 
 helmCharts:
   - name: plex-media-server
@@ -16,3 +18,8 @@ helmCharts:
     releaseName: plex
     namespace: plex
     valuesFile: values.yaml
+
+  - name: secure-route
+    releaseName: plex-routes
+    namespace: plex
+    valuesFile: values-secure-route.yaml

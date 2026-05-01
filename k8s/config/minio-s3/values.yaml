@@ -54,7 +54,7 @@ ingress:
   enabled: false
 
 consoleIngress:
-  enabled: true
+  enabled: false
   ingressClassName: "public"
   hosts:
     - s3.arffornia.com

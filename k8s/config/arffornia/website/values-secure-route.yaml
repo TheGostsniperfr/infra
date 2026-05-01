@@ -1,11 +1,10 @@
 routes:
-  coder:
+  vault:
     hostnames:
-      - "coder.arffornia.com"
-      - "*.coder.arffornia.com"
+      - "arffornia.com"
     rules:
       - backendRefs:
-          - name: coder
+          - name: arffornia-website-chart
             port: 80
     auth:
       enabled: false

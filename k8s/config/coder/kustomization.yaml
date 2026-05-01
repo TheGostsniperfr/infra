@@ -5,7 +5,6 @@ namespace: coder
 resources:
   - namespace.yaml
   - secret.yaml
-  - certificate.yaml
 
 helmGlobals:
   chartHome: ../../../charts

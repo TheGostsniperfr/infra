@@ -5,7 +5,6 @@ namespace: nextcloud
 
 resources:
   - namespace.yaml
-  - nextcloud-certificate.yaml
   - secret.yaml
   - nas-pvc.yaml
 
