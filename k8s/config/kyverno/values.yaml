@@ -1,0 +1,36 @@
+# Values: https://github.com/kyverno/kyverno/blob/main/charts/kyverno/values.yaml
+
+# HA require at least 3 replicas
+admissionController:
+  replicas: 1
+backgroundController:
+  replicas: 1
+cleanupController:
+  replicas: 1
+reportsController:
+  replicas: 1
+
+# Necessary in EKS with custom Network CNI plugin
+# https://cert-manager.io/docs/installation/compatibility/#aws-eks
+# hostNetwork: true
+
+config:
+  # Ensure proper resource cleanup and sync status
+  # Doc: https://kyverno.io/docs/installation/platform-notes/#notes-for-argocd-users
+  preserve: false
+
+  webhooks:
+    # Exclude namespaces
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          # Critical Resources
+          values:
+            - kube-system
+            - kyverno
+    # Exclude objects
+    objectSelector:
+      matchExpressions:
+        - key: webhooks.kyverno.io/exclude
+          operator: DoesNotExist

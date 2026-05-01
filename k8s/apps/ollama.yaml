@@ -3,16 +3,18 @@ kind: Application
 metadata:
   name: ollama
   namespace: argocd
-  labels:
-    app: ollama
+  annotations:
+    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   syncPolicy:
-    syncOptions:
-      - CreateNamespace=true
     automated:
       prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
   project: default
   source:
     repoURL: https://github.com/TheGostsniperfr/infra.git

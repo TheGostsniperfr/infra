@@ -1,0 +1,14 @@
+crds:
+  enabled: true
+  keep: false # Manage CRDs with cert-manager lifecycle
+
+# Doc about values: https://cert-manager.io/docs/usage/gateway/
+config:
+  apiVersion: controller.config.cert-manager.io/v1alpha1
+  kind: ControllerConfiguration
+  enableGatewayAPI: true
+
+# To solve chart issue: https://github.com/cert-manager/cert-manager/issues/6716
+global:
+  leaderElection:
+    namespace: cert-manager

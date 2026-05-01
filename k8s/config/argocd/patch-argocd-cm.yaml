@@ -6,4 +6,24 @@ metadata:
     app.kubernetes.io/name: argocd-cm
     app.kubernetes.io/part-of: argocd
 data:
-  kustomize.buildOptions: "--enable-helm --load-restrictor=LoadRestrictionsNone"
+  # Allows Kustomize to natively render Helm charts
+  # Allows Kustomize to load files outside of its current root directory (useful for shared bases)
+  kustomize.buildOptions: |
+    --enable-helm
+    --load-restrictor=LoadRestrictionsNone
+
+  # Ignore RBAC changes made by Kubernetes aggregated roles.
+  # Without this, ArgoCD flags ClusterRoles as OutOfSync when the K8s API auto-merges rules.
+  # Ref: https://argo-cd.readthedocs.io/en/stable/user-guide/diffing/#ignoring-rbac-changes-made-by-aggregateroles
+  resource.compareoptions: |
+    ignoreAggregatedRoles: true
+
+  admin.enabled: "false"
+  url: "https://argocd.arffornia.com"
+  timeout.reconciliation: "30s"
+  oidc.config: |
+    name: Arffornia ID
+    issuer: https://auth.arffornia.com/realms/arffornia
+    clientID: argocd
+    clientSecret: $oidc.keycloak.clientSecret
+    requestedScopes: ["openid", "profile", "email", "groups"]

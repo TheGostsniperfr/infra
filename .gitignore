@@ -1,1 +1,6 @@
-charts/
+k8s/**/charts/
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json

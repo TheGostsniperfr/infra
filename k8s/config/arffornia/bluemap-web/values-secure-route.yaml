@@ -1,0 +1,12 @@
+routes:
+  bluemap:
+    hostnames:
+      - "map.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: bluemap-web-service
+            port: 8100
+    auth:
+      enabled: false
+    ipFilter:
+      enabled: false
