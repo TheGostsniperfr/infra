@@ -7,6 +7,9 @@ resources:
   - secret.yaml
   - certificate.yaml
 
+helmGlobals:
+  chartHome: ../../../charts
+
 helmCharts:
   - name: coder
     repo: https://helm.coder.com/v2
@@ -14,3 +17,8 @@ helmCharts:
     releaseName: coder
     namespace: coder
     valuesFile: values.yaml
+
+  - name: secure-route
+    releaseName: coder-routes
+    namespace: coder
+    valuesFile: values-secure-route.yaml

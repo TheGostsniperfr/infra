@@ -1,0 +1,12 @@
+routes:
+  argocd:
+    hostnames:
+      - "argocd.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: argocd-server
+            port: 80
+    auth:
+      enabled: false
+    ipFilter:
+      enabled: false

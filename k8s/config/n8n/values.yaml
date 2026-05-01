@@ -33,18 +33,7 @@ hostAliases: []
 # Ingress
 #
 ingress:
-  enabled: true
-  className: "public"
-  annotations:
-    cert-manager.io/cluster-issuer: default-issuer
-  hosts:
-    - host: n8n.arffornia.com
-      paths:
-        - "/"
-  tls:
-    - hosts:
-        - n8n.arffornia.com
-      secretName: n8n-tls
+  enabled: false
 
 # the main (n8n) application related configuration + Kubernetes specific settings
 # The config: {} dictionary is converted to environmental variables in the ConfigMap.

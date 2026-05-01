@@ -8,4 +8,12 @@ resources:
   - service.yaml
   - endpoints.yaml
   - certificate.yaml
-  - ingress.yaml
+
+helmGlobals:
+  chartHome: ../../../charts
+
+helmCharts:
+  - name: secure-route
+    releaseName: ollama-routes
+    namespace: ollama
+    valuesFile: values-secure-route.yaml

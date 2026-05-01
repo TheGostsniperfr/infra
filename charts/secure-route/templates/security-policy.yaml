@@ -1,0 +1,55 @@
+{{- range $routeName, $routeConfig := .Values.routes }}
+
+{{- $authEnabled := and $routeConfig.auth $routeConfig.auth.enabled }}
+{{- $ipFilterEnabled := and $routeConfig.ipFilter $routeConfig.ipFilter.enabled }}
+
+{{- if or $authEnabled $ipFilterEnabled }}
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: "{{ $routeName }}-security"
+  namespace: "{{ $.Release.Namespace }}"
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: "{{ $routeName }}-route"
+
+  {{- if $authEnabled }}
+  oidc:
+    provider:
+      issuer: "https://auth.{{ $.Values.global.baseDomain }}/realms/{{ $.Values.global.keycloakRealm }}"
+      authorizationEndpoint: "https://auth.{{ $.Values.global.baseDomain }}/realms/{{ $.Values.global.keycloakRealm }}/protocol/openid-connect/auth"
+      tokenEndpoint: "https://auth.{{ $.Values.global.baseDomain }}/realms/{{ $.Values.global.keycloakRealm }}/protocol/openid-connect/token"
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: keycloakx-http
+          namespace: keycloak
+          port: 80
+    clientID: "{{ $.Values.global.authClientId }}"
+    clientSecret:
+      name: "{{ $routeName }}-envoy-auth-secret"
+
+    {{- $host := "" }}
+    {{- if $routeConfig.hostnames }}
+      {{- $host = index $routeConfig.hostnames 0 }}
+    {{- else if $routeConfig.ingress }}
+      {{- $host = $routeConfig.ingress.hostname }}
+    {{- end }}
+    redirectURL: "https://{{ $host }}/oauth2/callback"
+    logoutPath: "/logout"
+  {{- end }}
+
+  {{- if $ipFilterEnabled }}
+  authorization:
+    defaultAction: Deny
+    rules:
+      - action: Allow
+        principal:
+          clientCIDRs:
+            {{- toYaml $routeConfig.ipFilter.allowedCidrs | nindent 12 }}
+  {{- end }}
+---
+{{- end }}
+{{- end }}

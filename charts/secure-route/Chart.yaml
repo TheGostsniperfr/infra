@@ -1,0 +1,4 @@
+apiVersion: v2
+name: secure-route
+description: A Helm chart to expose and secure any existing K8s Service via Envoy Gateway
+version: 0.1.0

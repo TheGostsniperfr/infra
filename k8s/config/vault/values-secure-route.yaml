@@ -1,0 +1,12 @@
+routes:
+  vault:
+    hostnames:
+      - "vault.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: vault
+            port: 8200
+    auth:
+      enabled: false
+    ipFilter:
+      enabled: false

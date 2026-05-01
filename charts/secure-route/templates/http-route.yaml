@@ -1,0 +1,27 @@
+{{- range $routeName, $routeConfig := .Values.routes }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: "{{ $routeName }}-route"
+  namespace: "{{ $.Release.Namespace }}"
+spec:
+  parentRefs:
+    - name: {{ $.Values.global.gatewayName }}
+      namespace: {{ $.Values.global.gatewayNamespace }}
+  {{- if $routeConfig.hostnames }}
+  hostnames:
+    {{- toYaml $routeConfig.hostnames | nindent 4 }}
+  {{- else if $routeConfig.ingress }}
+  hostnames:
+    - {{ $routeConfig.ingress.hostname | quote }}
+  {{- end }}
+  rules:
+    {{- if $routeConfig.rules }}
+    {{- toYaml $routeConfig.rules | nindent 4 }}
+    {{- else if $routeConfig.targetService }}
+    - backendRefs:
+        - name: {{ $routeConfig.targetService.name }}
+          port: {{ $routeConfig.targetService.port }}
+    {{- end }}
+---
+{{- end }}

@@ -1,0 +1,51 @@
+# Default 2, but need to ask for this kind of thing what's the real needs for HA or is ok ? because it's an operator
+operator:
+  replicas: 1
+
+# Bare-Metal Setup (e.g., Talos etc.)
+# ipam:
+#   mode: kubernetes
+
+kubeProxyReplacement: true
+socketLB:
+  # Mandatory with kube proxy replacement if we want to use kata containers
+  # See
+  hostNamespaceOnly: true
+
+securityContext:
+  capabilities:
+    ciliumAgent:
+      - CHOWN
+      - KILL
+      - NET_ADMIN
+      - NET_RAW
+      - IPC_LOCK
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    cleanCiliumState:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+
+# Talos Requirement
+# cgroup:
+#   autoMount:
+#     enabled: false
+#   hostRoot: /sys/fs/cgroup
+
+# Talos Service Port
+# k8sServiceHost: localhost
+# k8sServicePort: 7445
+
+gatewayAPI:
+  enabled: false
+
+l7Proxy: true # default true
+
+# This require to add Envoy-related CRDs
+envoyConfig:
+  enabled: false

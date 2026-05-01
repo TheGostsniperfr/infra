@@ -1,0 +1,15 @@
+routes:
+  longhorn:
+    hostnames:
+      - "longhorn.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: longhorn-frontend
+            port: 80
+    auth:
+      enabled: true
+      vault:
+        path: "kvv2/longhorn/envoy-auth"
+        role: "longhorn-role"
+    ipFilter:
+      enabled: false

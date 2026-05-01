@@ -11,7 +11,20 @@ terraform {
       source  = "cloudflare/cloudflare"
       version = "5.16.0"
     }
+
+    keycloak = {
+      source  = "keycloak/keycloak"
+      version = "5.7.0"
+    }
   }
+}
+
+provider "keycloak" {
+  client_id                = "admin-cli"
+  url                      = var.keycloak_url
+  username                 = var.keycloak_admin_user_var
+  password                 = var.keycloak_admin_password_var
+  tls_insecure_skip_verify = false # Set to true if using self-signed certs
 }
 
 provider "vault" {

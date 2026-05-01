@@ -27,3 +27,19 @@ variable "domain_name" {
   type        = string
   default     = "arffornia.com"
 }
+
+# -----------------------------------------------------------------------------
+# Keycloak Variables
+# -----------------------------------------------------------------------------
+
+variable "keycloak_url" {
+  description = "The Base URL of the Keycloak instance"
+  type        = string
+  default     = "https://auth.arffornia.com"
+}
+
+variable "base_domain" {
+  description = "Base domain for the lab"
+  type        = string
+  default     = "arffornia.com"
+}

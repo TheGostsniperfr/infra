@@ -6,7 +6,10 @@ namespace: vault
 resources:
   - namespace.yaml
   - vault-certificate.yaml
-  
+
+helmGlobals:
+  chartHome: ../../../charts
+
 helmCharts:
   - name: vault
     repo: https://helm.releases.hashicorp.com
@@ -15,4 +18,7 @@ helmCharts:
     namespace: vault
     valuesFile: vault-values.yaml
 
-
+  - name: secure-route
+    releaseName: vault-routes
+    namespace: vault
+    valuesFile: values-secure-route.yaml

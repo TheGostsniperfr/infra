@@ -1,0 +1,26 @@
+routes:
+  keycloak-http-route:
+    hostnames:
+      - "auth.arffornia.com"
+      - "admin-auth.arffornia.com"
+    rules:
+      - matches:
+          - path:
+              type: Exact
+              value: "/"
+            headers:
+              - type: Exact
+                name: "Host"
+                value: "auth.arffornia.com"
+        filters:
+          - type: RequestRedirect
+            requestRedirect:
+              statusCode: 302
+              path:
+                type: ReplaceFullPath
+                replaceFullPath: "/realms/arffornia/account/"
+      - backendRefs:
+          - name: keycloakx-http
+            port: 80
+    auth:
+      enabled: false

@@ -1,0 +1,29 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-envoy-oidc
+  namespace: keycloak
+spec:
+  from:
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: arffornia-proxy-velocity
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: arffornia-server-nexus
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: arffornia-server-arcane
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: arffornia-website
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: arffornia-bluemap-web
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: argocd
+  to:
+    - group: ""
+      kind: Service
+      name: keycloakx-http

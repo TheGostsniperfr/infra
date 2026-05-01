@@ -1,0 +1,29 @@
+garage:
+  replicationFactor: 1
+deployment:
+  replicaCount: 1
+persistence:
+  meta:
+    storageClass: "local-path"
+    size: 2Gi
+  data:
+    storageClass: "local-path"
+    size: 20Gi
+ingress:
+  s3:
+    api:
+      enabled: false
+  web:
+    enabled: false
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+    # monitoring:
+    # metrics:
+    # enabled: true
+    # serviceMonitor:
+    # enabled: true

@@ -1,0 +1,15 @@
+routes:
+  adminer:
+    hostnames:
+      - "adminer.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: adminer-service
+            port: 80
+    auth:
+      enabled: true
+      vault:
+        path: "kvv2/adminer/envoy-auth"
+        role: "adminer-role"
+    ipFilter:
+      enabled: false

@@ -5,9 +5,11 @@ namespace: longhorn-system
 
 resources:
   - namespace.yaml
-  - longhorn-ingress.yaml
   - longhorn-frontend-certificate.yaml
   - secret.yaml
+
+helmGlobals:
+  chartHome: ../../../charts
 
 helmCharts:
   - name: longhorn
@@ -16,3 +18,8 @@ helmCharts:
     releaseName: longhorn
     namespace: longhorn-system
     valuesFile: longhorn-values.yaml
+
+  - name: secure-route
+    releaseName: longhorn-routes
+    namespace: longhorn-system
+    valuesFile: values-secure-route.yaml

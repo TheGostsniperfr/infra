@@ -1,0 +1,24 @@
+global:
+  gatewayName: "shared-gateway"
+  gatewayNamespace: "gateway-infra"
+  baseDomain: "arffornia.com"
+  keycloakRealm: "arffornia"
+  authClientId: "arffornia-openid"
+
+routes: {}
+  # demo-frontend:
+  #   targetService:
+  #     name: "kube-classes-svc"
+  #     port: 80
+  #   ingress:
+  #     hostname: "demo.3istor.com"
+  #   auth:
+  #     enabled: true
+  #     vault:
+  #       path: "kvv2/demo-app/envoy-auth"
+  #       role: "demo-app-role"
+  #   ipFilter:
+  #     enabled: true
+  #     allowedCidrs:
+  #       - "82.65.250.241/32"
+  #       - "10.42.0.0/16"

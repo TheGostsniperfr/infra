@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kube-system
+
+helmCharts:
+  - name: cilium
+    repo: https://helm.cilium.io/
+    version: 1.19.1
+    releaseName: cilium
+    namespace: kube-system
+    valuesFile: values.yaml
+    # Fix to have gateway class using kustomize with helm template
+    apiVersions:
+      - gateway.networking.k8s.io/v1/GatewayClass

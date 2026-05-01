@@ -8,7 +8,10 @@ resources:
   - nextcloud-certificate.yaml
   - secret.yaml
   - nas-pvc.yaml
-  
+
+helmGlobals:
+  chartHome: ../../../charts
+
 helmCharts:
   - name: nextcloud
     repo: https://nextcloud.github.io/helm/
@@ -17,4 +20,7 @@ helmCharts:
     namespace: nextcloud
     valuesFile: nextcloud-values.yaml
 
-
+  - name: secure-route
+    releaseName: nextcloud-routes
+    namespace: nextcloud
+    valuesFile: values-secure-route.yaml
