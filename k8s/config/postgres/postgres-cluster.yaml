@@ -16,7 +16,7 @@ spec:
     coder: coder
   enableConnectionPooler: true
   enableReplicaConnectionPooler: true
-  enableReplicaLoadBalancer: true
+  enableReplicaLoadBalancer: false
   numberOfInstances: 3
   postgresql:
     version: "17"

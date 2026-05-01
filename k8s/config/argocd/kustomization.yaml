@@ -14,6 +14,7 @@ patches:
   - path: patch-argocd-cm.yaml
   - path: argocd-cmd-params-cm-patch.yaml
   - path: patch-argocd-rbac-cm.yaml
+  - path: patch-argocd-server-service.yaml
 
 helmGlobals:
   chartHome: ../../../charts

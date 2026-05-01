@@ -12,7 +12,6 @@ resources:
   - kyverno.yaml
   - envoy-gateway.yaml
   - gateway-infra.yaml
-  - ingress-nginx.yaml
   - cert-manager.yaml
   - default-issuer.yaml
   - metallb.yaml
