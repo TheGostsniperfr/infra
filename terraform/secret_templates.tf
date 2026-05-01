@@ -259,6 +259,20 @@ resource "vault_kv_secret_v2" "adminer_basic_auth_secret" {
   })
 }
 
+variable "adminer_envoy_auth_client_secret_var" {
+  description = "OIDC client secret for Adminer Envoy auth."
+  type        = string
+  sensitive   = true
+}
+
+resource "vault_kv_secret_v2" "adminer_envoy_auth_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "adminer/envoy-auth"
+  data_json = jsonencode({
+    client-secret = var.adminer_envoy_auth_client_secret_var
+  })
+}
+
 # -----------------------------------------------------------------------------
 # CSI Driver SMB Secrets
 # -----------------------------------------------------------------------------
@@ -283,6 +297,24 @@ resource "vault_kv_secret_v2" "smb_nas_credentials_secret" {
 }
 
 # -----------------------------------------------------------------------------
+# Longhorn Secrets
+# -----------------------------------------------------------------------------
+
+variable "longhorn_envoy_auth_client_secret_var" {
+  description = "OIDC client secret for Longhorn Envoy auth."
+  type        = string
+  sensitive   = true
+}
+
+resource "vault_kv_secret_v2" "longhorn_envoy_auth_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "longhorn/envoy-auth"
+  data_json = jsonencode({
+    client-secret = var.longhorn_envoy_auth_client_secret_var
+  })
+}
+
+# -----------------------------------------------------------------------------
 # Keycloak Secrets
 # -----------------------------------------------------------------------------
 variable "keycloak_admin_user_var" {
@@ -292,11 +324,6 @@ variable "keycloak_admin_user_var" {
 }
 variable "keycloak_admin_password_var" {
   description = "Admin password for Keycloak."
-  type        = string
-  sensitive   = true
-}
-variable "keycloak_epinaloa_client_secret_var" {
-  description = "Client secret for the epinaloa realm in Keycloak."
   type        = string
   sensitive   = true
 }
@@ -319,13 +346,6 @@ resource "vault_kv_secret_v2" "keycloak_admin_secret" {
     password = var.keycloak_admin_password_var
   })
 }
-resource "vault_kv_secret_v2" "keycloak_realm_secret" {
-  mount = vault_mount.kvv2.path
-  name  = "keycloak/epinaloa-realm-secret"
-  data_json = jsonencode({
-    client_secret = var.keycloak_epinaloa_client_secret_var
-  })
-}
 resource "vault_kv_secret_v2" "postgres_keycloak_secret" {
   mount = vault_mount.kvv2.path
   name  = "postgres/keycloak"
@@ -336,7 +356,74 @@ resource "vault_kv_secret_v2" "postgres_keycloak_secret" {
 }
 
 # -----------------------------------------------------------------------------
-# Minio S3 Secrets
+# Garage S3 Secrets
+# -----------------------------------------------------------------------------
+
+# Postgres backup key
+variable "garage_postgres_backup_access_key_var" {
+  description = "Garage S3 access key for postgres backups."
+  type        = string
+  sensitive   = true
+}
+variable "garage_postgres_backup_secret_key_var" {
+  description = "Garage S3 secret key for postgres backups."
+  type        = string
+  sensitive   = true
+}
+
+resource "vault_kv_secret_v2" "garage_postgres_backup_credentials" {
+  mount = vault_mount.kvv2.path
+  name  = "garage-s3/postgres-backup-key"
+  data_json = jsonencode({
+    AWS_ACCESS_KEY_ID     = var.garage_postgres_backup_access_key_var
+    AWS_SECRET_ACCESS_KEY = var.garage_postgres_backup_secret_key_var
+  })
+}
+
+# Longhorn backup key
+variable "garage_longhorn_backup_access_key_var" {
+  description = "Garage S3 access key for longhorn backups."
+  type        = string
+  sensitive   = true
+}
+variable "garage_longhorn_backup_secret_key_var" {
+  description = "Garage S3 secret key for longhorn backups."
+  type        = string
+  sensitive   = true
+}
+
+resource "vault_kv_secret_v2" "garage_longhorn_backup_credentials" {
+  mount = vault_mount.kvv2.path
+  name  = "garage-s3/longhorn-backup-key"
+  data_json = jsonencode({
+    AWS_ACCESS_KEY_ID     = var.garage_longhorn_backup_access_key_var
+    AWS_SECRET_ACCESS_KEY = var.garage_longhorn_backup_secret_key_var
+  })
+}
+
+# User avatars key (for website)
+variable "garage_user_avatars_access_key_var" {
+  description = "Garage S3 access key for user avatars."
+  type        = string
+  sensitive   = true
+}
+variable "garage_user_avatars_secret_key_var" {
+  description = "Garage S3 secret key for user avatars."
+  type        = string
+  sensitive   = true
+}
+
+resource "vault_kv_secret_v2" "garage_user_avatars_credentials" {
+  mount = vault_mount.kvv2.path
+  name  = "garage-s3/user-avatars-key"
+  data_json = jsonencode({
+    AWS_ACCESS_KEY_ID     = var.garage_user_avatars_access_key_var
+    AWS_SECRET_ACCESS_KEY = var.garage_user_avatars_secret_key_var
+  })
+}
+
+# -----------------------------------------------------------------------------
+# Minio S3 Secrets (DEPRECATED - use Garage S3)
 # -----------------------------------------------------------------------------
 variable "minio_s3_root_user_var" {
   description = "Root username for Minio S3."
