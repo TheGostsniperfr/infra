@@ -3,7 +3,7 @@
 #   realm_id       = keycloak_realm.arffornia.id
 #   username       = "admin"
 #   enabled        = true
-#   email          = "admin@arffornia.fr"
+#   email          = "admin@arffornia.com"
 #   email_verified = true
 #   first_name     = "Admin"
 #   last_name      = "User"
@@ -22,7 +22,7 @@
 # USERS
 locals {
   team_members = {
-    "admin" = { first = "Admin", last = "User", email = "admin@arffornia.fr", is_infra = true }
+    "admin" = { first = "Admin", last = "User", email = "admin@arffornia.com", is_infra = true }
     "brian" = { first = "Brian", last = "Perret", email = "brianperret.pro@gmail.com", is_infra = true }
   }
 }

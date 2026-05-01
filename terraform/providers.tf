@@ -22,8 +22,8 @@ terraform {
 provider "keycloak" {
   client_id                = "admin-cli"
   url                      = var.keycloak_url
-  username                 = var.keycloak_admin_username
-  password                 = var.keycloak_admin_password
+  username                 = var.keycloak_admin_user_var
+  password                 = var.keycloak_admin_password_var
   tls_insecure_skip_verify = false # Set to true if using self-signed certs
 }
 

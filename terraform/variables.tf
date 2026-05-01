@@ -7,7 +7,7 @@ variable "k8s_host_url" {
 variable "vault_url" {
   description = "The URL of the Vault server."
   type        = string
-  default     = "https://vault.arffornia.fr"
+  default     = "https://vault.arffornia.com"
 }
 
 variable "cloudflare_zone_id" {
@@ -25,7 +25,7 @@ variable "dc_ip" {
 variable "domain_name" {
   description = "The domain name for the Arffornia Cluster."
   type        = string
-  default     = "arffornia.fr"
+  default     = "arffornia.com"
 }
 
 # -----------------------------------------------------------------------------
@@ -35,23 +35,11 @@ variable "domain_name" {
 variable "keycloak_url" {
   description = "The Base URL of the Keycloak instance"
   type        = string
-  default     = "https://auth.arffornia.fr"
-}
-
-variable "keycloak_admin_username" {
-  description = "Keycloak admin username"
-  type        = string
-  default     = "admin"
-}
-
-variable "keycloak_admin_password" {
-  description = "Keycloak admin password"
-  type        = string
-  sensitive   = true
+  default     = "https://auth.arffornia.com"
 }
 
 variable "base_domain" {
   description = "Base domain for the lab"
   type        = string
-  default     = "arffornia.fr"
+  default     = "arffornia.com"
 }
