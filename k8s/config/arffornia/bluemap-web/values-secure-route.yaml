@@ -5,7 +5,7 @@ routes:
     rules:
       - backendRefs:
           - name: bluemap-web-service
-            port: 8100
+            port: 80
     auth:
       enabled: false
     ipFilter:

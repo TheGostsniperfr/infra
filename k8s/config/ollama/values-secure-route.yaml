@@ -4,7 +4,7 @@ routes:
       - "ollama.arffornia.com"
     rules:
       - backendRefs:
-          - name: ollama
+          - name: ollama-external-service
             port: 11434
     auth:
       enabled: false
