@@ -79,7 +79,7 @@ spec:
         mode: Terminate
         certificateRefs:
           - kind: Secret
-            name: arffornia-tls
+            name: arffornia-wildcard-tls
             namespace: gateway-infra
       allowedRoutes:
         namespaces:
