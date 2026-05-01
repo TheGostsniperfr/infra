@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: garage-s3
+  name: minio-s3
   namespace: argocd
   annotations:
     argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
@@ -18,11 +18,11 @@ spec:
   project: default
   destination:
     name: in-cluster
-    namespace: garage-s3
+    namespace: minio-s3
   sources:
     - repoURL: https://github.com/TheGostsniperfr/infra.git
       targetRevision: HEAD
-      path: k8s/config/garage-s3
+      path: k8s/config/minio-s3
       ref: my-repo
     - repoURL: https://git.deuxfleurs.fr/Deuxfleurs/garage.git
       targetRevision: v2.2.0
@@ -30,4 +30,4 @@ spec:
       helm:
         releaseName: garage
         valueFiles:
-          - $my-repo/k8s/config/garage-s3/values.yaml
+          - $my-repo/k8s/config/minio-s3/values.yaml
