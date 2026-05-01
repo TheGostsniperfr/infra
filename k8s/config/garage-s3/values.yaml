@@ -4,10 +4,10 @@ deployment:
   replicaCount: 1
 persistence:
   meta:
-    storageClass: "local-path"
+    storageClass: "longhorn"
     size: 2Gi
   data:
-    storageClass: "local-path"
+    storageClass: "longhorn"
     size: 20Gi
 ingress:
   s3:

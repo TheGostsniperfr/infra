@@ -29,13 +29,14 @@ locals {
     "coder"       = true
 
     # DNS Only (Grey Cloud)
-    "auth"    = false
-    "ollama"  = false
-    "ping"    = false
-    "rcon"    = false
-    "s3"      = false
-    "noproxy" = false
-    "plex"    = false
+    "auth"       = false
+    "admin-auth" = false
+    "ollama"     = false
+    "ping"       = false
+    "rcon"       = false
+    "s3"         = false
+    "noproxy"    = false
+    "plex"       = false
   }
 }
 

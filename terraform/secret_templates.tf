@@ -681,3 +681,15 @@ resource "vault_kv_secret_v2" "postgres_coder_secret" {
     password = var.postgres_coder_password_var
   })
 }
+
+# -----------------------------------------------------------------------------
+# ArgoCD Secrets
+# -----------------------------------------------------------------------------
+resource "vault_kv_secret_v2" "argocd_oidc_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "argocd/oidc"
+
+  data_json = jsonencode({
+    "oidc.keycloak.clientSecret" = keycloak_openid_client.argocd.client_secret
+  })
+}
