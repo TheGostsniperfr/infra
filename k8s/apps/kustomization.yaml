@@ -4,25 +4,47 @@ kind: Kustomization
 namespace: argocd
 
 resources:
+  # Core ArgoCD
   - argocd.yaml
+
+  # Infrastructure Layer
+  - kube-system.yaml
+  - kyverno.yaml
+  - envoy-gateway.yaml
+  - gateway-infra.yaml
   - ingress-nginx.yaml
   - cert-manager.yaml
   - default-issuer.yaml
   - metallb.yaml
-  - postgres-operator.yaml
-  - postgres.yaml
-  - longhorn.yaml
+
+  # Vault & Secrets
   - vault.yaml
   - vault-secrets-operator.yaml
-  - nextcloud.yaml
-  - arffornia/
-  - csi-driver-smb.yaml
+
+  # Identity & Auth
   - keycloak.yaml
+
+  # Storage
+  - longhorn.yaml
+  - csi-driver-smb.yaml
+  - garage-s3.yaml
+  - minio-s3.yaml
+
+  # Database
+  - postgres-operator.yaml
+  - postgres.yaml
+
+  # Monitoring
+  - monitoring.yaml
+
+  # Applications
   - adminer.yaml
+  - nextcloud.yaml
   - vaultwarden.yaml
   - n8n.yaml
   - ollama.yaml
-  - minio-s3.yaml
-  - monitoring.yaml
   - plex.yaml
   - coder.yaml
+
+  # Arffornia Apps
+  - arffornia/
