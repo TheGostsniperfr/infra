@@ -1,12 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
-    ":timezone(Europe/Paris)",
-    "kubernetes:recommended"
+    "config:recommended",
+    ":timezone(Europe/Paris)"
   ],
   "minimumReleaseAge": "14 days",
-  "internalChecksFilter": "strict",
   "argocd": {
     "fileMatch": ["k8s/apps/.*\\.yaml$"]
   },
