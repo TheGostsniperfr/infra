@@ -1,6 +1,48 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:base",
+    ":timezone(Europe/Paris)",
+    "kubernetes:recommended"
+  ],
+  "argocd": {
+    "fileMatch": ["k8s/apps/.*\\.yaml$"]
+  },
+  "kustomize": {
+    "fileMatch": ["k8s/config/.*/kustomization\\.yaml$"]
+  },
+  "helm-values": {
+    "fileMatch": ["k8s/config/.*/values.*\\.yaml$"]
+  },
+  "terraform": {
+    "fileMatch": ["terraform/.*\\.tf$"]
+  },
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchDatasources": ["helm"],
+      "groupName": "Helm Charts (Minor & Patch)"
+    },
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchDatasources": ["terraform-provider"],
+      "groupName": "Terraform Providers (Minor & Patch)"
+    },
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchDatasources": ["docker"],
+      "groupName": "Docker Images (Minor & Patch)"
+    }
+  ],
+  "schedule": ["before 5am on monday"],
+  "prConcurrentLimit": 5,
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["values.*\\.yaml$"],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\s+.*?:\\s*[\"']?(?<currentValue>[^\"'\\s]+)[\"']?"
+      ]
+    }
   ]
 }
