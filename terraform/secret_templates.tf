@@ -269,7 +269,7 @@ resource "vault_kv_secret_v2" "adminer_envoy_auth_secret" {
   mount = vault_mount.kvv2.path
   name  = "adminer/envoy-auth"
   data_json = jsonencode({
-    client-secret = var.adminer_envoy_auth_client_secret_var
+    client-secret = keycloak_openid_client.arffornia_openid_client.client_secret
   })
 }
 
@@ -310,7 +310,7 @@ resource "vault_kv_secret_v2" "longhorn_envoy_auth_secret" {
   mount = vault_mount.kvv2.path
   name  = "longhorn/envoy-auth"
   data_json = jsonencode({
-    client-secret = var.longhorn_envoy_auth_client_secret_var
+    client-secret = keycloak_openid_client.arffornia_openid_client.client_secret
   })
 }
 

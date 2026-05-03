@@ -17,15 +17,21 @@ resource "keycloak_openid_client" "arffornia_openid_client" {
   oauth2_device_authorization_grant_enabled = false
 
   valid_redirect_uris = [
-    "https://*.${var.base_domain}/oauth2/callback"
+    "https://longhorn.${var.base_domain}/oauth2/callback",
+    "https://adminer.${var.base_domain}/oauth2/callback",
+    "http://localhost:3000/api/auth/callback/keycloak"
   ]
 
   valid_post_logout_redirect_uris = [
-    "https://*.${var.base_domain}/"
+    "https://longhorn.${var.base_domain}/",
+    "https://adminer.${var.base_domain}/",
+    "http://localhost:3000/"
   ]
 
   web_origins = [
-    "https://*.${var.base_domain}"
+    "https://longhorn.${var.base_domain}",
+    "https://adminer.${var.base_domain}",
+    "http://localhost:3000/"
   ]
 
   authentication_flow_binding_overrides {
