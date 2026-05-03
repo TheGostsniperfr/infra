@@ -5,6 +5,8 @@
     ":timezone(Europe/Paris)",
     "kubernetes:recommended"
   ],
+  "minimumReleaseAge": "14 days",
+  "internalChecksFilter": "strict",
   "argocd": {
     "fileMatch": ["k8s/apps/.*\\.yaml$"]
   },
