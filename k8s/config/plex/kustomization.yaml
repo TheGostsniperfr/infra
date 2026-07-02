@@ -14,7 +14,7 @@ helmGlobals:
 helmCharts:
   - name: plex-media-server
     repo: https://raw.githubusercontent.com/plexinc/pms-docker/gh-pages
-    version: "1.5.0"
+    version: "1.6.0"
     releaseName: plex
     namespace: plex
     valuesFile: values.yaml
