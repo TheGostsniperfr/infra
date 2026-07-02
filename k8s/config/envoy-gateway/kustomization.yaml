@@ -15,7 +15,7 @@ helmCharts:
 
   - name: gateway-helm
     repo: oci://docker.io/envoyproxy
-    version: 1.7.2
+    version: 1.8.1
     releaseName: envoy-gateway-system
     namespace: envoy-gateway-system
     # valuesFile: values.yaml
