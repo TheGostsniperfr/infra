@@ -3,7 +3,6 @@ kind: Kustomization
 
 namespace: argocd
 
-resources:
-  - arffornia-server-arcane.yaml
-  # - arffornia-server-nexus.yaml
-  
+# resources:
+# - arffornia-server-arcane.yaml
+# - arffornia-server-nexus.yaml
