@@ -12,7 +12,7 @@ helmGlobals:
 helmCharts:
   - name: coder
     repo: https://helm.coder.com/v2
-    version: 2.32.0
+    version: 2.35.1
     releaseName: coder
     namespace: coder
     valuesFile: values.yaml
