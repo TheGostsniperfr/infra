@@ -66,6 +66,20 @@ server:
       globalMounts:
         - path: /mnt/photos
           readOnly: true
+    phone-photos:
+      enabled: true
+      type: persistentVolumeClaim
+      existingClaim: immich-phone-photos-pvc
+      globalMounts:
+        - path: /mnt/phone-photos
+          readOnly: true
+    phone-videos:
+      enabled: true
+      type: persistentVolumeClaim
+      existingClaim: immich-phone-videos-pvc
+      globalMounts:
+        - path: /mnt/phone-videos
+          readOnly: true
 
 machine-learning:
   enabled: true
