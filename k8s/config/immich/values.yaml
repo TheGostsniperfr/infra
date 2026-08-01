@@ -39,7 +39,7 @@ controllers:
           DB_VECTOR_EXTENSION: pgvector
 
 valkey:
-  enabled: false  # use standalone redis:7-alpine deployment
+  enabled: false # use standalone redis:7-alpine deployment
 
 server:
   enabled: true
@@ -54,7 +54,7 @@ server:
               memory: "512Mi"
               cpu: "250m"
             limits:
-              memory: "4Gi"
+              memory: "6Gi"
   ingress:
     main:
       enabled: false
