@@ -31,6 +31,7 @@ locals {
     # DNS Only (Grey Cloud)
     "auth"       = false
     "admin-auth" = false
+    "immich"     = false
     "ollama"     = false
     "ping"       = false
     "rcon"       = false

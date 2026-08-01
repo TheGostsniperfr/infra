@@ -33,6 +33,11 @@ server:
       memory: "2Gi"
   env:
     IMMICH_LOG_LEVEL: log
+    IMMICH_SECRET_KEY:
+      valueFrom:
+        secretKeyRef:
+          name: immich-secret-key
+          key: value
     REDIS_HOSTNAME: "immich-redis.immich.svc.cluster.local"
     DB_HOSTNAME: "immich-postgres.immich.svc.cluster.local"
     DB_PORT: "5432"
