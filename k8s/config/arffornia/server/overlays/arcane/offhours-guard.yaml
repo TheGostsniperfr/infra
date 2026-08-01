@@ -1,0 +1,11 @@
+apiVersion: guard.3istor.com/v1alpha1
+kind: OffhoursSchedule
+metadata:
+  name: arffornia-server-arcane
+  namespace: arffornia-server-arcane
+spec:
+  sleepAt: "0 3 * * *" # 03:00 Europe/Paris
+  wakeAt: "0 7 * * *" # 07:00 Europe/Paris
+  timezone: "Europe/Paris"
+  targetRefs:
+    - name: arffornia-server-arcane-minecraft

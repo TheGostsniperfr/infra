@@ -32,6 +32,17 @@ resource "vault_policy" "arffornia_website_policy" {
 }
 
 # -----------------------------------------------------------------------------
+# Offhours Guard Policy
+# -----------------------------------------------------------------------------
+
+resource "vault_policy" "offhours_guard_policy" {
+  name = "offhours-guard-policy"
+  policy = templatefile("${path.module}/policies/offhours_guard.hcl", {
+    mount_path = vault_mount.kvv2.path
+  })
+}
+
+# -----------------------------------------------------------------------------
 # Adminer Policy
 # -----------------------------------------------------------------------------
 

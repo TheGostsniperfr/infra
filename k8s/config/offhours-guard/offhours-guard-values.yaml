@@ -1,0 +1,4 @@
+image:
+  repository: ghcr.io/thegostsniperfr/offhours-guard
+  tag: "1.1.7"
+  pullPolicy: IfNotPresent

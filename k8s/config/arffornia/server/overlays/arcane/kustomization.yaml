@@ -9,6 +9,7 @@ resources:
   - pvc.yaml
   - servicemonitor.yaml
   - addition-config.yaml
+  - offhours-guard.yaml
 
 helmCharts:
   - name: minecraft
