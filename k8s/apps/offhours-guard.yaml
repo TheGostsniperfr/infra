@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: offhours-guard
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
+  project: default
+  source:
+    repoURL: https://github.com/TheGostsniperfr/infra.git
+    targetRevision: HEAD
+    path: k8s/config/offhours-guard
+  destination:
+    name: in-cluster
+    namespace: offhours-guard

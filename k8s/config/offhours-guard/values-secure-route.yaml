@@ -1,0 +1,15 @@
+routes:
+  offhours-guard:
+    hostnames:
+      - "offhours-guard.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: offhours-guard
+            port: 8082
+    auth:
+      enabled: true
+      vault:
+        path: "kvv2/offhours-guard/envoy-auth"
+        role: "offhours-guard-role"
+    ipFilter:
+      enabled: false

@@ -24,9 +24,10 @@ locals {
     "nextcloud"   = true
     "vault"       = true
     "vaultwarden" = true
-    "www"         = true
-    "map"         = true
-    "coder"       = true
+    "www"            = true
+    "map"            = true
+    "coder"          = true
+    "offhours-guard" = true
 
     # DNS Only (Grey Cloud)
     "auth"       = false

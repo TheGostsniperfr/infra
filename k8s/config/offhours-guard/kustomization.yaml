@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: offhours-guard
+
+resources:
+  - namespace.yaml
+
+helmGlobals:
+  chartHome: ../../../charts
+
+helmCharts:
+  - name: offhours-guard
+    repo: oci://ghcr.io/thegostsniperfr/charts
+    version: 1.1.7
+    releaseName: offhours-guard
+    namespace: offhours-guard
+    valuesFile: offhours-guard-values.yaml
+
+  - name: secure-route
+    releaseName: offhours-guard-routes
+    namespace: offhours-guard
+    valuesFile: values-secure-route.yaml

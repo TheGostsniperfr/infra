@@ -40,6 +40,19 @@ resource "vault_kubernetes_auth_backend_role" "arffornia_website_role" {
 }
 
 # -----------------------------------------------------------------------------
+# Offhours Guard Role
+# -----------------------------------------------------------------------------
+
+resource "vault_kubernetes_auth_backend_role" "offhours_guard_role" {
+  backend                          = vault_auth_backend.kubernetes.path
+  role_name                        = "offhours-guard-role"
+  bound_service_account_names      = ["vault-secrets-operator"]
+  bound_service_account_namespaces = ["vault-secrets-operator"]
+  token_ttl                        = 86400 # 24h
+  token_policies                   = [vault_policy.offhours_guard_policy.name]
+}
+
+# -----------------------------------------------------------------------------
 # Adminer Role
 # -----------------------------------------------------------------------------
 

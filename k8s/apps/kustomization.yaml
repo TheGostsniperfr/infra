@@ -36,6 +36,7 @@ resources:
   - monitoring.yaml
 
   # Applications
+  - offhours-guard.yaml
   - adminer.yaml
   - nextcloud.yaml
   - vaultwarden.yaml
