@@ -18,15 +18,6 @@ postgresql:
 redis:
   enabled: false  # use standalone redis:7-alpine deployment (bitnami image has pull issues)
 
-externalDatabase:
-  enabled: true
-  host: "postgres-cluster.postgres.svc.cluster.local"
-  port: 5432
-  database: "immich"
-  existingSecret: "immich-db-secret"
-  existingSecretUsernameKey: "username"
-  existingSecretPasswordKey: "password"
-
 server:
   enabled: true
   image:
@@ -43,6 +34,19 @@ server:
   env:
     IMMICH_LOG_LEVEL: log
     REDIS_HOSTNAME: "immich-redis.immich.svc.cluster.local"
+    DB_HOSTNAME: "postgres-cluster.postgres.svc.cluster.local"
+    DB_PORT: "5432"
+    DB_DATABASE_NAME: "immich"
+    DB_USERNAME:
+      valueFrom:
+        secretKeyRef:
+          name: immich-db-secret
+          key: username
+    DB_PASSWORD:
+      valueFrom:
+        secretKeyRef:
+          name: immich-db-secret
+          key: password
   extraVolumes:
     - name: photos-library
       persistentVolumeClaim:
@@ -56,6 +60,19 @@ microservices:
   enabled: true
   env:
     REDIS_HOSTNAME: "immich-redis.immich.svc.cluster.local"
+    DB_HOSTNAME: "postgres-cluster.postgres.svc.cluster.local"
+    DB_PORT: "5432"
+    DB_DATABASE_NAME: "immich"
+    DB_USERNAME:
+      valueFrom:
+        secretKeyRef:
+          name: immich-db-secret
+          key: username
+    DB_PASSWORD:
+      valueFrom:
+        secretKeyRef:
+          name: immich-db-secret
+          key: password
   resources:
     requests:
       memory: "512Mi"
