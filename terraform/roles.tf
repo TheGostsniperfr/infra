@@ -220,3 +220,29 @@ resource "vault_kubernetes_auth_backend_role" "coder_role" {
   token_ttl                        = 86400
   token_policies                   = [vault_policy.coder_policy.name]
 }
+
+# -----------------------------------------------------------------------------
+# Photo-AI Role
+# -----------------------------------------------------------------------------
+
+resource "vault_kubernetes_auth_backend_role" "photo_ai_role" {
+  backend                          = vault_auth_backend.kubernetes.path
+  role_name                        = "photo-ai-role"
+  bound_service_account_names      = ["vault-secrets-operator"]
+  bound_service_account_namespaces = ["vault-secrets-operator"]
+  token_ttl                        = 86400
+  token_policies                   = [vault_policy.photo_ai_policy.name]
+}
+
+# -----------------------------------------------------------------------------
+# Immich Role
+# -----------------------------------------------------------------------------
+
+resource "vault_kubernetes_auth_backend_role" "immich_role" {
+  backend                          = vault_auth_backend.kubernetes.path
+  role_name                        = "immich-role"
+  bound_service_account_names      = ["vault-secrets-operator"]
+  bound_service_account_namespaces = ["vault-secrets-operator"]
+  token_ttl                        = 86400
+  token_policies                   = [vault_policy.immich_policy.name]
+}

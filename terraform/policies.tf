@@ -184,3 +184,25 @@ resource "vault_policy" "coder_policy" {
     mount_path = vault_mount.kvv2.path
   })
 }
+
+# -----------------------------------------------------------------------------
+# Photo-AI Policy
+# -----------------------------------------------------------------------------
+
+resource "vault_policy" "photo_ai_policy" {
+  name = "photo-ai-policy"
+  policy = templatefile("${path.module}/policies/photo_ai.hcl", {
+    mount_path = vault_mount.kvv2.path
+  })
+}
+
+# -----------------------------------------------------------------------------
+# Immich Policy
+# -----------------------------------------------------------------------------
+
+resource "vault_policy" "immich_policy" {
+  name = "immich-policy"
+  policy = templatefile("${path.module}/policies/immich.hcl", {
+    mount_path = vault_mount.kvv2.path
+  })
+}

@@ -683,6 +683,99 @@ resource "vault_kv_secret_v2" "postgres_coder_secret" {
 }
 
 # -----------------------------------------------------------------------------
+# Photo-AI Secrets
+# -----------------------------------------------------------------------------
+
+variable "photo_ai_discord_token_var" {
+  description = "Discord bot token for the photo-ai bot."
+  type        = string
+  sensitive   = true
+}
+
+variable "photo_ai_runner_auth_token_var" {
+  description = "Shared auth token between Discord bot and workstation runner."
+  type        = string
+  sensitive   = true
+}
+
+variable "postgres_photoai_user_var" {
+  description = "Postgres username for the photoai database."
+  type        = string
+  sensitive   = true
+}
+
+variable "postgres_photoai_password_var" {
+  description = "Postgres password for the photoai database."
+  type        = string
+  sensitive   = true
+}
+
+resource "vault_kv_secret_v2" "photo_ai_discord_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "photo-ai/discord"
+  data_json = jsonencode({
+    token    = var.photo_ai_discord_token_var
+    guild_id = "577223034642104328"
+  })
+}
+
+resource "vault_kv_secret_v2" "photo_ai_runner_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "photo-ai/runner"
+  data_json = jsonencode({
+    auth_token = var.photo_ai_runner_auth_token_var
+  })
+}
+
+resource "vault_kv_secret_v2" "postgres_photoai_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "postgres/photoai"
+  data_json = jsonencode({
+    username = var.postgres_photoai_user_var
+    password = var.postgres_photoai_password_var
+  })
+}
+
+# -----------------------------------------------------------------------------
+# Immich Secrets
+# -----------------------------------------------------------------------------
+
+variable "immich_secret_key_var" {
+  description = "Random secret key for Immich session tokens."
+  type        = string
+  sensitive   = true
+}
+
+variable "postgres_immich_user_var" {
+  description = "Postgres username for the immich database."
+  type        = string
+  sensitive   = true
+}
+
+variable "postgres_immich_password_var" {
+  description = "Postgres password for the immich database."
+  type        = string
+  sensitive   = true
+}
+
+resource "vault_kv_secret_v2" "immich_secret_key_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "immich/secret-key"
+  data_json = jsonencode({
+    value = var.immich_secret_key_var
+  })
+}
+
+resource "vault_kv_secret_v2" "postgres_immich_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "postgres/immich"
+  data_json = jsonencode({
+    username = var.postgres_immich_user_var
+    password = var.postgres_immich_password_var
+  })
+}
+
+# -----------------------------------------------------------------------------
 # ArgoCD Secrets
 # -----------------------------------------------------------------------------
 resource "vault_kv_secret_v2" "argocd_oidc_secret" {
