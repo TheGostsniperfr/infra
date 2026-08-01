@@ -18,6 +18,8 @@ spec:
         - name: postgres
           image: pgvector/pgvector:pg17
           env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
             - name: POSTGRES_DB
               value: immich
             - name: POSTGRES_USER
