@@ -1,5 +1,4 @@
-# SMB mount of the Nextcloud photos directory — read-only for Immich external library.
-# Same NAS server as Nextcloud (192.168.1.49) but scoped to /nextcloud/photos only.
+# SMB mounts of Nextcloud directories — read-only for Immich external libraries.
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -43,3 +42,91 @@ spec:
       storage: 200Gi
   storageClassName: smb-nas
   volumeName: pv-nas-photos-immich
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-nas-phone-photos-immich
+spec:
+  capacity:
+    storage: 50Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: smb-nas
+  mountOptions:
+    - "uid=1000"
+    - "gid=1000"
+    - "vers=3.0"
+    - "dir_mode=0755"
+    - "file_mode=0644"
+    - "cache=strict"
+    - "noserverino"
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: true
+    volumeHandle: pv-nas-phone-photos-immich-handle
+    volumeAttributes:
+      source: "//192.168.1.49/raid5_proxmox/nextcloud/Tél/Caméra"
+    nodeStageSecretRef:
+      name: smb-nas-credentials
+      namespace: default
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: immich-phone-photos-pvc
+  namespace: immich
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: smb-nas
+  volumeName: pv-nas-phone-photos-immich
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-nas-phone-videos-immich
+spec:
+  capacity:
+    storage: 50Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: smb-nas
+  mountOptions:
+    - "uid=1000"
+    - "gid=1000"
+    - "vers=3.0"
+    - "dir_mode=0755"
+    - "file_mode=0644"
+    - "cache=strict"
+    - "noserverino"
+  csi:
+    driver: smb.csi.k8s.io
+    readOnly: true
+    volumeHandle: pv-nas-phone-videos-immich-handle
+    volumeAttributes:
+      source: "//192.168.1.49/raid5_proxmox/nextcloud/Tél/Caméra 2"
+    nodeStageSecretRef:
+      name: smb-nas-credentials
+      namespace: default
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: immich-phone-videos-pvc
+  namespace: immich
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: smb-nas
+  volumeName: pv-nas-phone-videos-immich
