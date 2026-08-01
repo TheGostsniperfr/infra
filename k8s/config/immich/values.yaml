@@ -54,7 +54,7 @@ server:
               memory: "512Mi"
               cpu: "250m"
             limits:
-              memory: "2Gi"
+              memory: "4Gi"
   ingress:
     main:
       enabled: false
