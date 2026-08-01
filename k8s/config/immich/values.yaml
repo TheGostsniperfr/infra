@@ -2,9 +2,6 @@
 # Chart: https://immich-app.github.io/immich-charts
 # Values reference: https://github.com/immich-app/immich-charts/blob/main/charts/immich/values.yaml
 
-image:
-  tag: "v1.131.0"
-
 immich:
   metrics:
     enabled: false
@@ -12,99 +9,79 @@ immich:
     library:
       existingClaim: "immich-library-pvc"
 
-postgresql:
-  enabled: false  # use dedicated immich-postgres StatefulSet in this namespace
+# Shared config applied to all Immich components (server + formerly microservices)
+controllers:
+  main:
+    containers:
+      main:
+        image:
+          tag: "v3.1.0"
+        env:
+          IMMICH_SECRET_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: immich-secret-key
+                key: value
+          REDIS_HOSTNAME: "immich-redis.immich.svc.cluster.local"
+          DB_HOSTNAME: "immich-postgres.immich.svc.cluster.local"
+          DB_PORT: "5432"
+          DB_DATABASE_NAME: "immich"
+          DB_USERNAME:
+            valueFrom:
+              secretKeyRef:
+                name: immich-db-secret
+                key: username
+          DB_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: immich-db-secret
+                key: password
+          DB_VECTOR_EXTENSION: pgvector
 
-redis:
-  enabled: false  # use standalone redis:7-alpine deployment (bitnami image has pull issues)
+valkey:
+  enabled: false  # use standalone redis:7-alpine deployment
 
 server:
   enabled: true
-  image:
-    pullPolicy: Always
+  controllers:
+    main:
+      containers:
+        main:
+          image:
+            pullPolicy: Always
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
   ingress:
     main:
       enabled: false
-  resources:
-    requests:
-      memory: "512Mi"
-      cpu: "250m"
-    limits:
-      memory: "2Gi"
-  env:
-    IMMICH_LOG_LEVEL: log
-    IMMICH_SECRET_KEY:
-      valueFrom:
-        secretKeyRef:
-          name: immich-secret-key
-          key: value
-    REDIS_HOSTNAME: "immich-redis.immich.svc.cluster.local"
-    DB_HOSTNAME: "immich-postgres.immich.svc.cluster.local"
-    DB_PORT: "5432"
-    DB_DATABASE_NAME: "immich"
-    DB_USERNAME:
-      valueFrom:
-        secretKeyRef:
-          name: immich-db-secret
-          key: username
-    DB_PASSWORD:
-      valueFrom:
-        secretKeyRef:
-          name: immich-db-secret
-          key: password
-    DB_VECTOR_EXTENSION: pgvector
-  extraVolumes:
-    - name: photos-library
-      persistentVolumeClaim:
-        claimName: immich-photos-pvc
-  extraVolumeMounts:
-    - name: photos-library
-      mountPath: /mnt/photos
-      readOnly: true
-
-microservices:
-  enabled: true
-  env:
-    REDIS_HOSTNAME: "immich-redis.immich.svc.cluster.local"
-    DB_HOSTNAME: "immich-postgres.immich.svc.cluster.local"
-    DB_PORT: "5432"
-    DB_DATABASE_NAME: "immich"
-    DB_USERNAME:
-      valueFrom:
-        secretKeyRef:
-          name: immich-db-secret
-          key: username
-    DB_PASSWORD:
-      valueFrom:
-        secretKeyRef:
-          name: immich-db-secret
-          key: password
-    DB_VECTOR_EXTENSION: pgvector
-  resources:
-    requests:
-      memory: "512Mi"
-      cpu: "250m"
-    limits:
-      memory: "2Gi"
-  extraVolumes:
-    - name: photos-library
-      persistentVolumeClaim:
-        claimName: immich-photos-pvc
-  extraVolumeMounts:
-    - name: photos-library
-      mountPath: /mnt/photos
-      readOnly: true
+  persistence:
+    photos:
+      enabled: true
+      type: persistentVolumeClaim
+      existingClaim: immich-photos-pvc
+      globalMounts:
+        - path: /mnt/photos
+          readOnly: true
 
 machine-learning:
   enabled: true
-  resources:
-    requests:
-      memory: "1Gi"
-      cpu: "500m"
-    limits:
-      memory: "4Gi"
+  controllers:
+    main:
+      containers:
+        main:
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
   persistence:
     cache:
       enabled: true
+      type: persistentVolumeClaim
       size: 10Gi
       storageClass: longhorn
