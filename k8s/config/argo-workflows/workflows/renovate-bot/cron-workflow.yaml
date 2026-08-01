@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: renovate-bot
+  namespace: argo-workflows
+spec:
+  schedules:
+   - "0 8 ? * MON"
+  concurrencyPolicy: "Replace"
+  timezone: "Europe/Paris"
+  workflowSpec:
+    entrypoint: run-renovate
+    serviceAccountName: argo-workflows-executor
+    templates:
+    - name: run-renovate
+      container:
+        image: renovate/renovate:42.25
+        command: ["renovate"]
+        envFrom:
+        - secretRef:
+            name: renovate-credentials-secret
+        - configMapRef:
+            name: renovate-bot-configmap
+        volumeMounts:
+        - name: renovate-config
+          mountPath: /usr/src/app/config.js
+          subPath: config.js
+      volumes:
+      - name: renovate-config
+        configMap:
+          name: renovate-bot-json-config

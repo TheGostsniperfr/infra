@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: build-all-images
+  namespace: argo-workflows
+spec:
+  entrypoint: main
+  templates:
+    - name: main
+      steps:
+        - - name: build-all
+            templateRef:
+              name: buildkit-template
+              template: pipeline
+            arguments:
+              parameters:
+                - name: repo-url
+                  value: "https://github.com/TheGostsniperfr/infra"
+                - name: git-revision
+                  value: "master"
+                - name: context-path
+                  value: "{{item.path}}"
+                - name: image-name
+                  value: "{{item.image}}"
+                - name: image-tag
+                  value: "0.1.0" # TODO check how to get the triggered tag (from the hook)
+            withItems:
+              - { path: "backend/", image: "" } # TODO set the image name
+              - { path: "frontend/", image: "" } # TODO set the image name
