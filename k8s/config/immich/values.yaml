@@ -47,6 +47,7 @@ server:
         secretKeyRef:
           name: immich-db-secret
           key: password
+    DB_VECTOR_EXTENSION: pgvector
   extraVolumes:
     - name: photos-library
       persistentVolumeClaim:
@@ -73,6 +74,7 @@ microservices:
         secretKeyRef:
           name: immich-db-secret
           key: password
+    DB_VECTOR_EXTENSION: pgvector
   resources:
     requests:
       memory: "512Mi"
