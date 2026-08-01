@@ -8,6 +8,7 @@ resources:
   - secret.yaml
   - nas-pv.yaml
   - immich-library-pvc.yaml
+  - redis.yaml
 
 helmGlobals:
   chartHome: ../../../charts

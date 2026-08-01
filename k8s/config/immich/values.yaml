@@ -16,7 +16,7 @@ postgresql:
   enabled: false  # use external postgres-operator cluster
 
 redis:
-  enabled: true   # Immich's bundled Redis
+  enabled: false  # use standalone redis:7-alpine deployment (bitnami image has pull issues)
 
 externalDatabase:
   enabled: true
@@ -42,6 +42,7 @@ server:
       memory: "2Gi"
   env:
     IMMICH_LOG_LEVEL: log
+    REDIS_HOSTNAME: "immich-redis.immich.svc.cluster.local"
   extraVolumes:
     - name: photos-library
       persistentVolumeClaim:
@@ -53,6 +54,8 @@ server:
 
 microservices:
   enabled: true
+  env:
+    REDIS_HOSTNAME: "immich-redis.immich.svc.cluster.local"
   resources:
     requests:
       memory: "512Mi"
