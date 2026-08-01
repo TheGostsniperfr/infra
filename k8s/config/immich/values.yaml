@@ -83,5 +83,8 @@ machine-learning:
     cache:
       enabled: true
       type: persistentVolumeClaim
+      accessMode: ReadWriteOnce
       size: 10Gi
       storageClass: longhorn
+      globalMounts:
+        - path: /cache
