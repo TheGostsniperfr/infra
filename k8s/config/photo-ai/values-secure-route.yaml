@@ -1,0 +1,12 @@
+routes:
+  qdrant:
+    hostnames:
+      - "qdrant.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: qdrant
+            port: 6333
+    auth:
+      enabled: true
+    ipFilter:
+      enabled: false

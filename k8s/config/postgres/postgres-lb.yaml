@@ -1,0 +1,17 @@
+# LoadBalancer service so the workstation runner can reach PostgreSQL on a LAN IP.
+# MetalLB assigns an IP from the pool (192.168.1.82-123 range).
+# After applying: kubectl get svc postgres-lb -n postgres → copy EXTERNAL-IP to .env
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-lb
+  namespace: postgres
+spec:
+  type: LoadBalancer
+  selector:
+    app: postgres-cluster
+    spilo-role: master
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: 5432

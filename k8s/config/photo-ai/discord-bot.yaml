@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: photo-ai-bot
+  namespace: photo-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: photo-ai-bot
+  template:
+    metadata:
+      labels:
+        app: photo-ai-bot
+    spec:
+      containers:
+        - name: bot
+          image: ghcr.io/thegostsniperfr/photo-ai/bot:main
+          imagePullPolicy: Always
+          env:
+            - name: BOT_DISCORD_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: photo-ai-discord-secret
+                  key: token
+            - name: BOT_RUNNER_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: photo-ai-runner-secret
+                  key: auth_token
+            - name: BOT_DISCORD_GUILD_ID
+              valueFrom:
+                secretKeyRef:
+                  name: photo-ai-discord-secret
+                  key: guild_id
+            - name: BOT_RUNNER_URL
+              value: "http://photo-ai-runner.photo-ai.svc.cluster.local:8765"
+            - name: BOT_OLLAMA_URL
+              value: "http://ollama-external-service.ollama.svc.cluster.local:11434"
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "10m"
+            limits:
+              memory: "128Mi"

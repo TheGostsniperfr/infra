@@ -14,6 +14,8 @@ spec:
     vaultwarden: vaultwarden
     n8n: n8n
     coder: coder
+    photoai: photoai
+    immich: immich
   enableConnectionPooler: true
   enableReplicaConnectionPooler: true
   enableReplicaLoadBalancer: false
@@ -21,6 +23,8 @@ spec:
   patroni:
     pg_hba:
       - hostnossl nextcloud nextcloud 0.0.0.0/0 md5
+      - hostnossl photoai photoai 192.168.1.0/24 md5
+      - hostnossl immich immich 0.0.0.0/0 md5
       - hostssl all all 0.0.0.0/0 md5
   postgresql:
     version: "17"
@@ -41,6 +45,8 @@ spec:
     vaultwarden: []
     n8n: []
     coder: []
+    photoai: []
+    immich: []
   volume:
     size: 10Gi
     storageClass: longhorn

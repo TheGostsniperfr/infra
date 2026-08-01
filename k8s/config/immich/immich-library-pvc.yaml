@@ -1,0 +1,13 @@
+# Longhorn PVC for Immich's own generated assets (thumbnails, encoded videos, etc.)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: immich-library-pvc
+  namespace: immich
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: longhorn

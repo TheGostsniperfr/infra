@@ -1,0 +1,26 @@
+# ExternalService pointing to the photo-ai runner on the workstation VM.
+# Same pattern as the existing ollama ExternalService.
+# The runner (Docker container) listens on 192.168.1.20:8765.
+apiVersion: v1
+kind: Service
+metadata:
+  name: photo-ai-runner
+  namespace: photo-ai
+spec:
+  ports:
+    - protocol: TCP
+      port: 8765
+      targetPort: 8765
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: photo-ai-runner
+  namespace: photo-ai
+subsets:
+  - addresses:
+      - ip: "192.168.1.20"
+    ports:
+      - name: http
+        port: 8765
+        protocol: TCP

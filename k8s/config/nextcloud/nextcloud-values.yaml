@@ -58,7 +58,7 @@ extraEnv:
     value: "nextcloud.arffornia.com"
 
   - name: NEXTCLOUD_INSTALL_APPS
-    value: "files_external" # comma separated
+    value: "files_external,recognize"
   - name: PHP_MEMORY_LIMIT
     value: "2048M"
   - name: PHP_FPM_PM
@@ -71,6 +71,12 @@ extraEnv:
     value: "1"
   - name: PHP_FPM_PM_MAX_SPARE_SERVERS
     value: "3"
+
+lifecycle:
+  postStartCommand:
+    - /bin/sh
+    - -c
+    - sleep 60 && php /var/www/html/occ app:enable recognize 2>/dev/null || true
 
 phpClientHttpsFix:
   enabled: true

@@ -1,0 +1,12 @@
+routes:
+  immich:
+    hostnames:
+      - "immich.arffornia.com"
+    rules:
+      - backendRefs:
+          - name: immich-server
+            port: 2283
+    auth:
+      enabled: false  # Immich has its own auth
+    ipFilter:
+      enabled: false

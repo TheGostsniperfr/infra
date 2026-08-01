@@ -1,0 +1,83 @@
+# Immich helm chart values
+# Chart: https://immich-app.github.io/immich-charts
+# Values reference: https://github.com/immich-app/immich-charts/blob/main/charts/immich/values.yaml
+
+image:
+  tag: "v1.131.0"
+
+immich:
+  metrics:
+    enabled: false
+  persistence:
+    library:
+      existingClaim: "immich-library-pvc"
+
+postgresql:
+  enabled: false  # use external postgres-operator cluster
+
+redis:
+  enabled: true   # Immich's bundled Redis
+
+externalDatabase:
+  enabled: true
+  host: "postgres-cluster.postgres.svc.cluster.local"
+  port: 5432
+  database: "immich"
+  existingSecret: "immich-db-secret"
+  existingSecretUsernameKey: "username"
+  existingSecretPasswordKey: "password"
+
+server:
+  enabled: true
+  image:
+    pullPolicy: Always
+  ingress:
+    main:
+      enabled: false
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+  env:
+    IMMICH_LOG_LEVEL: log
+  extraVolumes:
+    - name: photos-library
+      persistentVolumeClaim:
+        claimName: immich-photos-pvc
+  extraVolumeMounts:
+    - name: photos-library
+      mountPath: /mnt/photos
+      readOnly: true
+
+microservices:
+  enabled: true
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+  extraVolumes:
+    - name: photos-library
+      persistentVolumeClaim:
+        claimName: immich-photos-pvc
+  extraVolumeMounts:
+    - name: photos-library
+      mountPath: /mnt/photos
+      readOnly: true
+
+machine-learning:
+  enabled: true
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "4Gi"
+  persistence:
+    cache:
+      enabled: true
+      size: 10Gi
+      storageClass: longhorn

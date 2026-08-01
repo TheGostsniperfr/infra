@@ -9,3 +9,4 @@ resources:
   - postgres-cluster.yaml
   - postgres-pvc.yaml
   - s3-secret.yaml
+  - postgres-lb.yaml

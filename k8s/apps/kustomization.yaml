@@ -43,6 +43,8 @@ resources:
   - ollama.yaml
   - plex.yaml
   - coder.yaml
+  - photo-ai.yaml
+  - immich.yaml
 
   # Arffornia Apps
   - arffornia/
