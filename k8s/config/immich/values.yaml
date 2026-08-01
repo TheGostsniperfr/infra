@@ -13,7 +13,7 @@ immich:
       existingClaim: "immich-library-pvc"
 
 postgresql:
-  enabled: false  # use external postgres-operator cluster
+  enabled: false  # use dedicated immich-postgres StatefulSet in this namespace
 
 redis:
   enabled: false  # use standalone redis:7-alpine deployment (bitnami image has pull issues)
@@ -34,7 +34,7 @@ server:
   env:
     IMMICH_LOG_LEVEL: log
     REDIS_HOSTNAME: "immich-redis.immich.svc.cluster.local"
-    DB_HOSTNAME: "postgres-cluster.postgres.svc.cluster.local"
+    DB_HOSTNAME: "immich-postgres.immich.svc.cluster.local"
     DB_PORT: "5432"
     DB_DATABASE_NAME: "immich"
     DB_USERNAME:
@@ -61,7 +61,7 @@ microservices:
   enabled: true
   env:
     REDIS_HOSTNAME: "immich-redis.immich.svc.cluster.local"
-    DB_HOSTNAME: "postgres-cluster.postgres.svc.cluster.local"
+    DB_HOSTNAME: "immich-postgres.immich.svc.cluster.local"
     DB_PORT: "5432"
     DB_DATABASE_NAME: "immich"
     DB_USERNAME:

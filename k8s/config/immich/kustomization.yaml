@@ -9,6 +9,7 @@ resources:
   - nas-pv.yaml
   - immich-library-pvc.yaml
   - redis.yaml
+  - postgres.yaml
 
 helmGlobals:
   chartHome: ../../../charts
