@@ -1,6 +1,5 @@
 # ExternalService pointing to the photo-ai runner on the workstation VM.
-# Same pattern as the existing ollama ExternalService.
-# The runner (Docker container) listens on 192.168.1.20:8765.
+# Uses EndpointSlice (not Endpoints) — ArgoCD excludes raw Endpoints by default.
 apiVersion: v1
 kind: Service
 metadata:
@@ -8,19 +7,25 @@ metadata:
   namespace: photo-ai
 spec:
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 8765
       targetPort: 8765
 ---
-apiVersion: v1
-kind: Endpoints
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
 metadata:
   name: photo-ai-runner
   namespace: photo-ai
-subsets:
+  labels:
+    kubernetes.io/service-name: photo-ai-runner
+addressType: IPv4
+endpoints:
   - addresses:
-      - ip: "192.168.1.20"
-    ports:
-      - name: http
-        port: 8765
-        protocol: TCP
+      - "192.168.1.20"
+    conditions:
+      ready: true
+ports:
+  - name: http
+    port: 8765
+    protocol: TCP
