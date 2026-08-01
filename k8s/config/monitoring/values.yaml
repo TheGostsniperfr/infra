@@ -130,8 +130,11 @@ additionalPrometheusRulesMap:
         rules:
           # Alert: High Ping / Latency (Node Level)
           - alert: HighNetworkLatency
-            expr: rate(node_network_receive_drop_total{device!~"veth.*|weave|vxlan.*|datapath|lo"}[5m])
-              > 0
+            expr: >
+              rate(node_network_receive_drop_total{device!~"veth.*|weave|vxlan.*|datapath|lo"}[5m])
+              /
+              rate(node_network_receive_packets_total{device!~"veth.*|weave|vxlan.*|datapath|lo"}[5m])
+              > 0.005
             for: 5m
             labels:
               severity: warning
