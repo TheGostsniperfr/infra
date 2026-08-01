@@ -1,4 +1,4 @@
-# Daily batch trigger: checks if workstation Ollama is alive, then triggers scan-new.
+# Daily batch trigger: checks if photo-ai runner is alive, then triggers scan-new.
 # Runs at 03:00 every day. If runner is unreachable the job simply exits — no retries.
 apiVersion: batch/v1
 kind: CronJob
@@ -29,15 +29,15 @@ spec:
                 - -c
                 - |
                   set -e
-                  echo "Checking Ollama availability..."
+                  echo "Checking runner availability..."
                   if ! curl -sf --max-time 5 \
-                    http://ollama-external-service.ollama.svc.cluster.local:11434/api/tags \
+                    http://photo-ai-runner.photo-ai.svc.cluster.local:8765/healthz \
                     > /dev/null; then
-                    echo "Ollama unreachable — workstation offline, skipping scan."
+                    echo "Runner unreachable — workstation offline or runner not started, skipping scan."
                     exit 0
                   fi
 
-                  echo "Ollama reachable. Triggering photo-ai scan-new..."
+                  echo "Runner reachable. Triggering photo-ai scan-new..."
                   curl -sf --max-time 10 \
                     -X POST \
                     -H "Authorization: Bearer ${RUNNER_AUTH_TOKEN}" \

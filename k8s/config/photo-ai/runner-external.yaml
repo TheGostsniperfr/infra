@@ -1,5 +1,3 @@
-# ExternalService pointing to the photo-ai runner on the workstation VM.
-# Uses EndpointSlice (not Endpoints) — ArgoCD excludes raw Endpoints by default.
 apiVersion: v1
 kind: Service
 metadata:
@@ -12,20 +10,15 @@ spec:
       port: 8765
       targetPort: 8765
 ---
-apiVersion: discovery.k8s.io/v1
-kind: EndpointSlice
+apiVersion: v1
+kind: Endpoints
 metadata:
   name: photo-ai-runner
   namespace: photo-ai
-  labels:
-    kubernetes.io/service-name: photo-ai-runner
-addressType: IPv4
-endpoints:
+subsets:
   - addresses:
-      - "192.168.1.20"
-    conditions:
-      ready: true
-ports:
-  - name: http
-    port: 8765
-    protocol: TCP
+      - ip: "192.168.1.20"
+    ports:
+      - name: http
+        port: 8765
+        protocol: TCP

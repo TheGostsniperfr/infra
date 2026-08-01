@@ -18,6 +18,16 @@ data:
   resource.compareoptions: |
     ignoreAggregatedRoles: true
 
+  # Override ArgoCD v3 defaults: allow managing manually-created Endpoints (ExternalService pattern).
+  # EndpointSlice stays excluded — k8s auto-generates those from Services and ArgoCD shouldn't touch them.
+  resource.exclusions: |
+    - apiGroups:
+      - discovery.k8s.io
+      kinds:
+      - EndpointSlice
+      clusters:
+      - "*"
+
   admin.enabled: "false"
   url: "https://argocd.arffornia.com"
   timeout.reconciliation: "30s"

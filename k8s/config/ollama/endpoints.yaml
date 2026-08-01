@@ -1,17 +1,12 @@
-apiVersion: discovery.k8s.io/v1
-kind: EndpointSlice
+apiVersion: v1
+kind: Endpoints
 metadata:
   name: ollama-external-service
   namespace: ollama
-  labels:
-    kubernetes.io/service-name: ollama-external-service
-addressType: IPv4
-endpoints:
+subsets:
   - addresses:
-      - "192.168.1.20"
-    conditions:
-      ready: true
-ports:
-  - name: http
-    port: 11434
-    protocol: TCP
+      - ip: "192.168.1.20"
+    ports:
+      - name: http
+        port: 11434
+        protocol: TCP
