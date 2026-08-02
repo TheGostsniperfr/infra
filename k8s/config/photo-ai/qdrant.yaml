@@ -69,17 +69,18 @@ spec:
       port: 6334
       targetPort: 6334
 ---
-# External access for workstation runner (MetalLB assigns LAN IP)
+# External access for workstation runner via NodePort (LB VIP blocked by node firewall)
 apiVersion: v1
 kind: Service
 metadata:
   name: qdrant-lb
   namespace: photo-ai
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: qdrant
   ports:
     - name: http
       port: 6333
       targetPort: 6333
+      nodePort: 30633
