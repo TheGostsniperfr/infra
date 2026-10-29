@@ -32,9 +32,9 @@ jobs:
     name: validate (${{ matrix.scope }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # The repo-wide scope reports only, until the pre-existing failures outside
-    # Arffornia are fixed. The Arffornia scope blocks the PR.
-    continue-on-error: ${{ matrix.scope == 'repo' }}
+    # The repo-wide scope reports only (warnings, green check) until the
+    # pre-existing failures outside Arffornia are fixed (#53). The Arffornia
+    # scope blocks the PR.
     strategy:
       fail-fast: false
       matrix:
@@ -74,6 +74,8 @@ jobs:
       - name: Render and validate kustomizations
         env:
           ROOTS: ${{ matrix.roots }}
+          # "error" fails the job, "warning" only annotates it.
+          LEVEL: ${{ matrix.scope == 'repo' && 'warning' || 'error' }}
         run: |
           set -uo pipefail
           out="$RUNNER_TEMP/rendered"
@@ -85,7 +87,7 @@ jobs:
             file="$out/$(echo "$dir" | tr '/' '_').yaml"
             echo "::group::$dir"
             if ! kustomize build --enable-helm --load-restrictor=LoadRestrictionsNone "$dir" > "$file"; then
-              echo "::error title=kustomize build failed::$dir"
+              echo "::${LEVEL} title=kustomize build failed::$dir"
               failed=1
               echo "::endgroup::"
               continue
@@ -95,9 +97,13 @@ jobs:
                 -schema-location default \
                 -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
                 "$file"; then
-              echo "::error title=kubeconform failed::$dir"
+              echo "::${LEVEL} title=kubeconform failed::$dir"
               failed=1
             fi
             echo "::endgroup::"
           done
+          if [ "$failed" = 1 ] && [ "$LEVEL" = warning ]; then
+            echo "Report-only scope: failures above are warnings (see #53)."
+            exit 0
+          fi
           exit "$failed"
