@@ -1,0 +1,81 @@
+# Default-deny NetworkPolicies for this namespace, plus the flows it needs.
+# Enforced by Cilium. Pods in this namespace only get the traffic listed here.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# From the Envoy Gateway data plane (shared-gateway). Envoy proxy pods run in
+# the controller namespace by default; gateway-infra is listed too in case the
+# deployment mode changes.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-gateway-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app: bluemap-web
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gateway-infra
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+# nginx proxies /maps/*/live/ to the Arcane BlueMap live webserver.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-bluemap-live-egress
+spec:
+  podSelector:
+    matchLabels:
+      app: bluemap-web
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: arffornia-server-arcane
+          podSelector:
+            matchLabels:
+              app: arffornia-server-arcane-minecraft
+      ports:
+        - protocol: TCP
+          port: 8100
