@@ -10,6 +10,7 @@ resources:
   - servicemonitor.yaml
   - addition-config.yaml
   - offhours-guard.yaml
+  - networkpolicy.yaml
 
 helmCharts:
   - name: minecraft

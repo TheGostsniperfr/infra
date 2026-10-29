@@ -8,6 +8,7 @@ resources:
   - secret.yaml
   - config.yaml
   - offhours-guard.yaml
+  - networkpolicy.yaml
 
 helmCharts:
   - name: minecraft-proxy

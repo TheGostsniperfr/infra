@@ -1,0 +1,155 @@
+# Default-deny NetworkPolicies for this namespace, plus the flows it needs.
+# Enforced by Cilium. Pods in this namespace only get the traffic listed here.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-server-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app: arffornia-server-arcane-minecraft
+  policyTypes:
+    - Ingress
+  ingress:
+    # Velocity proxy -> Minecraft
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: arffornia-proxy-velocity
+          podSelector:
+            matchLabels:
+              app: arffornia-proxy-velocity-minecraft-proxy
+      ports:
+        - protocol: TCP
+          port: 25565
+    # bluemap-web nginx -> BlueMap live webserver
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: arffornia-bluemap-web
+          podSelector:
+            matchLabels:
+              app: bluemap-web
+      ports:
+        - protocol: TCP
+          port: 8100
+    # Prometheus -> metrics exporter
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 19565
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-postgres-egress
+spec:
+  podSelector:
+    matchLabels:
+      app: arffornia-server-arcane-minecraft
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+---
+# Public internet over HTTP(S) only, no private ranges (cluster, LAN, NAS).
+# Used by the config-updater init container (GitHub, CurseForge, Modrinth),
+# the image's own downloads, and calls to https://arffornia.com/api.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-internet-egress
+spec:
+  podSelector:
+    matchLabels:
+      app: arffornia-server-arcane-minecraft
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+              - 100.64.0.0/10
+              - 169.254.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 80
+---
+# Calls to https://arffornia.com/api (Arffornia mod / proxy plugin). Covers the
+# case where arffornia.com resolves to the shared-gateway LoadBalancer IP
+# (192.168.1.84), which the internet rule above excludes: Cilium then sees the
+# Envoy pods as the destination.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-website-api-egress
+spec:
+  podSelector:
+    matchLabels:
+      app: arffornia-server-arcane-minecraft
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gateway-infra
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 10443
+        - protocol: TCP
+          port: 10080
