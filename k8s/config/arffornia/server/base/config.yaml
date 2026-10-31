@@ -18,6 +18,10 @@ data:
   NM_REPLACE_ENV_VARIABLES: "true"
   NM_REPLACE_ENV_VARIABLE_PREFIX: "NM_"
 
+  # Website API, reached inside the cluster (no hairpin through the router or Cloudflare).
+  # Used by the provisioned configs as ${CFG_API_BASE_URL}.
+  CFG_API_BASE_URL: "http://arffornia-website-chart.arffornia-website.svc.cluster.local/api"
+
   # Arffornia mod: one-shot recipe migration, only enable on purpose (see Arffornia_Provisioning #23)
   CFG_MIGRATE_ON_STARTUP: "false"
 

@@ -294,6 +294,11 @@ extraEnv:
       configMapKeyRef:
         name: arffornia-proxy-config
         key: REPLACE_ENV_SUFFIXES
+  CFG_API_BASE_URL:
+    valueFrom:
+      configMapKeyRef:
+        name: arffornia-proxy-config
+        key: CFG_API_BASE_URL
 
   CFG_LUCKPERMS_USER:
     valueFrom:
