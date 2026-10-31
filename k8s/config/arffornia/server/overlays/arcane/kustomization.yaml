@@ -9,6 +9,7 @@ resources:
   - pvc.yaml
   - servicemonitor.yaml
   - addition-config.yaml
+  - backup-scripts.yaml
   - offhours-guard.yaml
 
 helmCharts:
