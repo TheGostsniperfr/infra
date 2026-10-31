@@ -1,5 +1,5 @@
 minecraftServer:
-  motd: "Welcome to Minecraft on Kubernetes Nexus!"
+  motd: "Arffornia backend: nexus" # not shown to players, see base/values.yaml
 
 extraVolumes:
   - volumeMounts:

@@ -1,5 +1,5 @@
 minecraftServer:
-  motd: "Welcome to Minecraft on Kubernetes Arcane!"
+  motd: "Arffornia backend: arcane" # not shown to players, see base/values.yaml
 
 mcbackup:
   enabled: true

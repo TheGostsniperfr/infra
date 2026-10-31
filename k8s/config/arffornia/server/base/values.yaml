@@ -252,8 +252,10 @@ minecraftServer:
   levelSeed:
   # One of: creative, survival, adventure, spectator
   gameMode: survival
-  # Message of the Day
-  motd: "Welcome to Minecraft on Kubernetes base!"
+  # Backend MOTD: never shown to players, who only reach this server through the proxy.
+  # The server-list MOTD lives only in Arffornia_Provisioning
+  # config/proxy/storage/plugins/arffornia_proxy/motd.yml.
+  motd: "Arffornia backend"
   # If true, enable player-vs-player damage.
   pvp: default
   # One of: DEFAULT, FLAT, LARGEBIOMES, AMPLIFIED, CUSTOMIZED
