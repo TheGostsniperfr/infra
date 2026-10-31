@@ -14,6 +14,10 @@ data:
   NM_REPLACE_ENV_VARIABLES: "true"
   NM_REPLACE_ENV_VARIABLE_PREFIX: "NM_"
 
+  # Website API, reached inside the cluster (no hairpin through the router or Cloudflare).
+  # Used by the provisioned configs as ${CFG_API_BASE_URL}.
+  CFG_API_BASE_URL: "http://arffornia-website-chart.arffornia-website.svc.cluster.local/api"
+
   NEOFORGE_VERSION: "21.1.172"
   CREATE_CONSOLE_IN_PIPE: "true"
   ALLOW_FLIGHT: "true"
