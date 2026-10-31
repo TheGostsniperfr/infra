@@ -26,7 +26,6 @@ resources:
   - longhorn.yaml
   - csi-driver-smb.yaml
   - garage-s3.yaml
-  - minio-s3.yaml
 
   # Database
   - postgres-operator.yaml
