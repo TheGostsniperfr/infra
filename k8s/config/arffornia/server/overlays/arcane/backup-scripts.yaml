@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: arffornia-backup-scripts
+data:
+  # Run by the mc-backup sidecar after every backup (POST_BACKUP_SCRIPT_FILE).
+  # Arguments from mc-backup: $1 = backup exit status, $2 = path of the backup log.
+  # Settings (env of the mc-backup container, see patch-values.yaml):
+  #   MONTHLY_KEEP   number of monthly copies to keep, 0 = keep them forever (default 0)
+  #   VERIFY_BACKUP  read the new archive back and check it before trusting it (default true)
+  # This script must never exit non-zero: mc-backup runs with `set -e`, so a failure here
+  # would restart the sidecar and trigger a new backup.
+  post-backup.sh: |
+    #!/bin/bash
+    set -u
+
+    status="${1:-1}"
+    dest="${DEST_DIR:-/backups}"
+    monthly_dir="${dest}/monthly"
+    keep_monthly="${MONTHLY_KEEP:-0}"
+    verify="${VERIFY_BACKUP:-true}"
+
+    log() { echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) post-backup: $*"; }
+
+    # tar exit 1 means "a file changed while it was read": the archive is still valid.
+    # On any other failure the newest archive may be partial: the check below catches it.
+    if [ "$status" != "0" ] && [ "$status" != "1" ]; then
+      log "ERROR backup exit status ${status}"
+    fi
+
+    latest="$(ls -1t "${dest}"/*.tar.gz 2>/dev/null | head -n 1)"
+    if [ -z "${latest}" ]; then
+      log "ERROR no archive found in ${dest}"
+      exit 0
+    fi
+
+    # A broken archive is renamed so that it neither counts towards PRUNE_BACKUPS_COUNT
+    # nor becomes a monthly copy. It is kept on disk for inspection.
+    if [ "${verify}" = "true" ]; then
+      # Read the whole archive (gzip CRC + tar structure), then look for the world's level.dat.
+      if ! listing="$(tar -tzf "${latest}" 2>/dev/null)" || ! grep -q 'level\.dat$' <<<"${listing}"; then
+        mv "${latest}" "${latest}.broken" || true
+        log "ERROR ${latest} is unreadable or has no level.dat; renamed to ${latest}.broken"
+        exit 0
+      fi
+      log "verified ${latest}"
+    fi
+
+    mkdir -p "${monthly_dir}" || { log "ERROR cannot create ${monthly_dir}"; exit 0; }
+
+    # Archive names look like world-YYYYMMDD-HHMMSS.tar.gz. Keep the first good one of each month.
+    month="$(date -u +%Y%m)"
+    if ls "${monthly_dir}"/*-"${month}"[0-9][0-9]-*.tar.gz >/dev/null 2>&1; then
+      log "monthly copy for ${month} already exists"
+    else
+      name="$(basename "${latest}")"
+      if cp "${latest}" "${monthly_dir}/.${name}.partial" && mv "${monthly_dir}/.${name}.partial" "${monthly_dir}/${name}"; then
+        log "monthly copy for ${month}: ${monthly_dir}/${name}"
+      else
+        rm -f "${monthly_dir}/.${name}.partial"
+        log "ERROR could not copy ${latest} to ${monthly_dir}"
+      fi
+    fi
+
+    # Count-based, never age-based: a long shutdown does not delete anything.
+    if [ "${keep_monthly}" -gt 0 ] 2>/dev/null; then
+      ls -1t "${monthly_dir}"/*.tar.gz 2>/dev/null | tail -n +$((keep_monthly + 1)) | while read -r old; do
+        rm -f "${old}" && log "removed old monthly copy ${old}"
+      done
+    fi
+
+    exit 0
