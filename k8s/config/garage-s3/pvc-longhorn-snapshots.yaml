@@ -1,0 +1,40 @@
+# The Garage StatefulSet creates these PVCs from its volumeClaimTemplates, and the upstream
+# chart cannot label them. Declaring them here, with the same names and spec, lets Argo CD
+# keep the Longhorn recurring-job labels in git: Longhorn copies the
+# `recurring-job-group.longhorn.io/*` labels of a PVC that has
+# `recurring-job.longhorn.io/source: enabled` onto its volume, so the nightly `garage`
+# snapshot job (k8s/config/longhorn/recurring-job-garage.yaml) follows the PVC even when it
+# is recreated. Before this, the label was set by hand on the Longhorn volumes.
+#
+# Prune=false and Delete=false: Argo CD must never delete these claims (Garage data).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: meta-garage-0
+  labels:
+    recurring-job.longhorn.io/source: enabled
+    recurring-job-group.longhorn.io/garage: enabled
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-garage-0
+  labels:
+    recurring-job.longhorn.io/source: enabled
+    recurring-job-group.longhorn.io/garage: enabled
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 20Gi
