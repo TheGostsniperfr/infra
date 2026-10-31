@@ -84,11 +84,13 @@ readinessProbe:
   failureThreshold: 20
   successThreshold: 1
   timeoutSeconds: 1
+# A 300-mod pack can take longer to boot than the liveness budget (150s + 20 x 5s).
+# The startup probe gives it up to 15 minutes; liveness only starts once it succeeds.
 startupProbe:
   command:
     - mc-health
-  enabled: false
-  failureThreshold: 30
+  enabled: true
+  failureThreshold: 90
   periodSeconds: 10
 
 initContainers:
