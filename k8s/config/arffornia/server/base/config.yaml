@@ -9,6 +9,10 @@ data:
   REPLACE_ENV_DURING_SYNC: "true"
   REPLACE_ENV_VARIABLE_PREFIX: "CFG_"
 
+  # Only walk /data/config: every CFG_ placeholder of the server pack lives there.
+  # The default (/data) walks the whole tree, including /data/bluemap-web, the BlueMap tiles
+  # on the NAS: exclude paths are filtered after the walk, so they do not avoid it.
+  REPLACE_ENV_PATHS: "/data/config"
   REPLACE_ENV_VARIABLES_EXCLUDE_PATHS: "/data/bluemap-web /data/logs /data/mods /data/defaultconfigs /data/kubejs /data/local /backups"
   
   NM_REPLACE_ENV_VARIABLES: "true"
@@ -17,6 +21,9 @@ data:
   # Website API, reached inside the cluster (no hairpin through the router or Cloudflare).
   # Used by the provisioned configs as ${CFG_API_BASE_URL}.
   CFG_API_BASE_URL: "http://arffornia-website-chart.arffornia-website.svc.cluster.local/api"
+
+  # Arffornia mod: one-shot recipe migration, only enable on purpose (see Arffornia_Provisioning #23)
+  CFG_MIGRATE_ON_STARTUP: "false"
 
   NEOFORGE_VERSION: "21.1.172"
   CREATE_CONSOLE_IN_PIPE: "true"

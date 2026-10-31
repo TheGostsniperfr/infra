@@ -1,0 +1,13 @@
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: garage-snapshot
+  namespace: longhorn-system
+spec:
+  name: garage-snapshot
+  task: snapshot
+  cron: "30 2 * * *"
+  retain: 7
+  concurrency: 1
+  groups:
+    - garage

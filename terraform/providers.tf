@@ -2,11 +2,19 @@
 
 terraform {
   backend "s3" {
-    bucket         = "arffornia-infra-terraform-state"
-    key            = "infra/terraform.tfstate"
-    region         = "eu-west-3"
-    dynamodb_table = "terraform-state-locks"
-    encrypt        = true
+    bucket = "tf-state"
+    key    = "infra/terraform.tfstate"
+    region = "garage"
+    endpoints = {
+      s3 = "https://s3.arffornia.com"
+    }
+    use_path_style              = true
+    use_lockfile                = true
+    skip_credentials_validation = true
+    skip_requesting_account_id  = true
+    skip_metadata_api_check     = true
+    skip_region_validation      = true
+    skip_s3_checksum            = true
   }
   required_providers {
     vault = {

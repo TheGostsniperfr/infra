@@ -21,6 +21,10 @@ spec:
   numberOfInstances: 3
   patroni:
     pg_hba:
+      - local all all trust
+      - host all all 127.0.0.1/32 md5
+      - local replication standby trust
+      - hostssl replication standby all md5
       - hostnossl nextcloud nextcloud 0.0.0.0/0 md5
       - hostnossl photoai photoai 192.168.1.0/24 md5
       - hostssl all all 0.0.0.0/0 md5
@@ -72,6 +76,9 @@ spec:
     - name: AWS_S3_FORCE_PATH_STYLE
       value: "true"
 
+    - name: AWS_REGION
+      value: "garage"
+
     - name: AWS_ACCESS_KEY_ID
       valueFrom:
         secretKeyRef:
@@ -95,6 +102,9 @@ spec:
 
     - name: CLONE_AWS_S3_FORCE_PATH_STYLE
       value: "true"
+
+    - name: CLONE_AWS_REGION
+      value: "garage"
 
     - name: CLONE_AWS_ACCESS_KEY_ID
       valueFrom:

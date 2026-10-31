@@ -6,6 +6,7 @@ namespace: longhorn-system
 resources:
   - namespace.yaml
   - secret.yaml
+  - recurring-job-garage.yaml
 
 helmGlobals:
   chartHome: ../../../charts
