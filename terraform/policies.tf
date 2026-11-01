@@ -87,17 +87,6 @@ resource "vault_policy" "longhorn_policy" {
 }
 
 # -----------------------------------------------------------------------------
-# Minio S3 Policy
-# -----------------------------------------------------------------------------
-
-resource "vault_policy" "minio_s3_policy" {
-  name = "minio-s3-policy"
-  policy = templatefile("${path.module}/policies/minio_s3.hcl", {
-    mount_path = vault_mount.kvv2.path
-  })
-}
-
-# -----------------------------------------------------------------------------
 # Monitoring Policy
 # -----------------------------------------------------------------------------
 
