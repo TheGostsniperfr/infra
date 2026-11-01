@@ -22,9 +22,14 @@ Keycloak and Cloudflare. Read this before changing anything here.
 ## Rules
 - **Vault secrets, policies and roles are always managed through Terraform (`terraform/`), never
   by hand.** That covers `vault kv put`, `vault policy write` and `vault write auth/...` alike. To
-  change a secret value, edit `secrets_variables.tfvars` on Brian's machine and run
-  `terraform apply`; to change access, edit `terraform/policies/*.hcl` or `roles.tf`. A change
-  made by hand is drift: the next `apply` reverts it, or the state no longer describes Vault.
+  change a secret value, edit the sops-encrypted tfvars on Brian's machine (see
+  `terraform/Readme.md`) and run `terraform apply`; to change access, edit
+  `terraform/policies/*.hcl` or `roles.tf`. A change made by hand is drift: the next `apply` reverts it, or the state no longer describes Vault.
+- **Never commit secrets.** The state backend credentials and the tfvars values are in sops on
+  Brian's workstation, see `terraform/Readme.md`. There is no `secrets_variables.tfvars` file to
+  find or recreate: it is decrypted on the fly with `sops decrypt` as documented there.
+- Never print the content of `~/.config/arffornia/tf-backend.env` or of the decrypted tfvars.
+- Do not add a classical (X25519) recipient to `arffornia-tfvars.json`. It is post-quantum only.
 - **Kubernetes secrets** come only from `VaultSecret` CRs (Vault Secrets Operator) or `${CFG_*}`
   placeholders. Never commit a literal secret or a base64 `Secret` manifest.
 - **Postgres `pg_hba`** (`k8s/config/postgres/postgres-cluster.yaml`): any `patroni.pg_hba`
@@ -40,7 +45,8 @@ Keycloak and Cloudflare. Read this before changing anything here.
 - **Pin everything**: image tags (never `:latest`), chart versions, remote bases by tag.
 - **Free only**: self-hosted or free tiers. The only exceptions are a DNS name or a few euros
   over a long period.
-- English, Conventional Commits, one concern per PR. Open infra PRs may lag behind `main`: merge
+- English, Conventional Commits, one concern per PR. Never push to `main`. PRs that were applied
+  with Terraform say "Applied on <date>" in their body. Open infra PRs may lag behind `main`: merge
   `main` into them, never force-push.
 
 ## Storage and backups (state after the 2026-10-31 recovery)
