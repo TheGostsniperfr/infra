@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: seed
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 900
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: seed
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: seed
+          image: ghcr.io/arffornia/arffornia_website:main
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: arffornia-website-config
+            - secretRef:
+                name: website-secret
+            - secretRef:
+                name: db-secret
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              until pg_isready -q -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME"; do
+                echo "waiting for postgres"; sleep 3
+              done
+              php artisan migrate --force
+              users="$(PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d "$DB_DATABASE" -tAc 'select count(*) from users')"
+              if [ "$users" = "0" ]; then
+                php artisan db:seed --class='Database\Seeders\E2ESeeder' --force
+              else
+                echo "already seeded (${users} users): nothing to do"
+              fi
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 320Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]

@@ -1,0 +1,17 @@
+# Spec 016: about 1 CPU / 2 GiB. Chart 0.1.1 gives both website containers the same limits, so
+# the CPU limit is 2 to leave room for one rolling update of the website.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: staging-quota
+spec:
+  hard:
+    requests.cpu: "1"
+    limits.cpu: "2"
+    requests.memory: 1536Mi
+    limits.memory: 2Gi
+    pods: "8"
+    services.loadbalancers: "0"
+    services.nodeports: "0"
+    persistentvolumeclaims: "1"
+    requests.storage: 2Gi

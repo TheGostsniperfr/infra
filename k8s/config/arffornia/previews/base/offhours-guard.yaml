@@ -1,0 +1,11 @@
+# Sleeps with prod (spec 016, D6). Missing targets are skipped (a free slot runs nothing).
+apiVersion: guard.3istor.com/v1alpha1
+kind: OffhoursSchedule
+metadata:
+  name: playtest-slot
+spec:
+  sleepAt: "0 3 * * *" # 03:00 Europe/Paris
+  wakeAt: "0 7 * * *" # 07:00 Europe/Paris
+  timezone: "Europe/Paris"
+  targetRefs:
+    - name: arffornia-website-chart

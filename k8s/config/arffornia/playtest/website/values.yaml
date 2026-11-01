@@ -1,0 +1,47 @@
+# Values for a Website PR's own chart (charts/arffornia-website at the PR head) in a playtest
+# slot. Works with the chart on main and with #86's (unknown keys are ignored). The image tags
+# come from the env file (pr-<n>-<sha7>), set by the ApplicationSet.
+replicaCount: 1
+
+images:
+  frontend:
+    repository: ghcr.io/arffornia/nginx_arffornia_website
+    pullPolicy: IfNotPresent
+  backend:
+    repository: ghcr.io/arffornia/arffornia_website
+    pullPolicy: IfNotPresent
+    port: 9000
+    host: "127.0.0.1"
+
+# Seed data only (the seed Job); no service account: no game server talks to a website slot.
+syncServiceAccounts:
+  enabled: false
+migrateAndSeedDB:
+  enabled: false
+migrations:
+  enabled: false
+dangerouslyResetDatabase:
+  enabled: false
+
+envFrom:
+  - secretRef:
+      name: website-secret
+  - secretRef:
+      name: db-secret
+  - configMapRef:
+      name: arffornia-website-config
+
+ingress:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 288Mi
+
+itemTextures:
+  persistence:
+    enabled: false

@@ -1,0 +1,63 @@
+# The pack slot (spec 016): test.arffornia.com:25566. Always one app, `playtest-slot`.
+# With no envs/slot.yaml in Arffornia_Playtest it runs main with the `edge` mod (the staging
+# server); `playtest up <Mods or Provisioning PR>` writes that file, and its provisioningRef and
+# modTag replace the defaults (merge generator, key `slot`). The values only reach two pod
+# annotations (k8s/config/arffornia/playtest/pack), never the manifests' structure.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: playtest-pack
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - merge:
+        mergeKeys: [slot]
+        generators:
+          - list:
+              elements:
+                - slot: slot
+                  provisioningRef: refs/heads/main
+                  modTag: edge
+                  prsText: main + edge (staging)
+                  expires: never
+          - git:
+              repoURL: https://github.com/Arffornia/Arffornia_Playtest.git
+              revision: envs
+              files:
+                - path: envs/slot.yaml
+  template:
+    metadata:
+      name: playtest-slot
+      annotations:
+        playtest.arffornia.com/prs: "{{ .prsText }}"
+        playtest.arffornia.com/expires: "{{ .expires }}"
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: playtest
+      source:
+        repoURL: https://github.com/TheGostsniperfr/infra.git
+        targetRevision: HEAD
+        path: k8s/config/arffornia/playtest/pack
+        kustomize:
+          commonAnnotations:
+            playtest.arffornia.com/provisioning-ref: "{{ .provisioningRef }}"
+            playtest.arffornia.com/mod-tag: "{{ .modTag }}"
+      destination:
+        name: in-cluster
+        namespace: arffornia-slot
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
+      # offhours-guard scales the slot down at night.
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          jsonPointers:
+            - /spec/replicas

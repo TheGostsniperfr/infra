@@ -1,0 +1,23 @@
+# https://test.arffornia.com/pack/ -> the slot's pack-files (the beta launcher's Test slot).
+routes:
+  test-slot-pack:
+    hostnames:
+      - "test.arffornia.com"
+    rules:
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /pack/
+        filters:
+          - type: URLRewrite
+            urlRewrite:
+              path:
+                type: ReplacePrefixMatch
+                replacePrefixMatch: /
+        backendRefs:
+          - name: pack-files
+            port: 80
+    auth:
+      enabled: false
+    ipFilter:
+      enabled: false
