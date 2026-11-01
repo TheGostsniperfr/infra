@@ -10,13 +10,20 @@ Terraform is used to:
 
 ## How to use Terraform
 
+### Backend credentials
+
+The state lives in Garage S3 (bucket `tf-state`) and holds every secret in clear. Its credentials are managed by sops-nix on the workstation and exposed at `~/.config/arffornia/tf-backend.env` (symlink to `/run/secrets/arffornia_tf_backend`).
+
 ```sh
+set -a; . ~/.config/arffornia/tf-backend.env; set +a
 terraform init
 ```
 
 ### Register Real Secrets
 
-You also need to create the `secrets_variables.tfvars` file. (You should take a loot at `secrets_variables.tfvars.example` 👀)
+The real values are not stored in this repository. They live encrypted in `~/.dotfiles/secrets/arffornia-tfvars.json`, for a post-quantum age key only (ML-KEM-768 + X25519, kept in `~/.config/sops/age/keys.txt`). There is no plaintext `secrets_variables.tfvars` on disk: it is decrypted on the fly (see below).
+
+To add or change a variable, edit it with `sops --input-type json ~/.dotfiles/secrets/arffornia-tfvars.json`. The file is a sops binary document, so the editor shows the whole tfvars content in its `data` field. Keep `secrets_variables.tfvars.example` in sync. Never add a classical age recipient to this file: it would defeat the post-quantum protection.
 
 ### Setup Vault connection
 
@@ -35,13 +42,13 @@ export CLOUDFLARE_API_TOKEN="token"
 ### Plan your changes
 
 ```sh
-terraform plan -var-file="secrets_variables.tfvars"
+terraform plan -var-file=<(sops decrypt --input-type json --output-type binary ~/.dotfiles/secrets/arffornia-tfvars.json)
 ```
 
 ### Apply your changes
 
 ```sh
-terraform apply -var-file="secrets_variables.tfvars"
+terraform apply -var-file=<(sops decrypt --input-type json --output-type binary ~/.dotfiles/secrets/arffornia-tfvars.json)
 ```
 
 Then type `yes` to confirm the operation.
