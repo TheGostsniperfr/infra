@@ -1,0 +1,11 @@
+# The website playtest slots' fixed parts (spec 016, phase 3): namespaces arffornia-pr1..pr3,
+# their quota (the hard cap), their secrets and night sleep. What runs inside (the PR's chart and
+# images, Postgres, the seed Job, the route) comes from the ApplicationSet `playtest-website`
+# (../playtest/website), one app per envs/pr<k>.yaml in Arffornia_Playtest.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - pr1
+  - pr2
+  - pr3

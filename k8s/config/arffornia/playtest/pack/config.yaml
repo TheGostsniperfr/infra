@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: arffornia-slot-config
+data:
+  # Same interpolation rules as prod (../../server/base/config.yaml).
+  REPLACE_ENV_VARIABLES: "true"
+  REPLACE_ENV_DURING_SYNC: "true"
+  REPLACE_ENV_VARIABLE_PREFIX: "CFG_"
+  REPLACE_ENV_PATHS: "/data/config"
+  REPLACE_ENV_VARIABLES_EXCLUDE_PATHS: "/data/logs /data/mods /data/defaultconfigs /data/kubejs /data/local"
+  NM_REPLACE_ENV_VARIABLES: "true"
+  NM_REPLACE_ENV_VARIABLE_PREFIX: "NM_"
+
+  # The staging website, inside the cluster. pack-files also rewrites the API URL in the
+  # Arffornia mod config to this value (profile.yaml).
+  CFG_API_BASE_URL: "http://arffornia-website-chart.arffornia-staging.svc.cluster.local/api"
+  CFG_MIGRATE_ON_STARTUP: "false"
+  CFG_SERVER_DISPLAY_NAME: "Test slot"
+  CFG_SERVER_ID: "slot"
+  CFG_BLUEMAP_WEBAPP_ENABLED: "false"
+  NM_SERVER_ID: "slot"
+
+  # Prod-only integrations, empty on purpose (the placeholders must still resolve).
+  CFG_FORWARDING_SECRET: ""
+  CFG_DISCORD_BOT_CHANNEL: ""
+  CFG_DISCORD_BOT_TOKEN: ""
+  CFG_LUCKPERMS_USER: ""
+  CFG_LUCKPERMS_PASS: ""
+
+  NEOFORGE_VERSION: "21.1.172"
+  CREATE_CONSOLE_IN_PIPE: "true"
+  ALLOW_FLIGHT: "true"

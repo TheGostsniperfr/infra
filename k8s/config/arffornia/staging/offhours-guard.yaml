@@ -1,0 +1,12 @@
+# Sleeps with prod (spec 016). Postgres stays up (its volume keeps the seed either way).
+apiVersion: guard.3istor.com/v1alpha1
+kind: OffhoursSchedule
+metadata:
+  name: arffornia-staging
+spec:
+  sleepAt: "0 3 * * *" # 03:00 Europe/Paris
+  wakeAt: "0 7 * * *" # 07:00 Europe/Paris
+  timezone: "Europe/Paris"
+  targetRefs:
+    - name: arffornia-website-chart
+    - name: pack-files

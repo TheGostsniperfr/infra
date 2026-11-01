@@ -1,0 +1,19 @@
+# test.arffornia.com:25566 (spec 016, D12): its own port and IP, so the prod proxy and its
+# forwarding secret never meet PR code. The router forwards TCP 25566 to this IP.
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-slot-minecraft
+  annotations:
+    # The last address of the first MetalLB pool range (the allocator fills it from the start).
+    metallb.universe.tf/loadBalancerIPs: 192.168.1.123
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Cluster
+  selector:
+    app: arffornia-slot-minecraft
+  ports:
+    - name: minecraft
+      protocol: TCP
+      port: 25566
+      targetPort: 25565

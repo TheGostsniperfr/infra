@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: arffornia-slot
+  labels:
+    # The shared gateway serves routes only from labelled namespaces.
+    prod-gateway-access: "true"
+    # Test environment: Kyverno adds a LimitRange and default-deny NetworkPolicies, pins the
+    # images, the hostnames (test.arffornia.com) and the Vault paths (staging and slot only).
+    arffornia.com/env: slot

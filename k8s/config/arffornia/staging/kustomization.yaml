@@ -1,0 +1,74 @@
+# staging.arffornia.com (spec 016, phase 2): the website from main (image tag `main`) on seed data
+# only (E2ESeeder), with its own Postgres and no prod secret. /pack/ serves the pack from main with
+# the `edge` mod, for the beta launcher's Staging environment.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: arffornia-staging
+
+resources:
+  - namespace.yaml
+  - quota.yaml
+  - config.yaml
+  - secret.yaml
+  - pack-files-profile.yaml
+  - networkpolicy.yaml
+  - offhours-guard.yaml
+
+components:
+  - ../playtest/pack-files
+  - ../playtest/postgres
+  - ../playtest/seed
+
+images:
+  # The seed Job runs the same image as the website.
+  - name: ghcr.io/arffornia/arffornia_website
+    newTag: main
+
+helmGlobals:
+  chartHome: ../../../../charts
+
+helmCharts:
+  # The same chart version as prod; only the values differ.
+  - name: arffornia-website-chart
+    repo: oci://ghcr.io/arffornia
+    version: 0.1.1
+    releaseName: arffornia-website
+    namespace: arffornia-staging
+    valuesFile: values.yaml
+
+  - name: secure-route
+    releaseName: arffornia-staging-routes
+    namespace: arffornia-staging
+    valuesFile: values-secure-route.yaml
+
+patches:
+  # pack-files: what the beta launcher's Staging environment gets (main, with the edge mod).
+  - target:
+      kind: Deployment
+      name: pack-files
+    patch: |-
+      - op: add
+        path: /spec/template/metadata/annotations
+        value:
+          playtest.arffornia.com/provisioning-ref: refs/heads/main
+          playtest.arffornia.com/mod-tag: edge
+  # The chart's helm-test Pod (busybox) is not deployed: Kyverno allows only Arffornia images here.
+  - target:
+      kind: Pod
+      name: arffornia-website-chart-test-connection
+    patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: arffornia-website-chart-test-connection
+  # The website starts after the seed Job has migrated the database (wave 0): its startup runs
+  # app:sync-service-accounts, which needs the tables.
+  - target:
+      kind: Deployment
+      name: arffornia-website-chart
+    patch: |-
+      - op: add
+        path: /metadata/annotations/argocd.argoproj.io~1sync-wave
+        value: "1"

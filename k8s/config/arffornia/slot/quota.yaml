@@ -1,0 +1,16 @@
+# The hard cap (spec 016, D5): one full pack, 4 CPU / 16 GiB, plus pack-files and the
+# config-updater. Anything more stays Pending.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: slot-quota
+spec:
+  hard:
+    requests.cpu: "2"
+    limits.cpu: "5"
+    requests.memory: 10Gi
+    limits.memory: 17Gi
+    pods: "4"
+    services.loadbalancers: "1"
+    services.nodeports: "0"
+    persistentvolumeclaims: "0"

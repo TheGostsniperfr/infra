@@ -1,0 +1,8 @@
+# A small Postgres for one test website (staging, pr1-pr3): seed data only, on a 1 GiB Longhorn
+# volume so a night's sleep keeps the seed. Credentials: the Secret `db-secret` (VaultSecret,
+# keys POSTGRES_USER / POSTGRES_PASSWORD), defined by each user of this component.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - postgres.yaml

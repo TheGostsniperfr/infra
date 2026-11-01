@@ -1,0 +1,69 @@
+# The test slot, over ../../server/base/values.yaml. Lists replace the base ones entirely.
+
+# Cap per env (spec 016, D5): 4 CPU / 16 GiB. The namespace quota is the hard cap.
+resources:
+  requests:
+    memory: 8Gi
+    cpu: "1"
+  limits:
+    memory: 16Gi
+    cpu: "4"
+
+# The config-updater reads the pack from pack-files (this namespace), not raw GitHub.
+initContainers:
+  - name: config-updater
+    image: ghcr.io/arffornia/config-updater:updater-0.0.7@sha256:4a76a42ea5b7ce3eb63344eef784510c225ffc10695746846bf9f69ec00078d8
+    env:
+      - name: KIND
+        value: server
+      - name: BASE_URL
+        value: http://pack-files.arffornia-slot.svc.cluster.local/
+    envFrom:
+      - configMapRef:
+          name: arffornia-slot-config
+    resources:
+      requests: {cpu: 100m, memory: 256Mi}
+      limits: {cpu: 500m, memory: 1Gi}
+    volumeMounts:
+      - name: datadir
+        mountPath: /data
+
+# Only staging values: no proxy forwarding secret, no Discord bot, no prod database.
+envFrom:
+  - configMapRef:
+      name: arffornia-slot-config
+  - secretRef:
+      name: slot-svc-secret
+  - secretRef:
+      name: slot-db-secret
+
+extraEnv:
+  ENFORCE_WHITELIST: "TRUE"
+  # LuckPerms reads LUCKPERMS_<KEY> overrides; the profile also rewrites luckperms.conf to h2.
+  LUCKPERMS_STORAGE_METHOD: h2
+
+# A throwaway world: every start is a fresh server (spec 016: emptyDir world).
+persistence:
+  dataDir:
+    enabled: false
+
+# Prod's public API name never resolves here: the slot talks to staging only.
+# (The chart templates each extraPodSpec value as a string, hence the inline JSON.)
+extraPodSpec:
+  hostAliases: '[{"ip": "127.0.0.1", "hostnames": ["arffornia.com", "www.arffornia.com"]}]'
+
+minecraftServer:
+  # Players join directly (no Velocity): Mojang authentication and a whitelist.
+  onlineMode: true
+  whitelist: "The_Gost_sniper"
+  ops: "The_Gost_sniper"
+  maxPlayers: 10
+  motd: "Arffornia test slot"
+  memory: 12G
+  serviceType: ClusterIP
+  rcon:
+    enabled: true
+    existingSecret: slot-server-secret
+    secretKey: CFG_RCON_PASSWORD
+    serviceType: ClusterIP
+  extraPorts: []

@@ -1,0 +1,35 @@
+# Added to Kyverno's default-deny set (k8s/config/kyverno/policy/arffornia-envs.yaml).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-minecraft-players
+spec:
+  podSelector:
+    matchLabels:
+      app: arffornia-slot-minecraft
+  policyTypes: [Ingress]
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 25565
+---
+# The slot talks to staging only: its website (the API) and its database (the mod's shop link).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-to-staging
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: arffornia-staging
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 5432
