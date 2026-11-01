@@ -20,6 +20,9 @@ spec:
   enableReplicaLoadBalancer: false
   numberOfInstances: 3
   patroni:
+    # This list REPLACES the operator defaults. Always keep the two `local` lines and the
+    # two `replication` lines below: without them the operator, WAL-G and the replicas
+    # cannot connect (see AGENTS.md).
     pg_hba:
       - local all all trust
       - host all all 127.0.0.1/32 md5

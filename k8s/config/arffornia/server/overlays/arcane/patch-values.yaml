@@ -1,5 +1,5 @@
 minecraftServer:
-  motd: "Welcome to Minecraft on Kubernetes Arcane!"
+  motd: "Arffornia backend: arcane" # not shown to players, see base/values.yaml
 
 # World backups. Restore procedure: docs/runbooks/arffornia-world-backups.md
 # Retention is by COUNT, never by age, so starting the cluster after months off deletes nothing.

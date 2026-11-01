@@ -4,6 +4,7 @@ namespace: garage-s3
 
 resources:
   - namespace.yaml
+  - pvc-longhorn-snapshots.yaml
 
 helmGlobals:
   chartHome: ../../../charts
