@@ -423,29 +423,6 @@ resource "vault_kv_secret_v2" "garage_user_avatars_credentials" {
 }
 
 # -----------------------------------------------------------------------------
-# Minio S3 Secrets (DEPRECATED - use Garage S3)
-# -----------------------------------------------------------------------------
-variable "minio_s3_root_user_var" {
-  description = "Root username for Minio S3."
-  type        = string
-  sensitive   = true
-}
-variable "minio_s3_root_password_var" {
-  description = "Root password for Minio S3."
-  type        = string
-  sensitive   = true
-}
-
-resource "vault_kv_secret_v2" "minio_s3_credentials_secret" {
-  mount = vault_mount.kvv2.path
-  name  = "minio-s3/credentials"
-  data_json = jsonencode({
-    rootUser     = var.minio_s3_root_user_var
-    rootPassword = var.minio_s3_root_password_var
-  })
-}
-
-# -----------------------------------------------------------------------------
 # Monitoring Secrets
 # -----------------------------------------------------------------------------
 variable "grafana_admin_user_var" {
