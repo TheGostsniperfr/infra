@@ -1,9 +1,33 @@
 minecraftServer:
   motd: "Arffornia backend: arcane" # not shown to players, see base/values.yaml
 
+# World backups. Restore procedure: docs/runbooks/arffornia-world-backups.md
+# Retention is by COUNT, never by age, so starting the cluster after months off deletes nothing.
+#   - daily archives:   the PRUNE_BACKUPS_COUNT newest ones stay in /backups
+#   - monthly archives: the first good archive of each month is copied to /backups/monthly;
+#                       MONTHLY_KEEP of them are kept (0 = forever)
 mcbackup:
   enabled: true
-  
+
+  image:
+    repository: itzg/mc-backup
+    tag: 2026.10.1@sha256:c5f2c369bbe47d0b712601bf44af5927e67a18cb5816dc378efb45eb993dab0a
+
+  # Start once the server has finished booting, not in the middle of it.
+  initialDelay: 10m
+  # Wait for RCON as long as needed, instead of crashing the sidecar while a 300-mod pack boots.
+  rconRetries: -1
+
+  # 0 disables age-based pruning (after a long shutdown it deleted every older backup).
+  pruneBackupsDays: 0
+
+  extraEnv:
+    INCLUDES: "world"
+    PRUNE_BACKUPS_COUNT: "14"
+    MONTHLY_KEEP: "0"
+    VERIFY_BACKUP: "true"
+    POST_BACKUP_SCRIPT_FILE: "/backup-scripts/post-backup.sh"
+
   persistence:
     backupDir:
       enabled: true
@@ -20,3 +44,12 @@ extraVolumes:
       - name: bluemap-data
         persistentVolumeClaim:
           claimName: arffornia-bluemap-pvc
+  - volumeMounts:
+      - name: backup-scripts
+        mountPath: /backup-scripts
+        readOnly: true
+    volumes:
+      - name: backup-scripts
+        configMap:
+          name: arffornia-backup-scripts
+          defaultMode: 0555
