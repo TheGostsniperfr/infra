@@ -105,19 +105,6 @@ resource "vault_kubernetes_auth_backend_role" "longhorn_role" {
 }
 
 # -----------------------------------------------------------------------------
-# Minio S3 Role
-# -----------------------------------------------------------------------------
-
-resource "vault_kubernetes_auth_backend_role" "minio_s3_role" {
-  backend                          = vault_auth_backend.kubernetes.path
-  role_name                        = "minio-s3-role"
-  bound_service_account_names      = ["vault-secrets-operator"]
-  bound_service_account_namespaces = ["vault-secrets-operator"]
-  token_ttl                        = 86400 # 24h
-  token_policies                   = [vault_policy.minio_s3_policy.name]
-}
-
-# -----------------------------------------------------------------------------
 # Monitoring Role
 # -----------------------------------------------------------------------------
 
