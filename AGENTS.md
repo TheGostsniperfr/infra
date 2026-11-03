@@ -10,6 +10,8 @@ Keycloak and Cloudflare. Read this before changing anything here.
 | `k8s/config/<app>/` | What each Application deploys: kustomize, Helm values, `VaultSecret`s |
 | `charts/` | Local Helm charts (`secure-route`, the Arffornia charts) |
 | `terraform/` | Vault (auth, policies, roles, secrets), Keycloak, Cloudflare DNS. See `terraform/Readme.md` |
+| `architecture/` | noodle diagrams: one system per directory (`model.yaml`, `views/`, `layouts/`), renders in `architecture/diagrams/` |
+| `.noodle/icons/` | Project icons for noodle, passed with `-icons .noodle/icons` |
 
 ## How changes reach the cluster
 - Argo CD syncs `HEAD` of `main` with prune and selfHeal, so a merged change is live. Render the
@@ -49,8 +51,31 @@ Keycloak and Cloudflare. Read this before changing anything here.
   with Terraform say "Applied on <date>" in their body. Open infra PRs may lag behind `main`: merge
   `main` into them, never force-push.
 
+## Writing values files and manifests
+`k8s/config/gitlab/` is the reference for the style below.
+- **Header** of a `values.yaml`: what the chart is, then labelled links: `# Chart:` (its docs),
+  `# Values reference:` pinned to the chart tag in use (`/-/blob/v10.5.4/values.yaml`, never
+  `master`), and any page a reviewer needs to understand the whole file (release notes of a
+  major version, globals). Then a few lines on what this deployment does differently
+  (external database, secrets from Vault...).
+- **One comment block per functional section** (`# Redis: cache, sessions and Sidekiq
+  queues`), the role first, then labelled links:
+  - `# Feature:` what the feature does for a user, on the product docs;
+  - `# Chart:` how to enable and configure it, with the options;
+  - a specific label when it helps: `Requirements:`, `Extensions:`, `Tiers:`, `Executor:`...
+  A single value that maps to one product feature gets a bare link above it.
+- **Comments say why, not what.** An inline comment only for a value that would surprise a
+  reader (`enabled: false # Helm test Pod gets a random name on every render`).
+- **Every link is checked before it is committed**: the page answers 200, and an anchor
+  exists in the page's Markdown source (docs.gitlab.com builds anchors in the browser, so a
+  `curl` of the page cannot see them).
+- Above each `VaultSecret`: `# Vault path: kvv2/<path>  keys: <keys>`, plus the format doc
+  when the secret is a rendered file.
+- A component that needs steps outside Git (router rule, bucket creation, a manual SQL
+  extension) gets a `README.md` next to its manifests with those steps in order.
+
 ## Storage and backups (state after the 2026-10-31 recovery)
 - S3 is Garage only (`garage-s3` namespace, `https://s3.arffornia.com`). It holds the buckets
-  `tf-state`, `longhorn`, `postgres-backups` and `user-avatars`. MinIO and AWS are gone.
+  `tf-state`, `longhorn`, `postgres-backups`, `user-avatars` and the `gitlab-*` buckets. MinIO and AWS are gone.
 - Garage runs a single node with replication factor 1. Longhorn snapshots its volumes every
   night (`k8s/config/longhorn/recurring-job-garage.yaml`, group `garage`).

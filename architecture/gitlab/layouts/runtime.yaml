@@ -1,0 +1,60 @@
+apiVersion: noodle/v1alpha1
+kind: Layout
+canvas: {width: 2540, height: 1760}
+lanes:
+  user-in: {x: 330}
+  agent-in: {x: 345}
+  runner-back: {x: 720}
+  to-registry: {x: 740}
+  to-kas: {x: 760}
+  garage-registry: {x: 1470}
+  garage-workhorse: {x: 1490}
+  kas-up: {x: 1512}
+  puma-redis: {x: 1995}
+  sidekiq-pg: {x: 2013}
+  puma-pg: {x: 2031}
+elements:
+  z-internet: {x: 40, y: 240, w: 260, h: 300}
+  z-target-cluster: {x: 40, y: 600, w: 260, h: 220}
+  z-cluster: {x: 360, y: 180, w: 2160, h: 1120}
+  g-gateway: {x: 40, y: 60, w: 300, h: 420}
+  g-secrets: {x: 40, y: 540, w: 300, h: 500}
+  g-gitlab: {x: 620, y: 60, w: 980, h: 980}
+  g-data: {x: 1680, y: 60, w: 440, h: 1010}
+  developer: {x: 100, y: 100, w: 56, h: 56}
+  agentk: {x: 10, y: 80, w: 240, h: 90}
+  envoy: {x: 30, y: 160, w: 240, h: 100}
+  vso: {x: 30, y: 80, w: 240, h: 100}
+  vault: {x: 30, y: 300, w: 240, h: 100}
+  workhorse: {x: 40, y: 110, w: 280, h: 100}
+  puma: {x: 560, y: 110, w: 300, h: 100}
+  registry: {x: 40, y: 480, w: 280, h: 100}
+  sidekiq: {x: 560, y: 480, w: 300, h: 100}
+  kas: {x: 40, y: 780, w: 280, h: 100}
+  runner: {x: 560, y: 780, w: 300, h: 100}
+  gitaly: {x: 60, y: 110, w: 320, h: 110}
+  redis: {x: 60, y: 420, w: 320, h: 110}
+  postgres: {x: 60, y: 640, w: 320, h: 110}
+  garage: {x: 60, y: 870, w: 320, h: 110}
+edges:
+  c-developer-envoy: {from: developer.right, to: envoy.left@50px, waypoints: [lane:user-in]}
+  c-agentk-envoy: {from: agentk.right, to: envoy.left@80px, waypoints: [lane:agent-in]}
+  c-envoy-workhorse: {from: envoy.right@20px, to: workhorse.left@70px}
+  c-envoy-registry: {from: envoy.right@50px, to: registry.left, waypoints: [lane:to-registry], label_at: [880, 770]}
+  c-envoy-kas: {from: envoy.right@80px, to: kas.left, waypoints: [lane:to-kas], label_at: [890, 1070]}
+  c-workhorse-puma: {from: workhorse.right@50px, to: puma.left@50px}
+  c-workhorse-gitaly: {from: workhorse.right@15px, to: gitaly.top@120px, waypoints: [[1320, 365], [1320, 310], [2220, 310]]}
+  c-gitaly-puma: {from: gitaly.left@25px, to: puma.right@25px, against_flow: true}
+  c-puma-redis: {from: puma.right@60px, to: redis.left@50px, waypoints: [lane:puma-redis]}
+  c-puma-postgres: {from: puma.right@85px, to: postgres.left@80px, waypoints: [lane:puma-pg], label_at: [1900, 435]}
+  c-sidekiq-redis: {from: sidekiq.right@20px, to: redis.left@80px}
+  c-sidekiq-postgres: {from: sidekiq.right@60px, to: postgres.left@50px, waypoints: [lane:sidekiq-pg]}
+  c-workhorse-garage: {from: workhorse.bottom@40px, to: garage.left@85px, waypoints: [[1060, 620], lane:garage-workhorse]}
+  c-registry-garage: {from: registry.right@60px, to: garage.left@55px, waypoints: [lane:garage-registry]}
+  c-kas-puma: {from: kas.right@20px, to: puma.left@85px, waypoints: [lane:kas-up], against_flow: true}
+  c-runner-envoy: {from: runner.bottom, to: envoy.right@90px, waypoints: [[1690, 1250], [720, 1250], lane:runner-back], against_flow: true}
+  c-vso-vault: {from: vso.bottom, to: vault.top}
+cards:
+  card-steps: {x: 40, y: 1340, w: 820, h: 270}
+  card-background: {x: 890, y: 1340, w: 820, h: 210}
+  card-legend: {x: 1740, y: 1340, w: 760, h: 380}
