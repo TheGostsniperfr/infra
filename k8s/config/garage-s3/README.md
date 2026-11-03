@@ -7,6 +7,9 @@ Current buckets:
 - `longhorn` - Longhorn backup storage
 - `postgres-backups` - PostgreSQL WAL-G backups
 - `user-avatars` - Website user avatar storage
+- `gitlab-*` - GitLab object storage: `gitlab-lfs`, `gitlab-artifacts`, `gitlab-uploads`,
+  `gitlab-packages`, `gitlab-terraform-state`, `gitlab-ci-secure-files`, `gitlab-dependency-proxy`,
+  `gitlab-registry`, `gitlab-backups`, `gitlab-tmp`
 
 ## Access Keys
 
@@ -15,6 +18,7 @@ Current keys:
 - `longhorn-backup-key` - For Longhorn backups
 - `postgres-backup-key` - For PostgreSQL backups
 - `user-avatars-key` - For website avatars (public read)
+- `gitlab-key` - For every `gitlab-*` bucket
 
 ## Management Commands
 

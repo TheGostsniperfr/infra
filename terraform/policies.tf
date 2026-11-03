@@ -206,3 +206,14 @@ resource "vault_policy" "immich_policy" {
     mount_path = vault_mount.kvv2.path
   })
 }
+
+# -----------------------------------------------------------------------------
+# GitLab Policy
+# -----------------------------------------------------------------------------
+
+resource "vault_policy" "gitlab_policy" {
+  name = "gitlab-policy"
+  policy = templatefile("${path.module}/policies/gitlab.hcl", {
+    mount_path = vault_mount.kvv2.path
+  })
+}

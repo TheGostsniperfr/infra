@@ -246,3 +246,16 @@ resource "vault_kubernetes_auth_backend_role" "immich_role" {
   token_ttl                        = 86400
   token_policies                   = [vault_policy.immich_policy.name]
 }
+
+# -----------------------------------------------------------------------------
+# GitLab Role
+# -----------------------------------------------------------------------------
+
+resource "vault_kubernetes_auth_backend_role" "gitlab_role" {
+  backend                          = vault_auth_backend.kubernetes.path
+  role_name                        = "gitlab-role"
+  bound_service_account_names      = ["vault-secrets-operator"]
+  bound_service_account_namespaces = ["vault-secrets-operator"]
+  token_ttl                        = 86400
+  token_policies                   = [vault_policy.gitlab_policy.name]
+}

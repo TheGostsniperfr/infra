@@ -103,3 +103,34 @@ resource "keycloak_openid_client_default_scopes" "vault_scopes" {
     "groups"
   ]
 }
+
+# -----------------------------------------------------------------------------
+# OIDC CLIENT: GitLab
+# -----------------------------------------------------------------------------
+resource "keycloak_openid_client" "gitlab" {
+  realm_id                     = keycloak_realm.arffornia.id
+  client_id                    = "gitlab"
+  name                         = "GitLab"
+  enabled                      = true
+  access_type                  = "CONFIDENTIAL"
+  standard_flow_enabled        = true
+  direct_access_grants_enabled = false
+
+  valid_redirect_uris = [
+    "https://gitlab.${var.base_domain}/users/auth/openid_connect/callback"
+  ]
+
+  valid_post_logout_redirect_uris = [
+    "https://gitlab.${var.base_domain}/"
+  ]
+}
+
+resource "keycloak_openid_client_default_scopes" "gitlab_scopes" {
+  realm_id  = keycloak_realm.arffornia.id
+  client_id = keycloak_openid_client.gitlab.id
+  default_scopes = [
+    "profile",
+    "email",
+    keycloak_openid_client_scope.groups.name
+  ]
+}
