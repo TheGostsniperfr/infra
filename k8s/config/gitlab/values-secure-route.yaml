@@ -6,7 +6,9 @@ routes:
     hostnames:
       - "gitlab.arffornia.com"
     rules:
-      # No timeout: long git clone/push and CI log streaming over HTTPS
+      # No timeout: long git clone/push and CI log streaming over HTTPS. Envoy Gateway 1.7 has
+      # no per-route stream idle timeout (only ClientTrafficPolicy, shared by every app), so a
+      # silent stream over 5 min (Envoy default) is still cut.
       - backendRefs:
           - name: gitlab-webservice-default
             port: 8181

@@ -7,7 +7,6 @@ resources:
   - namespace.yaml
   - secret.yaml
   - redis.yaml
-  - backend-traffic-policy.yaml
 
 helmGlobals:
   chartHome: ../../../charts

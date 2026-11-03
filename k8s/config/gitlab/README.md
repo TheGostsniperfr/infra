@@ -19,6 +19,15 @@ disabled so a rebuild gets the same keys back. Architecture: `architecture/gitla
    `gitlab-dependency-proxy`, `gitlab-registry`, `gitlab-backups`, `gitlab-tmp`, each with
    read, write and owner for `gitlab-key` (commands in `k8s/config/garage-s3/README.md`).
 2. Merge: the operator creates the role and database `gitlab`. GitLab waits for its secrets.
+   The chart's upgrade check is a Helm pre-upgrade hook, which Argo CD also runs on the first
+   sync. It reads the ConfigMap `gitlab-gitlab-chart-info`, which only exists after a sync, so
+   the first sync loops on `unsupported upgrade path`. Create it once with the content the chart
+   renders, Argo CD adopts it:
+   ```sh
+   kustomize build --enable-helm k8s/config/gitlab \
+     | yq 'select(.kind=="ConfigMap" and .metadata.name=="gitlab-gitlab-chart-info")' \
+     | kubectl apply --server-side --field-manager=argocd-controller -f -
+   ```
 3. Extensions: `amcheck` is not a trusted extension, so the `gitlab` role cannot create it.
    On the primary:
    ```sh
