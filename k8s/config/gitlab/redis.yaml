@@ -18,9 +18,21 @@ spec:
       labels:
         app: gitlab-redis
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999 # redis user and group of the official image
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: redis
           image: redis:7.4.9-alpine
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true # Redis only writes to /data
+            capabilities:
+              drop: ["ALL"]
           args:
             - --requirepass
             - $(REDIS_PASSWORD)

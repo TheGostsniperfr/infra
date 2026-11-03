@@ -151,6 +151,10 @@ prometheus:
   install: false
 
 # GitLab components, scaled to one replica each (lab)
+# Resources: requests are the chart defaults. Memory limits only: a CPU limit throttles Rails
+# for nothing, a memory limit keeps a leak from starving the node (Burstable QoS).
+# Limits marked "chart" come from the chart's commented suggestions, the others are estimates.
+# QoS: https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/
 gitlab:
   # Rails web app and API, behind Workhorse
   # Chart: https://docs.gitlab.com/charts/charts/gitlab/webservice/
@@ -159,17 +163,30 @@ gitlab:
     maxReplicas: 1
     helmTests:
       enabled: false # Helm test Pod gets a random name on every render, Argo CD never converges
+    resources:
+      limits:
+        memory: 3G # chart
+    workhorse:
+      resources:
+        limits:
+          memory: 512Mi
 
   # Background jobs
   # Chart: https://docs.gitlab.com/charts/charts/gitlab/sidekiq/
   sidekiq:
     minReplicas: 1
     maxReplicas: 1
+    resources:
+      limits:
+        memory: 5G # chart
 
   # Chart: https://docs.gitlab.com/charts/charts/gitlab/kas/
   kas:
     minReplicas: 1
     maxReplicas: 1
+    resources:
+      limits:
+        memory: 512Mi
 
   # Git repositories
   # Feature: https://docs.gitlab.com/administration/gitaly/
@@ -178,6 +195,12 @@ gitlab:
     persistence:
       storageClass: longhorn
       size: 20Gi
+    resources:
+      limits:
+        memory: 2G # git pack-objects on large clones
+    securityContext:
+      seccompProfile:
+        type: RuntimeDefault # The only GitLab pod without it by default
 
   # Git over SSH on its own MetalLB IP: SSH is not HTTP, so it cannot go through
   # secure-route. Public through the router; key auth only, user git only, no forwarding.
@@ -189,6 +212,9 @@ gitlab:
       type: LoadBalancer
       annotations:
         metallb.universe.tf/loadBalancerIPs: 192.168.1.85
+    resources:
+      limits:
+        memory: 256Mi
 
   # Prometheus exporter for GitLab internals
   # Chart: https://docs.gitlab.com/charts/charts/gitlab/gitlab-exporter/
@@ -199,6 +225,9 @@ gitlab:
   # Chart: https://docs.gitlab.com/charts/charts/gitlab/toolbox/
   # Backups: https://docs.gitlab.com/charts/backup-restore/
   toolbox:
+    resources:
+      limits:
+        memory: 2G # chart
     backups:
       objectStorage:
         config:
@@ -213,6 +242,9 @@ registry:
   hpa:
     minReplicas: 1
     maxReplicas: 1
+  resources:
+    limits:
+      memory: 1024Mi # chart
   storage:
     secret: gitlab-registry-storage
     key: config
@@ -224,8 +256,18 @@ registry:
 gitlab-runner:
   install: true
   concurrent: 2
+  resources:
+    requests:
+      cpu: 100m # chart
+      memory: 128Mi # chart
+    limits:
+      memory: 256Mi # chart
+  # Job pods: without requests they would be BestEffort, first evicted under pressure
   runners:
     config: |
       [[runners]]
         [runners.kubernetes]
         image = "alpine:3.22"
+        cpu_request = "100m"
+        memory_request = "256Mi"
+        memory_limit = "2Gi"
