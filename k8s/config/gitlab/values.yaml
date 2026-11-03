@@ -37,6 +37,10 @@ global:
     installEnvoy: false
   ingress:
     enabled: false
+    # TLS is terminated by the shared-gateway with a public certificate. Without this the chart
+    # assumes a self-signed one and mounts its CA (gitlab-wildcard-tls-ca) in every pod.
+    tls:
+      enabled: true
 
   # PostgreSQL: database `gitlab` on the shared Zalando cluster. GitLab 19 needs PostgreSQL 17+
   # and the amcheck, btree_gist and pg_trgm extensions.
