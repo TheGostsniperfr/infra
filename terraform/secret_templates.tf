@@ -586,6 +586,29 @@ resource "vault_kv_secret_v2" "cert_manager_cloudflare_api_token_secret" {
 }
 
 # -----------------------------------------------------------------------------
+# Logging Secrets (Loki on Garage)
+# -----------------------------------------------------------------------------
+variable "loki_s3_access_key_var" {
+  description = "Garage access key ID of loki-key."
+  type        = string
+  sensitive   = true
+}
+variable "loki_s3_secret_key_var" {
+  description = "Garage secret key of loki-key."
+  type        = string
+  sensitive   = true
+}
+
+resource "vault_kv_secret_v2" "logging_loki_s3_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "logging/loki-s3"
+  data_json = jsonencode({
+    AWS_ACCESS_KEY_ID     = var.loki_s3_access_key_var
+    AWS_SECRET_ACCESS_KEY = var.loki_s3_secret_key_var
+  })
+}
+
+# -----------------------------------------------------------------------------
 # Monitoring Secrets (Discord)
 # -----------------------------------------------------------------------------
 variable "discord_webhook_general_var" {

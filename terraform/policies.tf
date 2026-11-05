@@ -98,6 +98,17 @@ resource "vault_policy" "monitoring_policy" {
 }
 
 # -----------------------------------------------------------------------------
+# Logging Policy
+# -----------------------------------------------------------------------------
+
+resource "vault_policy" "logging_policy" {
+  name = "logging-policy"
+  policy = templatefile("${path.module}/policies/logging.hcl", {
+    mount_path = vault_mount.kvv2.path
+  })
+}
+
+# -----------------------------------------------------------------------------
 # N8n Policy
 # -----------------------------------------------------------------------------
 
