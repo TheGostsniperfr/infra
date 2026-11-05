@@ -10,8 +10,8 @@ resource "keycloak_realm" "arffornia" {
   terraform_deletion_protection = false # When set to true, the realm cannot be deleted. Defaults to false.
 
   # Theme
-  login_theme = "arffornia"
-  # account_theme = "base"
+  login_theme   = "arffornia"
+  account_theme = "arffornia"
   # admin_theme   = "base"
   # email_theme   = "base"
 
