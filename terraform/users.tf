@@ -44,7 +44,7 @@ resource "keycloak_user" "team" {
   enabled        = true
   email_verified = true
 
-  required_actions = ["UPDATE_PASSWORD", "CONFIGURE_TOTP"]
+  required_actions = ["UPDATE_PASSWORD", "CONFIGURE_TOTP", "webauthn-register-passwordless", "CONFIGURE_RECOVERY_AUTHN_CODES"]
 
   initial_password {
     value     = random_password.team[each.key].result

@@ -33,6 +33,7 @@ resources:
 
   # Monitoring
   - monitoring.yaml
+  - logging.yaml
 
   # Applications
   - offhours-guard.yaml

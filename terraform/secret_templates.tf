@@ -327,6 +327,16 @@ variable "keycloak_admin_password_var" {
   type        = string
   sensitive   = true
 }
+variable "keycloak_smtp_user_var" {
+  description = "Gmail address Keycloak sends mail from (SMTP username)."
+  type        = string
+  sensitive   = true
+}
+variable "keycloak_smtp_password_var" {
+  description = "Google app password of that Gmail account."
+  type        = string
+  sensitive   = true
+}
 variable "postgres_keycloak_user_var" {
   description = "Postgres username for the Keycloak database."
   type        = string
@@ -586,6 +596,29 @@ resource "vault_kv_secret_v2" "cert_manager_cloudflare_api_token_secret" {
 }
 
 # -----------------------------------------------------------------------------
+# Logging Secrets (Loki on Garage)
+# -----------------------------------------------------------------------------
+variable "loki_s3_access_key_var" {
+  description = "Garage access key ID of loki-key."
+  type        = string
+  sensitive   = true
+}
+variable "loki_s3_secret_key_var" {
+  description = "Garage secret key of loki-key."
+  type        = string
+  sensitive   = true
+}
+
+resource "vault_kv_secret_v2" "logging_loki_s3_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "logging/loki-s3"
+  data_json = jsonencode({
+    AWS_ACCESS_KEY_ID     = var.loki_s3_access_key_var
+    AWS_SECRET_ACCESS_KEY = var.loki_s3_secret_key_var
+  })
+}
+
+# -----------------------------------------------------------------------------
 # Monitoring Secrets (Discord)
 # -----------------------------------------------------------------------------
 variable "discord_webhook_general_var" {
@@ -604,6 +637,21 @@ variable "discord_webhook_arffornia_var" {
   description = "Discord Webhook URL for Alertmanager Arffornia alerts."
   type        = string
   sensitive   = true
+}
+
+# Read-only Postgres role for the Arffornia Business dashboard. The role itself is created by
+# hand with this password (k8s/config/monitoring/README.md), Terraform only owns the value.
+resource "random_password" "grafana_arffornia_db" {
+  length  = 32
+  special = false
+}
+
+resource "vault_kv_secret_v2" "monitoring_grafana_arffornia_db_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "monitoring/grafana-arffornia-db"
+  data_json = jsonencode({
+    password = random_password.grafana_arffornia_db.result
+  })
 }
 
 resource "vault_kv_secret_v2" "monitoring_discord_secret" {

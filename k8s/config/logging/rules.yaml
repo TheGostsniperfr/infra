@@ -1,0 +1,41 @@
+# LogQL alerts evaluated by the Loki ruler, for failures that only show in the logs.
+# The rules sidecar of Loki loads every ConfigMap labelled loki_rule in this namespace.
+# Rules format: https://grafana.com/docs/loki/latest/alert/#alerting-rules
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-rules-arffornia
+  labels:
+    loki_rule: ""
+data:
+  arffornia.yaml: |
+    groups:
+      - name: arffornia.logs
+        rules:
+          # Forge writes a crash report before the JVM exits, or after a tick exception
+          - alert: MinecraftCrashReport
+            expr: |
+              sum by (namespace) (
+                count_over_time({namespace=~"arffornia-server-.*", container=~"arffornia-server-.*-minecraft"}
+                  |~ "This crash report has been saved|Exception in server tick loop|Encountered an unexpected exception" [5m])
+              ) > 0
+            labels:
+              severity: critical
+            annotations:
+              summary: "{{ $labels.namespace }} crashed"
+              description: "The server logged a crash report. Find it in Grafana Explore (Loki, namespace {{ $labels.namespace }}) or in /data/crash-reports."
+
+          # mc-backup only runs while players are online, so a missing backup is not an error:
+          # alert on the failures it logs. Exit code 1 means a file changed while tar read it,
+          # post-backup.sh still verifies that archive.
+          - alert: MinecraftBackupFailed
+            expr: |
+              sum by (namespace) (
+                count_over_time({namespace=~"arffornia-server-.*", container=~".*-mc-backup"}
+                  |~ "post-backup: ERROR|Backup failed with exit code [2-9]" [1h])
+              ) > 0
+            labels:
+              severity: warning
+            annotations:
+              summary: "{{ $labels.namespace }} world backup failed"
+              description: "mc-backup or its post-backup check logged an error in the last hour: the newest archive may be missing or broken."

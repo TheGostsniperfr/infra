@@ -1,0 +1,116 @@
+# Arffornia game alerts and recording rules, for the proxy and every backend server.
+# Kept in one place so a rule is evaluated once, not once per server namespace.
+# Every alert carries the namespace of the server it is about, which routes it to #arffornia.
+# Servers sleep from 03:00 to 07:00 (offhours-guard scales them to 0): availability alerts
+# only fire when the Deployment wants a replica. A modpack backend may take up to 15 minutes
+# to start (startupProbe: 90 x 10s).
+# Tick metrics: https://github.com/cpburnz/minecraft-prometheus-exporter/blob/master/metrics.md
+# Ping metrics: https://github.com/itzg/mc-monitor#export-for-prometheus
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: arffornia
+spec:
+  groups:
+    - name: arffornia.recording
+      rules:
+        # Ticks actually run per second, 20 when the server keeps up
+        - record: arffornia:server_tps:rate5m
+          expr: sum by (namespace) (rate(mc_server_tick_seconds_count{namespace=~"arffornia-server-.*"}[5m]))
+        # Mean milliseconds per tick: above 50ms the server cannot hold 20 TPS
+        - record: arffornia:server_mspt_seconds:rate5m
+          expr: |
+            sum by (namespace) (rate(mc_server_tick_seconds_sum{namespace=~"arffornia-server-.*"}[5m]))
+            / sum by (namespace) (rate(mc_server_tick_seconds_count{namespace=~"arffornia-server-.*"}[5m]))
+        # mc-monitor results keyed by the namespace of the pinged server
+        - record: arffornia:players_online
+          expr: label_replace(minecraft_status_players_online_count, "namespace", "$1", "server_host", "[^.]+\\.(.+)")
+        - record: arffornia:ping_healthy
+          expr: label_replace(minecraft_status_healthy, "namespace", "$1", "server_host", "[^.]+\\.(.+)")
+        - record: arffornia:ping_seconds
+          expr: label_replace(minecraft_status_response_time_seconds, "namespace", "$1", "server_host", "[^.]+\\.(.+)")
+        # 1 when the server is meant to run (awake), 0 while offhours-guard keeps it at 0
+        - record: arffornia:server_wanted
+          expr: |
+            max by (namespace) (
+              kube_deployment_spec_replicas{namespace=~"arffornia-.*", deployment=~"arffornia-.*-minecraft(-proxy)?"} > bool 0
+            )
+
+    - name: arffornia.availability
+      rules:
+        - alert: MinecraftProxyDown
+          expr: |
+            kube_deployment_spec_replicas{namespace="arffornia-proxy-velocity", deployment="arffornia-proxy-velocity-minecraft-proxy"} > 0
+            unless on (namespace, deployment)
+            kube_deployment_status_replicas_available{namespace="arffornia-proxy-velocity", deployment="arffornia-proxy-velocity-minecraft-proxy"} > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "The Velocity proxy has no available pod"
+            description: "Nobody can join Arffornia. Check the proxy pod events and logs."
+
+        - alert: MinecraftServerDown
+          expr: |
+            kube_deployment_spec_replicas{namespace=~"arffornia-server-.*", deployment=~"arffornia-server-.*-minecraft"} > 0
+            unless on (namespace, deployment)
+            kube_deployment_status_replicas_available{namespace=~"arffornia-server-.*", deployment=~"arffornia-server-.*-minecraft"} > 0
+          for: 20m
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $labels.namespace }} has been starting or down for 20 minutes"
+            description: "The backend should be awake but has no available pod. Check the server logs for a crash report or a mod loading error."
+
+        - alert: MinecraftServerUnreachable
+          expr: arffornia:ping_healthy == 0 and on (namespace) arffornia:server_wanted == 1
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $labels.namespace }} does not answer a Server List Ping"
+            description: "The pod runs but {{ $labels.server_host }} does not answer the status ping players use: the server is hung or its port is unreachable."
+
+    - name: arffornia.performance
+      rules:
+        - alert: MinecraftServerLagging
+          expr: arffornia:server_mspt_seconds:rate5m > 0.05
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.namespace }} cannot keep up: {{ $value | humanizeDuration }} per tick"
+            description: "Above 50ms per tick the server drops below 20 TPS. The dashboard shows the dimension and the entity types behind it."
+
+        - alert: MinecraftServerSevereLag
+          expr: arffornia:server_mspt_seconds:rate5m > 0.1
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $labels.namespace }} runs below 10 TPS ({{ $value | humanizeDuration }} per tick)"
+            description: "The game is visibly broken for players. Look for an entity or chunk loading spike on the dashboard, or a stuck mod in the server logs."
+
+        - alert: MinecraftHeapPressure
+          expr: |
+            max by (namespace) (jvm_memory_bytes_used{area="heap", namespace=~"arffornia-server-.*"})
+            / max by (namespace) (jvm_memory_bytes_max{area="heap", namespace=~"arffornia-server-.*"})
+            > 0.9
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.namespace }} heap is {{ $value | humanizePercentage }} full"
+            description: "The JVM heap stays above 90% of -Xmx: GC pauses will grow, then OutOfMemoryError. Raise the heap or look for a leak (loaded chunks, entities)."
+
+        - alert: MinecraftGCPressure
+          expr: |
+            sum by (namespace) (
+              rate(jvm_gc_collection_seconds_sum{namespace=~"arffornia-server-.*", gc!~".*Concurrent.*"}[5m])
+            ) > 0.1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.namespace }} spends {{ $value | humanizePercentage }} of its time in GC pauses"
+            description: "Stop-the-world pauses above 10% of wall time cause lag spikes. Usually the heap is too small for the loaded world."

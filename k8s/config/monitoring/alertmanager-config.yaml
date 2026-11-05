@@ -1,3 +1,11 @@
+# Alert routing to Discord. Severity policy:
+#   critical  someone acts now        -> #critical, repeated every 4h
+#   warning   look at it today        -> #general (infra) or #arffornia (game servers)
+#   info/none dashboards only, never sent (CPUThrottlingHigh, Watchdog, InfoInhibitor)
+# Every alert from an arffornia-* namespace goes to #arffornia whatever its severity.
+# Feature: https://prometheus-operator.dev/docs/developer/alerting/
+# Chart: https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1alpha1.AlertmanagerConfig
+# Vault path: kvv2/monitoring/discord  keys: webhook_general, webhook_critical, webhook_arffornia
 apiVersion: monitoring.coreos.com/v1alpha1
 kind: AlertmanagerConfig
 metadata:
@@ -7,33 +15,39 @@ metadata:
     release: kube-prometheus-stack
 spec:
   route:
-    groupBy: ["alertname", "job", "namespace"]
+    groupBy: ["alertname", "namespace"]
     groupWait: 30s
     groupInterval: 5m
-    repeatInterval: 12h
-    receiver: "discord-default"
+    repeatInterval: 24h
+    receiver: "discord-general"
     routes:
+      - receiver: "null"
+        matchers:
+          - name: severity
+            matchType: "=~"
+            value: "info|none"
+
+      - receiver: "discord-arffornia"
+        matchers:
+          - name: namespace
+            matchType: "=~"
+            value: "arffornia-.*"
+        repeatInterval: 4h
+
       - receiver: "discord-critical"
         matchers:
           - name: severity
             value: critical
-          - name: app
-            matchType: "!="
-            value: minecraft
-        continue: false
-
-      - receiver: "discord-arffornia"
-        matchers:
-          - name: app
-            value: minecraft
-        continue: false
+        repeatInterval: 4h
 
   receivers:
-    - name: "discord-default"
+    - name: "null"
+
+    - name: "discord-general"
       discordConfigs:
         - apiURL:
-            key: webhook_general
             name: alertmanager-discord-secret
+            key: webhook_general
           sendResolved: true
           title: '{{ template "discord.title" . }}'
           message: '{{ template "discord.message" . }}'
@@ -41,17 +55,17 @@ spec:
     - name: "discord-critical"
       discordConfigs:
         - apiURL:
-            key: webhook_critical
             name: alertmanager-discord-secret
+            key: webhook_critical
           sendResolved: true
-          title: "🔥 Critical Alert System"
+          title: '{{ template "discord.title" . }}'
           message: '{{ template "discord.message" . }}'
 
     - name: "discord-arffornia"
       discordConfigs:
         - apiURL:
-            key: webhook_arffornia
             name: alertmanager-discord-secret
+            key: webhook_arffornia
           sendResolved: true
-          title: "🎮 Arffornia Infra"
+          title: '{{ template "discord.title" . }}'
           message: '{{ template "discord.message" . }}'

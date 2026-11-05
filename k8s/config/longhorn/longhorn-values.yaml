@@ -7,3 +7,8 @@ longhornUI:
 defaultBackupStore:
   backupTarget: "s3://longhorn@garage/"
   backupTargetCredentialSecret: "longhorn-s3-secret"
+# Prometheus metrics: volume robustness, disk and node usage, last backup time
+# Feature: https://longhorn.io/docs/1.11.1/monitoring/metrics/
+metrics:
+  serviceMonitor:
+    enabled: true
