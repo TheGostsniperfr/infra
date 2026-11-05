@@ -24,7 +24,9 @@ Keep the same flag in the kubeadm ClusterConfiguration so an upgrade does not re
 kubectl -n kube-system get cm kubeadm-config -o yaml   # etcd.local.extraArgs
 ```
 
-Then set `kubeEtcd.enabled: true` and `defaultRules.rules.etcd: true` in `values.yaml`.
+Done on 2026-11-05: manifest and `kubeadm-config` updated, the previous manifest is in
+`/root/etcd.yaml.bak-20261105` on master-node. Without this flag the `kubeEtcd` scrape in
+`values.yaml` raises TargetDown and etcdMembersDown.
 
 ## 2. Remove kube-proxy
 
