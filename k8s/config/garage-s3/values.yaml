@@ -22,8 +22,12 @@ resources:
   requests:
     cpu: 100m
     memory: 128Mi
-    # monitoring:
-    # metrics:
-    # enabled: true
-    # serviceMonitor:
-    # enabled: true
+
+# Admin API /metrics on 3903: cluster health, disk space left, S3 request errors.
+# No metrics_token is set, so the endpoint is open inside the cluster.
+# Feature: https://garagehq.deuxfleurs.fr/documentation/reference-manual/monitoring/
+monitoring:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true

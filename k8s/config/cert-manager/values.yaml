@@ -12,3 +12,10 @@ config:
 global:
   leaderElection:
     namespace: cert-manager
+
+# Certificate readiness and expiry, for CertificateNotReady and CertificateExpiringSoon
+# Feature: https://cert-manager.io/docs/devops-tips/prometheus-metrics/
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: true
