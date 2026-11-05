@@ -30,6 +30,11 @@ Done on 2026-11-05: manifest and `kubeadm-config` updated, the previous manifest
 
 ## 2. Remove kube-proxy
 
+Done on 2026-11-05 after #77: DaemonSet and ConfigMap deleted, `KUBE-*` iptables rules
+cleaned on the 4 nodes (724 lines each). The rules before cleanup are in
+`/root/{iptables,ip6tables}-before-kube-proxy-removal.rules` on each node. The steps below
+are kept for a rebuilt node or cluster.
+
 Cilium runs with `kubeProxyReplacement: true`, kube-proxy is a leftover from `kubeadm init`
 and programs a second set of iptables rules for the same Services.
 Feature: https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/
