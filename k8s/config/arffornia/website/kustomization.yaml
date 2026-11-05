@@ -23,3 +23,16 @@ helmCharts:
     releaseName: arffornia-website-routes
     namespace: arffornia-website
     valuesFile: values-secure-route.yaml
+
+# The item-textures volume is ReadWriteOnce: a rolling update starts the new pod before the old
+# one stops and stays stuck on Multi-Attach when it lands on another node. The chart has no
+# strategy value.
+patches:
+  - target:
+      kind: Deployment
+      name: arffornia-website-chart
+    patch: |-
+      - op: replace
+        path: /spec/strategy
+        value:
+          type: Recreate
