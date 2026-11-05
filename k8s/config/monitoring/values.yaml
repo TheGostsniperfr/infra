@@ -9,11 +9,63 @@
 # to Discord is alertmanager-config.yaml, our own rules are in rules/. Steps outside Git
 # (control plane metrics, kube-proxy removal) are in README.md.
 
+# Grafana: three folders.
+#   Homelab / Arffornia  our dashboards (dashboards/), the home page is Homelab Overview
+#   Kubernetes           the kubernetes-mixin dashboards shipped by this chart
+#   Deep dives           community dashboards pinned by revision, for one component at a time
+# Chart: https://github.com/grafana/helm-charts/tree/grafana-10.5.8/charts/grafana#sidecar-for-dashboards
 grafana:
   grafana.ini:
     server:
       root_url: "https://grafana.arffornia.com"
       serve_from_sub_path: false
+    dashboards:
+      default_home_dashboard_path: /tmp/dashboards/Homelab/homelab-overview.json
+
+  sidecar:
+    dashboards:
+      folderAnnotation: grafana_folder
+      provider:
+        foldersFromFilesStructure: true
+      # Applied to the dashboard ConfigMaps rendered by kube-prometheus-stack itself
+      annotations:
+        grafana_folder: Kubernetes
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: deep-dives
+          folder: Deep dives
+          type: file
+          disableDeletion: true
+          editable: false
+          options:
+            path: /var/lib/grafana/dashboards/deep-dives
+
+  # Downloaded from grafana.com by an init container at each Grafana start. The chart default
+  # is `-skf`, which skips TLS verification.
+  defaultCurlOptions: "-sf"
+  dashboards:
+    deep-dives:
+      # https://grafana.com/grafana/dashboards/1860-node-exporter-full/
+      node-exporter-full:
+        gnetId: 1860
+        revision: 45
+      # https://grafana.com/grafana/dashboards/16888-longhorn-monitoring-backups/
+      longhorn:
+        gnetId: 16888
+        revision: 14
+        datasource: [ { name: DS_PROMETHEUS, value: prometheus } ]
+      # https://grafana.com/grafana/dashboards/9628-postgresql-database/
+      postgresql:
+        gnetId: 9628
+        revision: 8
+        datasource: [ { name: DS_PROMETHEUS, value: prometheus } ]
+      # https://grafana.com/grafana/dashboards/14584-argocd/
+      argocd:
+        gnetId: 14584
+        revision: 1
 
   admin:
     existingSecret: "grafana-admin-creds"
