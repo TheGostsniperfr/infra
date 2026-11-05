@@ -4,7 +4,7 @@ metadata:
   name: kube-system
   namespace: argocd
   annotations:
-    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -14,7 +14,21 @@ spec:
       selfHeal: true
     syncOptions:
       - ServerSideApply=true
+      - RespectIgnoreDifferences=true
       - CreateNamespace=true
+  # The Cilium chart generates a new CA and Hubble server certificate at each render: without
+  # this every self-heal would rotate them.
+  ignoreDifferences:
+    - kind: Secret
+      name: cilium-ca
+      namespace: kube-system
+      jsonPointers:
+        - /data
+    - kind: Secret
+      name: hubble-server-certs
+      namespace: kube-system
+      jsonPointers:
+        - /data
   project: default
   source:
     repoURL: https://github.com/TheGostsniperfr/infra.git

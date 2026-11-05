@@ -1,0 +1,77 @@
+# Scrape of the postgres_exporter sidecars (postgres-cluster.yaml) and Postgres alerts.
+# Metrics: https://github.com/prometheus-community/postgres_exporter/tree/v0.20.1/collector
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: postgres-cluster
+spec:
+  selector:
+    matchLabels:
+      application: spilo
+      cluster-name: postgres-cluster
+  podMetricsEndpoints:
+    - port: exporter
+      relabelings:
+        # master or replica, so a panel or an alert can tell them apart
+        - sourceLabels: [__meta_kubernetes_pod_label_spilo_role]
+          targetLabel: role
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: postgres
+spec:
+  groups:
+    - name: postgres
+      rules:
+        - alert: PostgresDown
+          expr: pg_up{namespace="postgres"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Postgres on {{ $labels.pod }} does not answer"
+            description: "The exporter cannot connect: every app using this instance through the pooler is affected."
+
+        # 0 while the replica has replayed everything it received
+        - alert: PostgresReplicationLag
+          expr: pg_replication_lag_seconds{namespace="postgres"} > 300
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Replica {{ $labels.pod }} is {{ $value | humanizeDuration }} behind"
+            description: "A failover to this replica would lose those writes. Check its Patroni logs and the network to the master."
+
+        # Spilo archives a WAL segment at least every 30 minutes (archive_timeout), so on the
+        # master a much older last archive means WAL-G cannot write to Garage
+        - alert: PostgresWALArchivingStalled
+          expr: |
+            pg_stat_archiver_last_archive_age{namespace="postgres"} > 2 * 3600
+            and on (pod) pg_replication_is_replica{namespace="postgres"} == 0
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: "No WAL archived to Garage for {{ $value | humanizeDuration }}"
+            description: "Point-in-time recovery stops at the last archived segment. Check WAL-G errors in the master's logs and Garage health."
+
+        - alert: PostgresWALArchivingFailing
+          expr: increase(pg_stat_archiver_failed_count{namespace="postgres"}[15m]) > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "WAL archiving fails on {{ $labels.pod }}"
+            description: "archive_command keeps failing: WAL piles up in pg_wal and the volume will fill."
+
+        - alert: PostgresTooManyConnections
+          expr: |
+            sum by (pod) (pg_stat_activity_count{namespace="postgres"})
+            / max by (pod) (pg_settings_max_connections{namespace="postgres"}) > 0.8
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.pod }} uses {{ $value | humanizePercentage }} of max_connections"
+            description: "New connections will be refused soon. Look for an app bypassing the pooler or leaking connections."

@@ -18,8 +18,15 @@ Keycloak and Cloudflare. Read this before changing anything here.
   kustomization before you push: `kustomize build --enable-helm <dir>`.
 - Terraform is never applied by CI. `plan` and `apply` run on Brian's machine, because the
   state backend credentials only live there (see `terraform/Readme.md`).
-- Agents have no cluster or backend access. Anything that needs `kubectl`, `vault` or
-  `terraform apply` goes into a prompt or runbook for Brian's local session.
+- Agents run in Brian's local session and **do have cluster access**: `kubectl` is
+  cluster-admin, `vault` reads with `VAULT_ADDR=https://vault.arffornia.com`. Use them to check
+  the real state before and after a change (pods, events, Prometheus through the API server
+  proxy, `kubectl apply --dry-run=server`). There is no SSH to the nodes: node-level changes go
+  through `kubectl debug node/<name> --profile=sysadmin` and get documented in a README.
+- What Argo CD manages still changes through Git only, never `kubectl apply/edit` on it
+  (selfHeal reverts it). Vault content still changes through Terraform only (rule below).
+- `terraform plan/apply` stays with Brian: the state backend credentials are not available to
+  agents. Write the change, `terraform validate` it, and list the apply in the PR.
 
 ## Rules
 - **Vault secrets, policies and roles are always managed through Terraform (`terraform/`), never
