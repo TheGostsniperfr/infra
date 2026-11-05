@@ -4,7 +4,6 @@ metadata:
   name: postgres-cluster
   namespace: postgres
 spec:
-  allowedSourceRanges: null
   databases:
     arffornia: arffornia
     luckperms: luckperms

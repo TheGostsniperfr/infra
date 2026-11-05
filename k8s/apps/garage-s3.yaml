@@ -4,7 +4,7 @@ metadata:
   name: garage-s3
   namespace: argocd
   annotations:
-    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -14,7 +14,16 @@ spec:
       selfHeal: true
     syncOptions:
       - ServerSideApply=true
+      - RespectIgnoreDifferences=true
       - CreateNamespace=true
+  # The chart generates a random RPC secret at each render (no lookup under Argo CD): without
+  # this every self-heal would rotate it and break the node's RPC.
+  ignoreDifferences:
+    - kind: Secret
+      name: garage-rpc-secret
+      namespace: garage-s3
+      jsonPointers:
+        - /data
   project: default
   destination:
     name: in-cluster
