@@ -1,17 +1,23 @@
 replicaCount: 1
 
+# Images are released from Arffornia_Website: a vX.Y.Z git tag publishes both images as
+# :vX.Y.Z (build-and-push-images.yml), main only moves :latest. Both images come from the
+# same tag and must stay on the same version. Renovate opens the bump PR (renovate.json).
+# Releases: https://github.com/Arffornia/Arffornia_Website/tags
 images:
   # Image of the front / web server used (default nginx)
   frontend:
     repository: ghcr.io/arffornia/nginx_arffornia_website
-    pullPolicy: Always
-    tag: "latest"
+    pullPolicy: IfNotPresent
+    # renovate: datasource=docker depName=ghcr.io/arffornia/nginx_arffornia_website versioning=regex:^v(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
+    tag: "v0.2.0"
 
   # Image of the Laravel app used
   backend:
     repository: ghcr.io/arffornia/arffornia_website
-    pullPolicy: Always
-    tag: "latest"
+    pullPolicy: IfNotPresent
+    # renovate: datasource=docker depName=ghcr.io/arffornia/arffornia_website versioning=regex:^v(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
+    tag: "v0.2.0"
     port: 9000
     host: "127.0.0.1"
 
