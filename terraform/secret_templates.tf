@@ -327,6 +327,16 @@ variable "keycloak_admin_password_var" {
   type        = string
   sensitive   = true
 }
+variable "keycloak_smtp_user_var" {
+  description = "Gmail address Keycloak sends mail from (SMTP username)."
+  type        = string
+  sensitive   = true
+}
+variable "keycloak_smtp_password_var" {
+  description = "Google app password of that Gmail account."
+  type        = string
+  sensitive   = true
+}
 variable "postgres_keycloak_user_var" {
   description = "Postgres username for the Keycloak database."
   type        = string
