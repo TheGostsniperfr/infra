@@ -4,7 +4,6 @@ metadata:
   name: postgres-cluster
   namespace: postgres
 spec:
-  allowedSourceRanges: null
   databases:
     arffornia: arffornia
     luckperms: luckperms
@@ -34,13 +33,17 @@ spec:
       - hostssl all all 0.0.0.0/0 md5
   postgresql:
     version: "17"
+  # Measured 2026-11: the master peaked at 491Mi of 500Mi with major page faults, and every
+  # instance was CPU-throttled up to 64% of the time (GitLab, Keycloak, n8n... share it).
+  # Spilo sizes shared_buffers from the memory limit, so it follows. The operator applies
+  # default_cpu_limit (1) when no CPU limit is set, hence an explicit one.
   resources:
     limits:
-      cpu: 500m
-      memory: 500Mi
+      cpu: "2"
+      memory: 1Gi
     requests:
-      cpu: 100m
-      memory: 100Mi
+      cpu: 250m
+      memory: 384Mi
   teamId: tgs
   users:
     arffornia: []
@@ -56,6 +59,33 @@ spec:
   volume:
     size: 10Gi
     storageClass: longhorn
+
+  # postgres_exporter next to each instance: connections, replication lag, WAL archiving to
+  # Garage, database sizes. Scraped by the PodMonitor in monitoring.yaml.
+  # Feature: https://github.com/zalando/postgres-operator/blob/v1.15.1/docs/user.md#sidecar-support
+  # Collectors: https://github.com/prometheus-community/postgres_exporter/tree/v0.20.1#flags
+  # The operator puts POSTGRES_USER/POSTGRES_PASSWORD (superuser) before these variables, so
+  # $(...) resolves. pg_hba lets 127.0.0.1 in with md5 and no TLS.
+  sidecars:
+    - name: postgres-exporter
+      image: quay.io/prometheuscommunity/postgres-exporter:v0.20.1
+      ports:
+        - name: exporter
+          containerPort: 9187
+          protocol: TCP
+      env:
+        - name: DATA_SOURCE_URI
+          value: "127.0.0.1:5432/postgres?sslmode=disable"
+        - name: DATA_SOURCE_USER
+          value: "$(POSTGRES_USER)"
+        - name: DATA_SOURCE_PASS
+          value: "$(POSTGRES_PASSWORD)"
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          memory: 64Mi
 
   # See: https://thedatabaseme.de/2022/03/26/backup-to-s3-configure-zalando-postgres-operator-backup-with-wal-g/
 
