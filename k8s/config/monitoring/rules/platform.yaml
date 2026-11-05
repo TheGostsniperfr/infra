@@ -113,13 +113,11 @@ spec:
             summary: "Argo CD app {{ $labels.name }} is {{ $labels.health_status }}"
             description: "Resources of {{ $labels.name }} are not healthy in {{ $labels.dest_namespace }}. Open the app in Argo CD to see which one."
 
-        # info until the permanent drift on RBAC objects and CRDs (10 apps in 2026-11) is
-        # fixed with ignoreDifferences or server-side diff, then warning
         - alert: ArgoCDAppOutOfSync
           expr: argocd_app_info{sync_status="OutOfSync"} == 1
           for: 30m
           labels:
-            severity: info
+            severity: warning
           annotations:
             summary: "Argo CD app {{ $labels.name }} is out of sync for 30 minutes"
             description: "main is not what runs in the cluster: a sync fails, or a resource is mutated by a controller and needs ignoreDifferences."

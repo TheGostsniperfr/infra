@@ -128,8 +128,8 @@ prometheus:
 
 # Control plane components: kubeadm binds the controller-manager and scheduler metrics to
 # 127.0.0.1 and Cilium replaces kube-proxy, so these targets can never be scraped and their
-# rules only raise TargetDown and *Down alerts. etcd is off until its metrics listen on the
-# node IP (README.md).
+# rules only raise TargetDown and *Down alerts. etcd also serves its metrics on the node IP
+# (README.md), so it stays scraped: DB size, fsync latency, leader changes.
 # Chart: https://github.com/prometheus-community/helm-charts/tree/kube-prometheus-stack-80.14.4/charts/kube-prometheus-stack#kubeproxy
 # Feature: https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/
 kubeControllerManager:
@@ -138,12 +138,9 @@ kubeScheduler:
   enabled: false
 kubeProxy:
   enabled: false
-kubeEtcd:
-  enabled: false
 
 defaultRules:
   rules:
-    etcd: false
     kubeControllerManager: false
     kubeProxy: false
     kubeSchedulerAlerting: false
