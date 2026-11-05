@@ -654,6 +654,14 @@ resource "vault_kv_secret_v2" "monitoring_grafana_arffornia_db_secret" {
   })
 }
 
+resource "vault_kv_secret_v2" "monitoring_grafana_oidc_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "monitoring/grafana-oidc"
+  data_json = jsonencode({
+    client_secret = keycloak_openid_client.grafana.client_secret
+  })
+}
+
 resource "vault_kv_secret_v2" "monitoring_discord_secret" {
   mount = vault_mount.kvv2.path
   name  = "monitoring/discord"
