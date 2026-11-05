@@ -46,7 +46,7 @@
       "schedule": ["at any time"]
     },
     {
-      "description": "Website tags carry a laravel-/nginx- prefix: only the annotated regex manager handles them",
+      "description": "Website images are tracked by the annotated regex manager only, so they are not bumped twice",
       "matchManagers": ["helm-values"],
       "matchPackageNames": ["ghcr.io/arffornia/arffornia_website", "ghcr.io/arffornia/nginx_arffornia_website"],
       "enabled": false
