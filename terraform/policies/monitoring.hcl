@@ -10,3 +10,7 @@ path "${mount_path}/data/monitoring/discord" {
 path "${mount_path}/data/monitoring/healthchecks" {
   capabilities = ["read"]
 }
+
+path "${mount_path}/data/monitoring/grafana-arffornia-db" {
+  capabilities = ["read"]
+}

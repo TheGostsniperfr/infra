@@ -98,6 +98,26 @@ grafana:
       access: proxy
       jsonData:
         maxLines: 1000
+    # Website database (players, votes, shop) for the Arffornia Business dashboard. Read-only
+    # role on the replicas, column grants only (README.md, step 3).
+    # Feature: https://grafana.com/docs/grafana/latest/datasources/postgres/
+    - name: Arffornia DB
+      type: grafana-postgresql-datasource
+      uid: arffornia-db
+      url: postgres-cluster-repl.postgres.svc.cluster.local:5432
+      user: grafana_arffornia
+      jsonData:
+        database: arffornia
+        sslmode: require
+        postgresVersion: 1700
+        maxOpenConns: 2
+      secureJsonData:
+        password: $GRAFANA_ARFFORNIA_DB_PASSWORD
+
+  # optional: Grafana still starts before the VaultSecret exists, only that datasource fails
+  envFromSecrets:
+    - name: grafana-arffornia-db
+      optional: true
   defaultDashboardsTimezone: "Europe/Paris"
   forceDeployDatasources: true
   forceDeployDashboards: true
