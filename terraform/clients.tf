@@ -33,10 +33,6 @@ resource "keycloak_openid_client" "arffornia_openid_client" {
     "https://adminer.${var.base_domain}",
     "http://localhost:3000/"
   ]
-
-  authentication_flow_binding_overrides {
-    browser_id = keycloak_authentication_flow.browser_v5.id
-  }
 }
 
 # -----------------------------------------------------------------------------
@@ -88,10 +84,6 @@ resource "keycloak_openid_client" "vault" {
     "https://vault.${var.base_domain}/ui/vault/auth/oidc/oidc/callback",
     "http://localhost:8250/oidc/callback"
   ]
-
-  authentication_flow_binding_overrides {
-    browser_id = keycloak_authentication_flow.browser_openid_client.id
-  }
 }
 
 resource "keycloak_openid_client_default_scopes" "vault_scopes" {
