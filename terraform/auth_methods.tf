@@ -23,3 +23,31 @@ resource "vault_jwt_auth_backend" "keycloak" {
   oidc_client_secret = keycloak_openid_client.vault.client_secret
   default_role       = "default"
 }
+
+# Role used by `vault login -method=oidc` and the UI. It was created by hand; the import block
+# brings it under Terraform. Before the first apply, compare with
+# `vault read auth/oidc/role/default`: the plan must only add max_age.
+# Docs: https://developer.hashicorp.com/vault/api-docs/auth/jwt#create-update-role
+import {
+  to = vault_jwt_auth_backend_role.oidc_default
+  id = "auth/oidc/role/default"
+}
+
+resource "vault_jwt_auth_backend_role" "oidc_default" {
+  backend        = vault_jwt_auth_backend.keycloak.path
+  role_name      = "default"
+  role_type      = "oidc"
+  user_claim     = "preferred_username"
+  groups_claim   = "groups"
+  token_policies = ["default"]
+
+  bound_audiences = [keycloak_openid_client.vault.client_id]
+  allowed_redirect_uris = [
+    "https://vault.${var.base_domain}/ui/vault/auth/oidc/oidc/callback",
+    "http://localhost:8250/oidc/callback",
+  ]
+
+  # Step-up: Keycloak re-authenticates when the last login is older than 5 minutes, so every
+  # Vault login asks for a fresh passkey touch even inside a 30-day remember-me session.
+  max_age = 300
+}
