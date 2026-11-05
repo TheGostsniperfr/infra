@@ -79,5 +79,12 @@ alloy:
         }
       }
 
+# Also on the control-plane node: etcd, kube-apiserver and the scheduler log there
+controller:
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+
 serviceMonitor:
   enabled: true

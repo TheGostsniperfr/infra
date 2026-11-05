@@ -45,8 +45,12 @@ loki:
       insecure: true
 
   # Feature: https://grafana.com/docs/loki/latest/operations/storage/retention/
+  # A new Alloy pod first ships the whole kubelet log backlog of its node: the 4MB/s
+  # default dropped part of it at the first start.
   limits_config:
     retention_period: 336h
+    ingestion_rate_mb: 16
+    ingestion_burst_size_mb: 32
     volume_enabled: true
     allow_structured_metadata: true
   compactor:
