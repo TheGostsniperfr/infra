@@ -54,6 +54,17 @@ spec:
       ports:
         - protocol: TCP
           port: 25565
+    # mc-monitor -> Server List Ping (k8s/config/arffornia/proxy/mc-monitor.yaml)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: arffornia-proxy-velocity
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: mc-monitor
+      ports:
+        - protocol: TCP
+          port: 25565
     # bluemap-web nginx -> BlueMap live webserver
     - from:
         - namespaceSelector:

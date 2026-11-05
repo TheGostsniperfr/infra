@@ -157,3 +157,47 @@ spec:
           port: 10443
         - protocol: TCP
           port: 10080
+---
+# mc-monitor pings the proxy and every backend like a client would (Server List Ping) and is
+# scraped by Prometheus. The proxy already accepts 25577 from anywhere (allow-public-ingress).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-mc-monitor
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: mc-monitor
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: arffornia-proxy-velocity-minecraft-proxy
+      ports:
+        - protocol: TCP
+          port: 25577
+    - to:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - arffornia-server-arcane
+                  - arffornia-server-nexus
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: minecraft
+      ports:
+        - protocol: TCP
+          port: 25565
