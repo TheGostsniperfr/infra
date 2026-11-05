@@ -126,3 +126,39 @@ resource "keycloak_openid_client_default_scopes" "gitlab_scopes" {
     keycloak_openid_client_scope.groups.name
   ]
 }
+
+# -----------------------------------------------------------------------------
+# OIDC CLIENT: Grafana
+# -----------------------------------------------------------------------------
+resource "keycloak_openid_client" "grafana" {
+  realm_id                     = keycloak_realm.arffornia.id
+  client_id                    = "grafana"
+  name                         = "Grafana"
+  enabled                      = true
+  access_type                  = "CONFIDENTIAL"
+  standard_flow_enabled        = true
+  direct_access_grants_enabled = false
+  pkce_code_challenge_method   = "S256"
+
+  valid_redirect_uris = [
+    "https://grafana.${var.base_domain}/login/generic_oauth"
+  ]
+
+  valid_post_logout_redirect_uris = [
+    "https://grafana.${var.base_domain}/login"
+  ]
+
+  web_origins = [
+    "https://grafana.${var.base_domain}"
+  ]
+}
+
+resource "keycloak_openid_client_default_scopes" "grafana_scopes" {
+  realm_id  = keycloak_realm.arffornia.id
+  client_id = keycloak_openid_client.grafana.id
+  default_scopes = [
+    "profile",
+    "email",
+    keycloak_openid_client_scope.groups.name
+  ]
+}
