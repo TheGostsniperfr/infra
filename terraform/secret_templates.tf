@@ -629,20 +629,6 @@ variable "discord_webhook_arffornia_var" {
   sensitive   = true
 }
 
-variable "healthchecks_ping_url_var" {
-  description = "healthchecks.io ping URL the Alertmanager Watchdog heartbeat is sent to."
-  type        = string
-  sensitive   = true
-}
-
-resource "vault_kv_secret_v2" "monitoring_healthchecks_secret" {
-  mount = vault_mount.kvv2.path
-  name  = "monitoring/healthchecks"
-  data_json = jsonencode({
-    ping_url = var.healthchecks_ping_url_var
-  })
-}
-
 resource "vault_kv_secret_v2" "monitoring_discord_secret" {
   mount = vault_mount.kvv2.path
   name  = "monitoring/discord"
