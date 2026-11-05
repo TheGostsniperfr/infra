@@ -104,7 +104,7 @@ extraVolumeMounts: |
 extraInitContainers: |
   # Login and account theme JAR: https://github.com/Arffornia/keycloak-theme-arffornia
   - name: theme-provider-init
-    image: ghcr.io/arffornia/keycloak-theme-arffornia:1.1.0
+    image: ghcr.io/arffornia/keycloak-theme-arffornia:1.2.0
     imagePullPolicy: IfNotPresent
     volumeMounts:
       - name: theme-providers
