@@ -11,6 +11,7 @@ resources:
   - addition-config.yaml
   - backup-scripts.yaml
   - offhours-guard.yaml
+  - networkpolicy.yaml
 
 helmCharts:
   - name: minecraft
