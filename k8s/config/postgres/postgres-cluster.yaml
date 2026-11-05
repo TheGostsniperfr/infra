@@ -33,13 +33,17 @@ spec:
       - hostssl all all 0.0.0.0/0 md5
   postgresql:
     version: "17"
+  # Measured 2026-11: the master peaked at 491Mi of 500Mi with major page faults, and every
+  # instance was CPU-throttled up to 64% of the time (GitLab, Keycloak, n8n... share it).
+  # Spilo sizes shared_buffers from the memory limit, so it follows. The operator applies
+  # default_cpu_limit (1) when no CPU limit is set, hence an explicit one.
   resources:
     limits:
-      cpu: 500m
-      memory: 500Mi
+      cpu: "2"
+      memory: 1Gi
     requests:
-      cpu: 100m
-      memory: 100Mi
+      cpu: 250m
+      memory: 384Mi
   teamId: tgs
   users:
     arffornia: []
