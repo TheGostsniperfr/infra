@@ -629,20 +629,6 @@ variable "discord_webhook_arffornia_var" {
   sensitive   = true
 }
 
-variable "healthchecks_ping_url_var" {
-  description = "healthchecks.io ping URL the Alertmanager Watchdog heartbeat is sent to."
-  type        = string
-  sensitive   = true
-}
-
-resource "vault_kv_secret_v2" "monitoring_healthchecks_secret" {
-  mount = vault_mount.kvv2.path
-  name  = "monitoring/healthchecks"
-  data_json = jsonencode({
-    ping_url = var.healthchecks_ping_url_var
-  })
-}
-
 # Read-only Postgres role for the Arffornia Business dashboard. The role itself is created by
 # hand with this password (k8s/config/monitoring/README.md), Terraform only owns the value.
 resource "random_password" "grafana_arffornia_db" {
