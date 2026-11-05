@@ -76,6 +76,10 @@ grafana:
     enabled: true
     storageClassName: "longhorn"
     size: 5Gi
+  # The volume is ReadWriteOnce: a rolling update starts the new pod before stopping the old
+  # one, and it stays stuck on Multi-Attach when it lands on another node.
+  deploymentStrategy:
+    type: Recreate
 
   ingress:
     enabled: false
