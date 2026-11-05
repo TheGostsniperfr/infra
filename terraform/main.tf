@@ -57,12 +57,53 @@ resource "keycloak_realm" "arffornia" {
     }
   }
 
-  # TODO
-  web_authn_policy {
-    relying_party_entity_name = "Example"
-    relying_party_id          = "keycloak.example.com"
-    signature_algorithms      = ["ES256", "RS256"]
+  # Passkeys: https://www.keycloak.org/docs/latest/server_admin/index.html#passkeys_server_administration_guide
+  # The RP ID is the registrable domain, not auth.<domain>, so passkeys survive a Keycloak
+  # hostname change. Changing it later invalidates every registered passkey.
+  web_authn_passwordless_policy {
+    relying_party_entity_name         = "Arffornia ID"
+    relying_party_id                  = var.base_domain
+    signature_algorithms              = ["ES256", "RS256"]
+    user_verification_requirement     = "required"
+    require_resident_key              = "Yes"
+    attestation_conveyance_preference = "none"
+    avoid_same_authenticator_register = true
+    passwordless_passkeys_enabled     = true
   }
+
+  # Security key (YubiKey) as a second factor after a password.
+  web_authn_policy {
+    relying_party_entity_name         = "Arffornia ID"
+    relying_party_id                  = var.base_domain
+    signature_algorithms              = ["ES256", "RS256"]
+    user_verification_requirement     = "preferred"
+    attestation_conveyance_preference = "none"
+    avoid_same_authenticator_register = true
+  }
+}
+
+resource "keycloak_required_action" "webauthn_register_passwordless" {
+  realm_id       = keycloak_realm.arffornia.id
+  alias          = "webauthn-register-passwordless"
+  name           = "Webauthn Register Passwordless"
+  enabled        = true
+  default_action = true
+}
+
+resource "keycloak_required_action" "webauthn_register" {
+  realm_id       = keycloak_realm.arffornia.id
+  alias          = "webauthn-register"
+  name           = "Webauthn Register"
+  enabled        = true
+  default_action = false
+}
+
+resource "keycloak_required_action" "recovery_codes" {
+  realm_id       = keycloak_realm.arffornia.id
+  alias          = "CONFIGURE_RECOVERY_AUTHN_CODES"
+  name           = "Recovery Authentication Codes"
+  enabled        = true
+  default_action = true
 }
 
 resource "keycloak_required_action" "totp" {
