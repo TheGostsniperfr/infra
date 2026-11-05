@@ -629,6 +629,21 @@ variable "discord_webhook_arffornia_var" {
   sensitive   = true
 }
 
+# Read-only Postgres role for the Arffornia Business dashboard. The role itself is created by
+# hand with this password (k8s/config/monitoring/README.md), Terraform only owns the value.
+resource "random_password" "grafana_arffornia_db" {
+  length  = 32
+  special = false
+}
+
+resource "vault_kv_secret_v2" "monitoring_grafana_arffornia_db_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "monitoring/grafana-arffornia-db"
+  data_json = jsonencode({
+    password = random_password.grafana_arffornia_db.result
+  })
+}
+
 resource "vault_kv_secret_v2" "monitoring_discord_secret" {
   mount = vault_mount.kvv2.path
   name  = "monitoring/discord"
