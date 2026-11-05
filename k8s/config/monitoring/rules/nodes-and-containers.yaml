@@ -1,0 +1,55 @@
+# Node and container alerts the kubernetes-mixin does not ship.
+# Rules format: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: nodes-and-containers
+  namespace: monitoring
+spec:
+  groups:
+    - name: homelab.nodes
+      rules:
+        # rx_dropped is not used: the kernel also counts there every LAN frame with an
+        # ethertype it does not handle (~1/s from the box on every VM), so a drop ratio
+        # fires on quiet nodes. Softnet drops are packets lost for lack of CPU/backlog.
+        # Metric: https://github.com/prometheus/node_exporter/blob/v1.10.2/collector/softnet_linux.go
+        - alert: NodeNetworkSoftnetDrops
+          expr: sum by (instance) (rate(node_softnet_dropped_total[5m])) > 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.instance }} drops packets in the kernel backlog"
+            description: "{{ $value | humanize }} packets/s dropped because softirq processing cannot keep up. Check CPU steal and softirq load on the node."
+
+    - name: homelab.containers
+      rules:
+        # A container near its memory limit has its page cache and mmapped files reclaimed by
+        # its cgroup, then reads them back from disk: the node looks healthy, the app crawls.
+        - alert: ContainerMemoryThrashing
+          expr: |
+            sum by (namespace, pod, container) (
+              rate(container_memory_failures_total{failure_type="pgmajfault", scope="container", container!=""}[5m])
+            ) > 50
+            and on (namespace, pod, container)
+            (
+              max by (namespace, pod, container) (container_memory_working_set_bytes{container!=""})
+              / max by (namespace, pod, container) (kube_pod_container_resource_limits{resource="memory", job="kube-state-metrics"})
+            ) > 0.85
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) thrashes against its memory limit"
+            description: "{{ $value | humanize }} major page faults/s while above 85% of its memory limit. Raise the limit."
+
+        - alert: ContainerOOMKilled
+          expr: |
+            increase(kube_pod_container_status_restarts_total{job="kube-state-metrics"}[15m]) > 0
+            and on (namespace, pod, container)
+            kube_pod_container_status_last_terminated_reason{reason="OOMKilled", job="kube-state-metrics"} == 1
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) was OOMKilled"
+            description: "The container hit its memory limit and was restarted in the last 15 minutes."
