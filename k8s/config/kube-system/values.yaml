@@ -11,6 +11,11 @@ operator:
 #   mode: kubernetes
 
 kubeProxyReplacement: true
+# Without kube-proxy, nothing serves the `kubernetes` Service before Cilium itself is up: the
+# agent must reach the API server directly. Single control plane, so its node IP.
+# Feature: https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/
+k8sServiceHost: 192.168.1.73
+k8sServicePort: 6443
 socketLB:
   # Mandatory with kube proxy replacement if we want to use kata containers
   # See

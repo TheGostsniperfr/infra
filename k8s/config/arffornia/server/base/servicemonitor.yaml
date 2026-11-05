@@ -1,0 +1,16 @@
+# Minecraft Prometheus Exporter (Forge mod in the modpack) on port 19565: TPS and tick time
+# per dimension, loaded chunks, entities by type, JVM heap and GC.
+# Metrics: https://github.com/cpburnz/minecraft-prometheus-exporter/blob/v0.3.1/metrics.md
+# The overlay sets the namespace; only the http-metrics Service exposes that port.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: minecraft
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: minecraft
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 15s
