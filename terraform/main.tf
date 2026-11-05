@@ -64,6 +64,23 @@ resource "keycloak_realm" "arffornia" {
     }
   }
 
+  # Outgoing mail through Gmail with an app password: security alerts and required-action
+  # emails to the team. The sender is the Gmail address itself, so SPF, DKIM and DMARC pass
+  # without DNS changes on our domain.
+  # App passwords: https://support.google.com/accounts/answer/185833
+  smtp_server {
+    host              = "smtp.gmail.com"
+    port              = "587"
+    starttls          = true
+    from              = var.keycloak_smtp_user_var
+    from_display_name = "Arffornia ID"
+
+    auth {
+      username = var.keycloak_smtp_user_var
+      password = var.keycloak_smtp_password_var
+    }
+  }
+
   # Passkeys: https://www.keycloak.org/docs/latest/server_admin/index.html#passkeys_server_administration_guide
   # The RP ID is the registrable domain, not auth.<domain>, so passkeys survive a Keycloak
   # hostname change. Changing it later invalidates every registered passkey.
@@ -173,4 +190,18 @@ resource "keycloak_realm_user_profile" "arffornia_profile" {
       name = "uri"
     }
   }
+}
+
+# Login events, and the "email" listener that mails a user on a failed login, a password
+# change and a second factor added or removed.
+# Docs: https://www.keycloak.org/docs/latest/server_admin/index.html#event-listener
+resource "keycloak_realm_events" "arffornia" {
+  realm_id = keycloak_realm.arffornia.id
+
+  events_enabled    = true
+  events_expiration = 2592000 # 30 days of login events in the admin console
+  events_listeners  = ["jboss-logging", "email"]
+
+  admin_events_enabled         = true
+  admin_events_details_enabled = false
 }
