@@ -56,7 +56,7 @@ startupProbe:
 
 initContainers:
   - name: config-updater
-    image: ghcr.io/arffornia/config-updater:latest
+    image: ghcr.io/arffornia/config-updater:updater-0.0.7@sha256:4a76a42ea5b7ce3eb63344eef784510c225ffc10695746846bf9f69ec00078d8
     env:
       - name: KIND
         value: proxy
@@ -294,6 +294,11 @@ extraEnv:
       configMapKeyRef:
         name: arffornia-proxy-config
         key: REPLACE_ENV_SUFFIXES
+  CFG_API_BASE_URL:
+    valueFrom:
+      configMapKeyRef:
+        name: arffornia-proxy-config
+        key: CFG_API_BASE_URL
 
   CFG_LUCKPERMS_USER:
     valueFrom:

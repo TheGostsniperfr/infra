@@ -7,7 +7,7 @@ data:
   APP_NAME: "Arffornia Website"
   APP_ENV: "production"
   # APP_KEY:
-  APP_DEBUG: "true"
+  APP_DEBUG: "false"
   APP_TIMEZONE: "UTC"
   APP_URL: "https://arffornia.com"
 
@@ -23,7 +23,7 @@ data:
   LOG_CHANNEL: "stack"
   LOG_STACK: "single"
   LOG_DEPRECATIONS_CHANNEL: "null"
-  LOG_LEVEL: "debug"
+  LOG_LEVEL: "info"
 
   DB_CONNECTION: "pgsql"
   DB_HOST: "postgres-cluster.postgres.svc.cluster.local"

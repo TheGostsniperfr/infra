@@ -32,6 +32,10 @@
       "matchUpdateTypes": ["minor", "patch"],
       "matchDatasources": ["docker"],
       "groupName": "Docker Images (Minor & Patch)"
+    },
+    {
+      "matchPackageNames": ["plexinc/pms-docker"],
+      "allowedVersions": "/^\\d+\\.\\d+\\.\\d+\\.\\d+-[0-9a-f]+$/"
     }
   ],
   "schedule": ["before 5am on monday"],

@@ -37,12 +37,12 @@ spec:
                     exit 0
                   fi
 
-                  echo "Runner reachable. Triggering photo-ai scan-new..."
+                  echo "Runner reachable. Triggering photo-ai scan (2-pass)..."
                   curl -sf --max-time 10 \
                     -X POST \
                     -H "Authorization: Bearer ${RUNNER_AUTH_TOKEN}" \
                     -H "Content-Type: application/json" \
-                    -d '{"mode":"scan-new"}' \
+                    -d '{"mode":"scan"}' \
                     http://photo-ai-runner.photo-ai.svc.cluster.local:8765/api/run
 
                   echo "Trigger sent."

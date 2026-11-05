@@ -15,12 +15,20 @@ spec:
     n8n: n8n
     coder: coder
     photoai: photoai
+    gitlab: gitlab
   enableConnectionPooler: true
   enableReplicaConnectionPooler: true
   enableReplicaLoadBalancer: false
   numberOfInstances: 3
   patroni:
+    # This list REPLACES the operator defaults. Always keep the two `local` lines and the
+    # two `replication` lines below: without them the operator, WAL-G and the replicas
+    # cannot connect (see AGENTS.md).
     pg_hba:
+      - local all all trust
+      - host all all 127.0.0.1/32 md5
+      - local replication standby trust
+      - hostssl replication standby all md5
       - hostnossl nextcloud nextcloud 0.0.0.0/0 md5
       - hostnossl photoai photoai 192.168.1.0/24 md5
       - hostssl all all 0.0.0.0/0 md5
@@ -44,6 +52,7 @@ spec:
     n8n: []
     coder: []
     photoai: []
+    gitlab: []
   volume:
     size: 10Gi
     storageClass: longhorn
@@ -72,6 +81,9 @@ spec:
     - name: AWS_S3_FORCE_PATH_STYLE
       value: "true"
 
+    - name: AWS_REGION
+      value: "garage"
+
     - name: AWS_ACCESS_KEY_ID
       valueFrom:
         secretKeyRef:
@@ -95,6 +107,9 @@ spec:
 
     - name: CLONE_AWS_S3_FORCE_PATH_STYLE
       value: "true"
+
+    - name: CLONE_AWS_REGION
+      value: "garage"
 
     - name: CLONE_AWS_ACCESS_KEY_ID
       valueFrom:
