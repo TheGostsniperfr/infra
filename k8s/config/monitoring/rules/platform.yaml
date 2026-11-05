@@ -1,0 +1,172 @@
+# Alerts for the platform components the kubernetes-mixin does not know: storage (Longhorn,
+# Garage), certificates, GitOps, the gateway, the CNI. Their ServiceMonitors live with each
+# component. Scrape failures are covered by the mixin's TargetDown.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: platform
+  namespace: monitoring
+spec:
+  groups:
+    # Metrics: https://longhorn.io/docs/1.11.1/monitoring/metrics/
+    - name: platform.longhorn
+      rules:
+        # robustness: 0 unknown, 1 healthy, 2 degraded (a replica is missing), 3 faulted
+        - alert: LonghornVolumeDegraded
+          expr: longhorn_volume_robustness == 2
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn volume {{ $labels.pvc_namespace }}/{{ $labels.pvc }} is degraded"
+            description: "A replica is missing and has not been rebuilt for 15 minutes. One more failure and the data is at risk."
+
+        - alert: LonghornVolumeFaulted
+          expr: longhorn_volume_robustness == 3
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Longhorn volume {{ $labels.pvc_namespace }}/{{ $labels.pvc }} is faulted"
+            description: "No healthy replica is left: the workload cannot read its data. Check the replicas in the Longhorn UI."
+
+        - alert: LonghornNodeDown
+          expr: longhorn_node_status{condition="ready"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Longhorn node {{ $labels.node }} is not ready"
+            description: "Volumes with a replica on this node are degraded and cannot schedule new replicas there."
+
+        - alert: LonghornDiskAlmostFull
+          expr: longhorn_disk_usage_bytes / longhorn_disk_capacity_bytes > 0.85
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn disk on {{ $labels.node }} is {{ $value | humanizePercentage }} full"
+            description: "Replica rebuilds and snapshots need free space: clean old snapshots or grow the disk."
+
+    # Metrics: https://garagehq.deuxfleurs.fr/documentation/reference-manual/monitoring/
+    - name: platform.garage
+      rules:
+        # Garage holds Terraform state, Postgres backups and GitLab objects on a single node
+        - alert: GarageUnhealthy
+          expr: cluster_healthy{namespace="garage-s3"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Garage S3 reports an unhealthy cluster"
+            description: "S3 writes may fail: Postgres WAL archiving, GitLab uploads and Terraform state are affected."
+
+        - alert: GarageDiskAlmostFull
+          expr: garage_local_disk_avail{namespace="garage-s3"} / garage_local_disk_total{namespace="garage-s3"} < 0.15
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Garage {{ $labels.volume }} volume has {{ $value | humanizePercentage }} free"
+            description: "Grow the garage-s3 PVC or lower the backup retention before writes start failing."
+
+    # Metrics: https://cert-manager.io/docs/devops-tips/prometheus-metrics/
+    - name: platform.certificates
+      rules:
+        - alert: CertificateNotReady
+          expr: certmanager_certificate_ready_status{condition="False"} == 1
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} is not ready"
+            description: "cert-manager cannot issue or renew it: `kubectl -n {{ $labels.namespace }} describe certificate {{ $labels.name }}`."
+
+        # cert-manager renews 30 days before expiry: under 14 days, renewal has been failing
+        - alert: CertificateExpiringSoon
+          expr: certmanager_certificate_expiration_timestamp_seconds - time() < 14 * 86400
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in {{ $value | humanizeDuration }}"
+            description: "Renewal should have happened two weeks ago. Check the Certificate and its CertificateRequests."
+
+        - alert: CertificateExpiringSoon
+          expr: certmanager_certificate_expiration_timestamp_seconds - time() < 3 * 86400
+          for: 1h
+          labels:
+            severity: critical
+          annotations:
+            summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in {{ $value | humanizeDuration }}"
+            description: "Browsers will reject the site when it expires. Check the Certificate and its CertificateRequests."
+
+    # Metrics: https://argo-cd.readthedocs.io/en/stable/operator-manual/metrics/
+    - name: platform.argocd
+      rules:
+        - alert: ArgoCDAppUnhealthy
+          expr: argocd_app_info{health_status=~"Degraded|Missing"} == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Argo CD app {{ $labels.name }} is {{ $labels.health_status }}"
+            description: "Resources of {{ $labels.name }} are not healthy in {{ $labels.dest_namespace }}. Open the app in Argo CD to see which one."
+
+        # info until the permanent drift on RBAC objects and CRDs (10 apps in 2026-11) is
+        # fixed with ignoreDifferences or server-side diff, then warning
+        - alert: ArgoCDAppOutOfSync
+          expr: argocd_app_info{sync_status="OutOfSync"} == 1
+          for: 30m
+          labels:
+            severity: info
+          annotations:
+            summary: "Argo CD app {{ $labels.name }} is out of sync for 30 minutes"
+            description: "main is not what runs in the cluster: a sync fails, or a resource is mutated by a controller and needs ignoreDifferences."
+
+        - alert: ArgoCDSyncFailed
+          expr: increase(argocd_app_sync_total{phase=~"Error|Failed"}[15m]) > 0
+          labels:
+            severity: warning
+          annotations:
+            summary: "Argo CD sync of {{ $labels.name }} failed"
+            description: "The last sync ended in {{ $labels.phase }}. The app's last operation shows the failing resource."
+
+    # Metrics: https://www.envoyproxy.io/docs/envoy/latest/configuration/upstream/cluster_manager/cluster_stats
+    - name: platform.gateway
+      rules:
+        # envoy_cluster_name is the backend: httproute/<namespace>/<route>/rule/<n>
+        - alert: GatewayBackend5xx
+          expr: |
+            (
+              sum by (envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx{envoy_response_code_class="5"}[5m]))
+              / sum by (envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx[5m]))
+            ) > 0.05
+            and sum by (envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx[5m])) > 0.1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.envoy_cluster_name }} answers {{ $value | humanizePercentage }} 5xx"
+            description: "More than 5% of the requests through the gateway to this backend fail for 10 minutes."
+
+    # Metrics: https://docs.cilium.io/en/stable/observability/metrics/
+    - name: platform.cilium
+      rules:
+        - alert: CiliumUnreachableNodes
+          expr: max by (pod) (cilium_unreachable_nodes) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Cilium agent {{ $labels.pod }} cannot reach {{ $value }} node(s)"
+            description: "Pod-to-pod traffic towards those nodes is likely broken. Run `cilium-dbg status --verbose` in the agent."
+
+        - alert: CiliumBPFMapPressure
+          expr: max by (pod, map_name) (cilium_bpf_map_pressure) > 0.9
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "BPF map {{ $labels.map_name }} is {{ $value | humanizePercentage }} full on {{ $labels.pod }}"
+            description: "When the map is full, new connections or endpoints are dropped. Raise its size in the Cilium values."

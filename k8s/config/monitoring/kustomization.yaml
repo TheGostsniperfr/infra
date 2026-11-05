@@ -8,6 +8,7 @@ resources:
   - namespace.yaml
   - alertmanager-config.yaml
   - rules/nodes-and-containers.yaml
+  - rules/platform.yaml
 
 helmGlobals:
   chartHome: ../../../charts

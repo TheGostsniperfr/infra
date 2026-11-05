@@ -1,6 +1,10 @@
 # Default 2, but need to ask for this kind of thing what's the real needs for HA or is ok ? because it's an operator
 operator:
   replicas: 1
+  prometheus:
+    serviceMonitor:
+      enabled: true
+      interval: 30s
 
 # Bare-Metal Setup (e.g., Talos etc.)
 # ipam:
@@ -49,3 +53,13 @@ l7Proxy: true # default true
 # This require to add Envoy-related CRDs
 envoyConfig:
   enabled: false
+
+# Agent and operator metrics: packet drops by reason, BPF map pressure, unreachable nodes.
+# trustCRDsExist: kustomize renders without the cluster's API list, the CRDs do exist.
+# Feature: https://docs.cilium.io/en/stable/observability/metrics/
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    trustCRDsExist: true
