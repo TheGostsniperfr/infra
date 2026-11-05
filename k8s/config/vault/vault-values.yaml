@@ -1,3 +1,11 @@
+# HashiCorp Vault, standalone with integrated (raft) storage
+# Chart: https://developer.hashicorp.com/vault/docs/platform/k8s/helm
+# Values reference: https://github.com/hashicorp/vault-helm/blob/v0.32.0/values.yaml
+#
+# Shamir seal: Vault comes back sealed after every restart of vault-0 and needs 3 unseal keys.
+# VaultSealed (rules.yaml) pages when that happens. Secrets, policies and roles are managed by
+# Terraform (terraform/), never by hand.
+
 global:
   enabled: true
   tlsDisable: true
@@ -9,6 +17,9 @@ global:
 server:
   standalone:
     enabled: true
+    # Telemetry: /v1/sys/metrics in Prometheus format, readable without a token
+    # Feature: https://developer.hashicorp.com/vault/docs/configuration/telemetry#prometheus
+    # Metrics: https://developer.hashicorp.com/vault/docs/internals/telemetry/metrics/all
     config: |
       ui = true
 
@@ -16,18 +27,28 @@ server:
         address = "[::]:8200"
         cluster_address = "[::]:8201"
         tls_disable = 1
+        telemetry {
+          unauthenticated_metrics_access = true
+        }
       }
       storage "raft" {
         path = "/vault/data"
       }
+      telemetry {
+        prometheus_retention_time = "24h"
+        disable_hostname = true
+      }
 
+  # Raft keeps its data in vault.db, a BoltDB file mmapped in memory (203Mi in 2026-11).
+  # Mapped pages count against the cgroup limit: at 256Mi the kernel kept evicting them and
+  # every read went back to Longhorn (900+ major page faults/s). The limit leaves room for the
+  # whole file plus the heap. No CPU limit, the request is enough to share the node.
   resources:
     requests:
-      memory: "256Mi"
-      cpu: "250m"
+      memory: "512Mi"
+      cpu: "100m"
     limits:
-      memory: "256Mi"
-      cpu: "250m"
+      memory: "1Gi"
 
   dataStorage:
     enabled: true
@@ -38,3 +59,10 @@ server:
     enabled: true
     storageClass: "longhorn"
     size: 10Gi
+
+serverTelemetry:
+  serviceMonitor:
+    enabled: true
+    # Prometheus selects every ServiceMonitor, the default `release: prometheus` is not needed
+    selectors:
+      app.kubernetes.io/part-of: vault

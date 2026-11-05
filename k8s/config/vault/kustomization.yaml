@@ -5,6 +5,7 @@ namespace: vault
 
 resources:
   - namespace.yaml
+  - rules.yaml
 
 helmGlobals:
   chartHome: ../../../charts
