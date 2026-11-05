@@ -1,0 +1,77 @@
+# mc-monitor: pings the proxy and each backend with a Server List Ping, as a Minecraft client
+# would, and exports health, response time and online players for Prometheus.
+# Feature: https://github.com/itzg/mc-monitor#export-for-prometheus
+# Metrics: minecraft_status_{healthy,response_time_seconds,players_online_count,players_max_count}
+# labelled server_host, server_port, server_version. A server that sleeps (offhours-guard)
+# reports healthy=0: rules.yaml only alerts when its Deployment wants a replica.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mc-monitor
+  labels:
+    app.kubernetes.io/name: mc-monitor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mc-monitor
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mc-monitor
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: mc-monitor
+          image: itzg/mc-monitor:1.18.3
+          args: ["export-for-prometheus"]
+          env:
+            # Comma-separated, no spaces: entries are not trimmed
+            - name: EXPORT_SERVERS
+              value: "arffornia-proxy-velocity-minecraft-proxy.arffornia-proxy-velocity:25565,arffornia-server-arcane-minecraft.arffornia-server-arcane:25565,arffornia-server-nexus-minecraft.arffornia-server-nexus:25565"
+            - name: TIMEOUT
+              value: 10s
+          ports:
+            - name: http-metrics
+              containerPort: 8080
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mc-monitor
+  labels:
+    app.kubernetes.io/name: mc-monitor
+spec:
+  selector:
+    app.kubernetes.io/name: mc-monitor
+  ports:
+    - name: http-metrics
+      port: 8080
+      targetPort: http-metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mc-monitor
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mc-monitor
+  endpoints:
+    - port: http-metrics
+      interval: 30s
