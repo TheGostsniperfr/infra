@@ -56,6 +56,33 @@ spec:
     size: 10Gi
     storageClass: longhorn
 
+  # postgres_exporter next to each instance: connections, replication lag, WAL archiving to
+  # Garage, database sizes. Scraped by the PodMonitor in monitoring.yaml.
+  # Feature: https://github.com/zalando/postgres-operator/blob/v1.15.1/docs/user.md#sidecar-support
+  # Collectors: https://github.com/prometheus-community/postgres_exporter/tree/v0.20.1#flags
+  # The operator puts POSTGRES_USER/POSTGRES_PASSWORD (superuser) before these variables, so
+  # $(...) resolves. pg_hba lets 127.0.0.1 in with md5 and no TLS.
+  sidecars:
+    - name: postgres-exporter
+      image: quay.io/prometheuscommunity/postgres-exporter:v0.20.1
+      ports:
+        - name: exporter
+          containerPort: 9187
+          protocol: TCP
+      env:
+        - name: DATA_SOURCE_URI
+          value: "127.0.0.1:5432/postgres?sslmode=disable"
+        - name: DATA_SOURCE_USER
+          value: "$(POSTGRES_USER)"
+        - name: DATA_SOURCE_PASS
+          value: "$(POSTGRES_PASSWORD)"
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          memory: 64Mi
+
   # See: https://thedatabaseme.de/2022/03/26/backup-to-s3-configure-zalando-postgres-operator-backup-with-wal-g/
 
   env:
