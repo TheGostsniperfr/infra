@@ -21,6 +21,11 @@ resource "keycloak_realm" "arffornia" {
   sso_session_idle_timeout = "10h" # The amount of time a session can be idle before it expires. ?
   sso_session_max_lifespan = "24h" # The maximum amount of time before a session expires regardless of activity.
 
+  # Remember me: one login per device and month. Acceptable because the login is a
+  # phishing-resistant passkey.
+  sso_session_idle_timeout_remember_me = "336h"
+  sso_session_max_lifespan_remember_me = "720h"
+
   # Enable user registration for testing (optional)
   login_with_email_allowed = true
   registration_allowed     = false
@@ -29,8 +34,10 @@ resource "keycloak_realm" "arffornia" {
   verify_email             = false # When true, users are required to verify their email address after registration and after email address changes.
   duplicate_emails_allowed = false # When true, multiple users will be allowed to have the same email address. This argument must be set to false if login_with_email_allowed is set to true.
 
-  ssl_required    = "external"
-  password_policy = "upperCase(1) and length(8) and forceExpiredPasswordChange(365) and notUsername"
+  ssl_required = "external"
+  # NIST SP 800-63B: length over composition rules, no periodic expiry.
+  # https://pages.nist.gov/800-63-4/sp800-63b.html
+  password_policy = "length(12) and notUsername and notEmail and passwordHistory(3)"
   # attributes = {
   #   mycustomAttribute = "myCustomValue"
   # }
@@ -48,7 +55,7 @@ resource "keycloak_realm" "arffornia" {
     }
     brute_force_detection {
       permanent_lockout                = false
-      max_login_failures               = 30
+      max_login_failures               = 10
       wait_increment_seconds           = 60
       quick_login_check_milli_seconds  = 1000
       minimum_quick_login_wait_seconds = 60
