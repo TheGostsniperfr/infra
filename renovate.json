@@ -37,6 +37,20 @@
       "matchPackageNames": ["plexinc/pms-docker"],
       "allowedVersions": "/^\\d+\\.\\d+\\.\\d+\\.\\d+-[0-9a-f]+$/"
     }
+ ,
+    {
+      "description": "Our own website releases: no waiting period, both images in one PR, any day",
+      "matchPackageNames": ["ghcr.io/arffornia/arffornia_website", "ghcr.io/arffornia/nginx_arffornia_website"],
+      "minimumReleaseAge": "0 days",
+      "groupName": "Arffornia website",
+      "schedule": ["at any time"]
+    },
+    {
+      "description": "Website tags carry a laravel-/nginx- prefix: only the annotated regex manager handles them",
+      "matchManagers": ["helm-values"],
+      "matchPackageNames": ["ghcr.io/arffornia/arffornia_website", "ghcr.io/arffornia/nginx_arffornia_website"],
+      "enabled": false
+    }
   ],
   "schedule": ["before 5am on monday"],
   "prConcurrentLimit": 5,
