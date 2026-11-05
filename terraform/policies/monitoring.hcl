@@ -6,3 +6,7 @@ path "${mount_path}/data/grafana/admin" {
 path "${mount_path}/data/monitoring/discord" {
   capabilities = ["read"]
 }
+
+path "${mount_path}/data/monitoring/healthchecks" {
+  capabilities = ["read"]
+}

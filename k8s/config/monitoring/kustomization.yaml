@@ -7,6 +7,7 @@ resources:
   - secret.yaml
   - namespace.yaml
   - alertmanager-config.yaml
+  - alertmanager-heartbeat.yaml
   - rules/nodes-and-containers.yaml
   - rules/platform.yaml
 
