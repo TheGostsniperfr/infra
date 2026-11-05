@@ -35,7 +35,7 @@ resource "keycloak_openid_client" "arffornia_openid_client" {
   ]
 
   authentication_flow_binding_overrides {
-    browser_id = keycloak_authentication_flow.browser_openid_client.id
+    browser_id = keycloak_authentication_flow.browser_v5.id
   }
 }
 
