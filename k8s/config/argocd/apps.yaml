@@ -9,8 +9,17 @@ spec:
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
+      - RespectIgnoreDifferences=true
     automated:
       prune: true
+  # Argo CD adds its own pre-delete finalizers to apps whose chart has PreDelete hooks
+  # (kyverno, longhorn): they are not in Git and must not be removed by a sync.
+  # Feature: https://argo-cd.readthedocs.io/en/stable/user-guide/diffing/
+  ignoreDifferences:
+    - group: argoproj.io
+      kind: Application
+      jqPathExpressions:
+        - .metadata.finalizers[]? | select(startswith("pre-delete-finalizer.argocd.argoproj.io"))
   project: default
   source:
     repoURL: https://github.com/TheGostsniperfr/infra.git
