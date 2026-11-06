@@ -9,6 +9,8 @@ metadata:
     metallb.universe.tf/loadBalancerIPs: 192.168.1.123
 spec:
   type: LoadBalancer
+  # MetalLB answers for the IP itself; no NodePort, which the slot quota (services.nodeports: 0) forbids.
+  allocateLoadBalancerNodePorts: false
   externalTrafficPolicy: Cluster
   selector:
     app: arffornia-slot-minecraft
