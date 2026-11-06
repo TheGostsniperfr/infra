@@ -10,6 +10,9 @@ data:
   APP_DEBUG: "false"
   APP_TIMEZONE: "UTC"
   APP_URL: "https://staging.arffornia.com"
+  # Pod network (Cilium cluster pool): trust X-Forwarded-Proto from the Envoy gateway, so URLs and
+  # assets are https. Prod gets it from APP_ENV=production instead (URL::forceScheme).
+  TRUSTED_PROXIES: "10.0.0.0/8"
 
   APP_LOCALE: "en"
   APP_FALLBACK_LOCALE: "en"
