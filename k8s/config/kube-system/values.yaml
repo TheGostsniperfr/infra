@@ -1,12 +1,21 @@
 # Default 2, but need to ask for this kind of thing what's the real needs for HA or is ok ? because it's an operator
 operator:
   replicas: 1
+  prometheus:
+    serviceMonitor:
+      enabled: true
+      interval: 30s
 
 # Bare-Metal Setup (e.g., Talos etc.)
 # ipam:
 #   mode: kubernetes
 
 kubeProxyReplacement: true
+# Without kube-proxy, nothing serves the `kubernetes` Service before Cilium itself is up: the
+# agent must reach the API server directly. Single control plane, so its node IP.
+# Feature: https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/
+k8sServiceHost: 192.168.1.73
+k8sServicePort: 6443
 socketLB:
   # Mandatory with kube proxy replacement if we want to use kata containers
   # See
@@ -49,3 +58,13 @@ l7Proxy: true # default true
 # This require to add Envoy-related CRDs
 envoyConfig:
   enabled: false
+
+# Agent and operator metrics: packet drops by reason, BPF map pressure, unreachable nodes.
+# trustCRDsExist: kustomize renders without the cluster's API list, the CRDs do exist.
+# Feature: https://docs.cilium.io/en/stable/observability/metrics/
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    trustCRDsExist: true

@@ -29,7 +29,12 @@ terraform {
 
     keycloak = {
       source  = "keycloak/keycloak"
-      version = "5.7.0"
+      version = "5.10.0"
+    }
+
+    tls = {
+      source  = "hashicorp/tls"
+      version = "4.4.1"
     }
   }
 }

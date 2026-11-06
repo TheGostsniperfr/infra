@@ -1,0 +1,23 @@
+# Vault alerts. vault_core_unsealed disappears when the pod is down or not scraped, the
+# readiness of vault-0 (its probe runs `vault status`, which fails while sealed) covers it.
+# Metrics: https://developer.hashicorp.com/vault/docs/internals/telemetry/metrics/core-system
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: vault
+  namespace: vault
+spec:
+  groups:
+    - name: vault
+      rules:
+        - alert: VaultSealed
+          expr: |
+            vault_core_unsealed == 0
+            or on ()
+            sum by (namespace) (kube_pod_container_status_ready{namespace="vault", container="vault", job="kube-state-metrics"}) == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Vault is sealed or down"
+            description: "VaultSecrets are not refreshed and vault-secrets-operator crash loops until Vault is unsealed: `kubectl -n vault exec -ti vault-0 -- vault operator unseal`, three times with three different keys."

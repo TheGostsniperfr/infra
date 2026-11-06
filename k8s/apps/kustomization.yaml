@@ -33,6 +33,7 @@ resources:
 
   # Monitoring
   - monitoring.yaml
+  - logging.yaml
 
   # Applications
   - offhours-guard.yaml
@@ -45,6 +46,7 @@ resources:
   - coder.yaml
   - photo-ai.yaml
   - immich.yaml
+  - gitlab.yaml
 
   # Arffornia Apps
   - arffornia/

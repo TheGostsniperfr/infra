@@ -1,0 +1,120 @@
+# Grafana Loki, single binary: one pod runs ingest, query, compaction and the ruler
+# Chart: https://grafana.com/docs/loki/latest/setup/install/helm/install-monolithic/
+# Values reference: https://github.com/grafana/loki/blob/helm-loki-7.3.0/production/helm/loki/values.yaml
+# Configuration: https://grafana.com/docs/loki/latest/configure/
+#
+# Chunks and index go to the Garage bucket `loki` (README.md), the local volume only holds the
+# WAL and caches. One tenant (auth_enabled: false), 14 days of retention: Garage is a single
+# 20Gi node shared with the Postgres backups. Alloy (alloy-values.yaml) ships the pod logs.
+# Log-based alert rules are ConfigMaps labelled loki_rule (rules.yaml), sent to Alertmanager.
+
+deploymentMode: SingleBinary
+
+loki:
+  auth_enabled: false
+
+  commonConfig:
+    replication_factor: 1
+
+  # Feature: https://grafana.com/docs/loki/latest/operations/storage/schema/
+  schemaConfig:
+    configs:
+      - from: "2026-11-01"
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+
+  # Garage, path-style, plain HTTP inside the cluster. Keys come from the loki-s3 Secret
+  # through -config.expand-env.
+  # Feature: https://grafana.com/docs/loki/latest/configure/storage/#on-premise-deployment-minio-single-store
+  storage:
+    type: s3
+    bucketNames:
+      chunks: loki
+      ruler: loki
+      admin: loki
+    s3:
+      endpoint: garage.garage-s3.svc.cluster.local:3900
+      region: garage
+      accessKeyId: ${AWS_ACCESS_KEY_ID}
+      secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+      s3ForcePathStyle: true
+      insecure: true
+
+  # Feature: https://grafana.com/docs/loki/latest/operations/storage/retention/
+  # A new Alloy pod first ships the whole kubelet log backlog of its node: the 4MB/s
+  # default dropped part of it at the first start.
+  limits_config:
+    retention_period: 336h
+    ingestion_rate_mb: 16
+    ingestion_burst_size_mb: 32
+    volume_enabled: true
+    allow_structured_metadata: true
+  compactor:
+    retention_enabled: true
+    delete_request_store: s3
+
+  # Patterns in Grafana Logs Drilldown
+  pattern_ingester:
+    enabled: true
+
+  # Ruler: LogQL alerts from /rules/fake (tenant "fake" when auth is off), filled by the
+  # rules sidecar, sent to the kube-prometheus-stack Alertmanager
+  # Feature: https://grafana.com/docs/loki/latest/alert/
+  rulerConfig:
+    storage:
+      type: local
+      local:
+        directory: /rules
+    rule_path: /var/loki/rules-temp
+    alertmanager_url: http://kube-prometheus-stack-alertmanager.monitoring.svc:9093
+    enable_api: true
+
+singleBinary:
+  replicas: 1
+  extraArgs:
+    - -config.expand-env=true
+  extraEnvFrom:
+    - secretRef:
+        name: loki-s3
+  persistence:
+    enabled: true
+    storageClass: longhorn
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+
+sidecar:
+  rules:
+    enabled: true
+    label: loki_rule
+    folder: /rules/fake
+
+# Scalable targets and their caches are off in single binary mode
+read:
+  replicas: 0
+write:
+  replicas: 0
+backend:
+  replicas: 0
+gateway:
+  enabled: false
+chunksCache:
+  enabled: false
+resultsCache:
+  enabled: false
+lokiCanary:
+  enabled: false
+test:
+  enabled: false
+
+monitoring:
+  serviceMonitor:
+    enabled: true

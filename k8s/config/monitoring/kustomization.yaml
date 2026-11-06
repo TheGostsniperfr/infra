@@ -7,6 +7,40 @@ resources:
   - secret.yaml
   - namespace.yaml
   - alertmanager-config.yaml
+  - rules/nodes-and-containers.yaml
+  - rules/platform.yaml
+
+# Our dashboards, loaded by the Grafana sidecar from any ConfigMap labelled grafana_dashboard=1.
+# Edit the JSON (export from Grafana: Share > Export, uid kept) rather than the UI: provisioned
+# dashboards are read-only there.
+configMapGenerator:
+  - name: dashboard-homelab-overview
+    files:
+      - dashboards/homelab-overview.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: Homelab
+  - name: dashboard-arffornia-live
+    files:
+      - dashboards/arffornia-live.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: Arffornia
+  - name: dashboard-arffornia-business
+    files:
+      - dashboards/arffornia-business.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: Arffornia
+
+generatorOptions:
+  disableNameSuffixHash: true
 
 helmGlobals:
   chartHome: ../../../charts

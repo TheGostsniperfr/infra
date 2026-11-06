@@ -4,6 +4,7 @@ namespace: envoy-gateway-system
 
 resources:
   - namespace.yaml
+  - monitoring.yaml
 
 helmCharts:
   # - name: envoy-gateway-system

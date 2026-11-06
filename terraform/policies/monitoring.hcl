@@ -6,3 +6,11 @@ path "${mount_path}/data/grafana/admin" {
 path "${mount_path}/data/monitoring/discord" {
   capabilities = ["read"]
 }
+
+path "${mount_path}/data/monitoring/grafana-arffornia-db" {
+  capabilities = ["read"]
+}
+
+path "${mount_path}/data/monitoring/grafana-oidc" {
+  capabilities = ["read"]
+}

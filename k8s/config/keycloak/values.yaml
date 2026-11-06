@@ -25,8 +25,10 @@ metrics:
 health:
   enabled: true
 
+# Metrics on the management port: logins, errors, HTTP latency
+# Feature: https://www.keycloak.org/observability/configuration-metrics
 serviceMonitor:
-  enabled: false
+  enabled: true
 
 autoscaling:
   enabled: false
@@ -100,9 +102,10 @@ extraVolumeMounts: |
     mountPath: /opt/keycloak/providers
 
 extraInitContainers: |
+  # Login and account theme JAR: https://github.com/Arffornia/keycloak-theme-arffornia
   - name: theme-provider-init
-    image: ghcr.io/arffornia/keycloak-theme-arffornia:latest
-    imagePullPolicy: Always
+    image: ghcr.io/arffornia/keycloak-theme-arffornia:1.2.0
+    imagePullPolicy: IfNotPresent
     volumeMounts:
       - name: theme-providers
         mountPath: /providers

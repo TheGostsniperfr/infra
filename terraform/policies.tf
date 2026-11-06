@@ -98,6 +98,17 @@ resource "vault_policy" "monitoring_policy" {
 }
 
 # -----------------------------------------------------------------------------
+# Logging Policy
+# -----------------------------------------------------------------------------
+
+resource "vault_policy" "logging_policy" {
+  name = "logging-policy"
+  policy = templatefile("${path.module}/policies/logging.hcl", {
+    mount_path = vault_mount.kvv2.path
+  })
+}
+
+# -----------------------------------------------------------------------------
 # N8n Policy
 # -----------------------------------------------------------------------------
 
@@ -203,6 +214,17 @@ resource "vault_policy" "photo_ai_policy" {
 resource "vault_policy" "immich_policy" {
   name = "immich-policy"
   policy = templatefile("${path.module}/policies/immich.hcl", {
+    mount_path = vault_mount.kvv2.path
+  })
+}
+
+# -----------------------------------------------------------------------------
+# GitLab Policy
+# -----------------------------------------------------------------------------
+
+resource "vault_policy" "gitlab_policy" {
+  name = "gitlab-policy"
+  policy = templatefile("${path.module}/policies/gitlab.hcl", {
     mount_path = vault_mount.kvv2.path
   })
 }

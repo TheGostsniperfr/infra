@@ -1,10 +1,101 @@
-# Doc: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
+# kube-prometheus-stack: Prometheus Operator, Prometheus, Alertmanager, Grafana,
+# node-exporter, kube-state-metrics and the kubernetes-mixin rules and dashboards
+# Chart: https://github.com/prometheus-community/helm-charts/tree/kube-prometheus-stack-80.14.4/charts/kube-prometheus-stack
+# Values reference: https://github.com/prometheus-community/helm-charts/blob/kube-prometheus-stack-80.14.4/charts/kube-prometheus-stack/values.yaml
+# Operator API: https://prometheus-operator.dev/docs/api-reference/api/
+#
+# Prometheus picks up every ServiceMonitor, PodMonitor, Probe and PrometheusRule in the
+# cluster, so an app ships its own scraping and alerts next to its manifests. Alert routing
+# to Discord is alertmanager-config.yaml, our own rules are in rules/. Steps outside Git
+# (control plane metrics, kube-proxy removal) are in README.md.
 
+# Grafana: three folders.
+#   Homelab / Arffornia  our dashboards (dashboards/), the home page is Homelab Overview
+#   Kubernetes           the kubernetes-mixin dashboards shipped by this chart
+#   Deep dives           community dashboards pinned by revision, for one component at a time
+# Chart: https://github.com/grafana/helm-charts/tree/grafana-10.5.8/charts/grafana#sidecar-for-dashboards
 grafana:
   grafana.ini:
     server:
       root_url: "https://grafana.arffornia.com"
       serve_from_sub_path: false
+    dashboards:
+      default_home_dashboard_path: /tmp/dashboards/Homelab/homelab-overview.json
+
+    # SSO through the Keycloak realm `arffornia` (client `grafana`, Terraform clients.tf).
+    # Keycloak group -> Grafana role: infra -> GrafanaAdmin, member -> Viewer, anyone else is
+    # refused (role_attribute_strict). The login page redirects straight to Keycloak; the local
+    # admin (grafana-admin-creds) stays as break-glass on /login?disableAutoLogin=true.
+    # The client secret comes from the grafana-oidc VaultSecret as
+    # GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET (envFromSecrets below).
+    # Feature: https://grafana.com/docs/grafana/latest/setup-grafana/configure-access/configure-authentication/keycloak/
+    auth:
+      signout_redirect_url: "https://auth.arffornia.com/realms/arffornia/protocol/openid-connect/logout?client_id=grafana&post_logout_redirect_uri=https%3A%2F%2Fgrafana.arffornia.com%2Flogin"
+    auth.generic_oauth:
+      enabled: true
+      name: Arffornia ID
+      icon: signin
+      auto_login: true
+      allow_sign_up: true
+      client_id: grafana
+      scopes: openid profile email groups
+      auth_url: https://auth.arffornia.com/realms/arffornia/protocol/openid-connect/auth
+      token_url: https://auth.arffornia.com/realms/arffornia/protocol/openid-connect/token
+      api_url: https://auth.arffornia.com/realms/arffornia/protocol/openid-connect/userinfo
+      use_pkce: true
+      use_refresh_token: true
+      login_attribute_path: preferred_username
+      name_attribute_path: name
+      email_attribute_path: email
+      groups_attribute_path: groups
+      role_attribute_path: "contains(groups[*], 'infra') && 'GrafanaAdmin' || contains(groups[*], 'member') && 'Viewer'"
+      role_attribute_strict: true
+      allow_assign_grafana_admin: true
+
+  sidecar:
+    dashboards:
+      folderAnnotation: grafana_folder
+      provider:
+        foldersFromFilesStructure: true
+      # Applied to the dashboard ConfigMaps rendered by kube-prometheus-stack itself
+      annotations:
+        grafana_folder: Kubernetes
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: deep-dives
+          folder: Deep dives
+          type: file
+          disableDeletion: true
+          editable: false
+          options:
+            path: /var/lib/grafana/dashboards/deep-dives
+
+  # Downloaded from grafana.com by an init container at each Grafana start. The chart default
+  # is `-skf`, which skips TLS verification.
+  defaultCurlOptions: "-sf"
+  dashboards:
+    deep-dives:
+      # https://grafana.com/grafana/dashboards/1860-node-exporter-full/
+      node-exporter-full:
+        gnetId: 1860
+        revision: 45
+      # https://grafana.com/grafana/dashboards/16888-longhorn-monitoring-backups/
+      longhorn:
+        gnetId: 16888
+        revision: 14
+        datasource: [ { name: DS_PROMETHEUS, value: prometheus } ]
+      # https://grafana.com/grafana/dashboards/9628-postgresql-database/
+      postgresql:
+        gnetId: 9628
+        revision: 8
+        datasource: [ { name: DS_PROMETHEUS, value: prometheus } ]
+      # https://grafana.com/grafana/dashboards/14584-argocd/
+      argocd:
+        gnetId: 14584
+        revision: 1
 
   admin:
     existingSecret: "grafana-admin-creds"
@@ -15,6 +106,10 @@ grafana:
     enabled: true
     storageClassName: "longhorn"
     size: 5Gi
+  # The volume is ReadWriteOnce: a rolling update starts the new pod before stopping the old
+  # one, and it stays stuck on Multi-Attach when it lands on another node.
+  deploymentStrategy:
+    type: Recreate
 
   ingress:
     enabled: false
@@ -28,12 +123,46 @@ grafana:
 
   plugins: []
   datasources: {}
+  # Logs: Loki from the logging app, explored in Explore and Logs Drilldown
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      uid: loki
+      url: http://loki.logging.svc.cluster.local:3100
+      access: proxy
+      jsonData:
+        maxLines: 1000
+    # Website database (players, votes, shop) for the Arffornia Business dashboard. Read-only
+    # role on the replicas, column grants only (README.md, step 3).
+    # Feature: https://grafana.com/docs/grafana/latest/datasources/postgres/
+    - name: Arffornia DB
+      type: grafana-postgresql-datasource
+      uid: arffornia-db
+      url: postgres-cluster-repl.postgres.svc.cluster.local:5432
+      user: grafana_arffornia
+      jsonData:
+        database: arffornia
+        sslmode: require
+        postgresVersion: 1700
+        maxOpenConns: 2
+      secureJsonData:
+        password: $GRAFANA_ARFFORNIA_DB_PASSWORD
+
+  # optional: Grafana still starts before the VaultSecret exists, only that datasource fails
+  envFromSecrets:
+    - name: grafana-arffornia-db
+      optional: true
+    - name: grafana-oidc
+      optional: true
   defaultDashboardsTimezone: "Europe/Paris"
   forceDeployDatasources: true
   forceDeployDashboards: true
 
 prometheus:
   prometheusSpec:
+    # 30 days to see capacity trends, capped below the 20Gi volume so it never fills
+    retention: 30d
+    retentionSize: 17GB
     storageSpec:
       volumeClaimTemplate:
         spec:
@@ -49,7 +178,37 @@ prometheus:
     podMonitorNamespaceSelector: {}
     probeSelectorNilUsesHelmValues: false
     probeNamespaceSelector: {}
+    # Without this only PrometheusRules labelled release=kube-prometheus-stack are loaded
+    ruleSelectorNilUsesHelmValues: false
+    ruleNamespaceSelector: {}
 
+# Control plane components: kubeadm binds the controller-manager and scheduler metrics to
+# 127.0.0.1 and Cilium replaces kube-proxy, so these targets can never be scraped and their
+# rules only raise TargetDown and *Down alerts. etcd also serves its metrics on the node IP
+# (README.md), so it stays scraped: DB size, fsync latency, leader changes.
+# Chart: https://github.com/prometheus-community/helm-charts/tree/kube-prometheus-stack-80.14.4/charts/kube-prometheus-stack#kubeproxy
+# Feature: https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+
+defaultRules:
+  rules:
+    kubeControllerManager: false
+    kubeProxy: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    windows: false
+
+windowsMonitoring:
+  enabled: false
+
+# Alertmanager: the routing tree to Discord is the AlertmanagerConfig in
+# alertmanager-config.yaml, this file only holds the root route and the inhibitions.
+# Feature: https://prometheus.io/docs/alerting/latest/configuration/
 alertmanager:
   enabled: true
   alertmanagerSpec:
@@ -58,121 +217,56 @@ alertmanager:
     alertmanagerConfigSelector:
       matchLabels:
         release: kube-prometheus-stack
+    # The default (OnNamespace) adds namespace="monitoring" to every route of an
+    # AlertmanagerConfig, which dropped every alert raised outside this namespace.
+    # Chart: https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1.AlertmanagerConfigMatcherStrategy
+    alertmanagerConfigMatcherStrategy:
+      type: None
 
   config:
     global:
       resolve_timeout: 5m
-    receivers:
-      - name: "null"
+    inhibit_rules:
+      - source_matchers: [ 'severity = critical' ]
+        target_matchers: [ 'severity =~ warning|info' ]
+        equal: [ 'namespace', 'alertname' ]
+      - source_matchers: [ 'severity = warning' ]
+        target_matchers: [ 'severity = info' ]
+        equal: [ 'namespace', 'alertname' ]
+      - source_matchers: [ 'alertname = InfoInhibitor' ]
+        target_matchers: [ 'severity = info' ]
+        equal: [ 'namespace' ]
+      - target_matchers: [ 'alertname = InfoInhibitor' ]
+      # A sealed Vault makes every consumer fail: page once for the cause
+      - source_matchers: [ 'alertname = VaultSealed' ]
+        target_matchers: [ 'namespace =~ vault|vault-secrets-operator', 'alertname != VaultSealed' ]
     route:
-      group_by: [ "alertname", "job", "namespace" ]
+      group_by: [ "alertname", "namespace" ]
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 12h
       receiver: "null"
       routes: []
-
+    receivers:
+      - name: "null"
     templates:
       - "/etc/alertmanager/config/*.tmpl"
 
+  # Discord embed: title max 256 characters, description max 4096
+  # Format: https://prometheus.io/docs/alerting/latest/notifications/
   templateFiles:
     discord.tmpl: |-
-      {{ define "discord.title" }}
-      {{ if eq .Status "firing" }}
-        {{ if eq .CommonLabels.severity "critical" }}🛑 [CRITICAL] {{ else if eq .CommonLabels.severity "warning" }}⚠️ [WARNING] {{ else }}ℹ️ [INFO] {{ end }}
-      {{ else }}
-        ✅ [RESOLVED]
+      {{ define "discord.title" -}}
+      {{ if eq .Status "firing" }}[{{ .CommonLabels.severity | toUpper }}]{{ else }}[RESOLVED]{{ end }} {{ .GroupLabels.alertname }}{{ with .GroupLabels.namespace }} in {{ . }}{{ end }}{{ if gt (len .Alerts.Firing) 1 }} ({{ len .Alerts.Firing }}){{ end }}
+      {{- end }}
+
+      {{ define "discord.message" -}}
+      {{ range $i, $a := .Alerts }}{{ if lt $i 8 }}
+      **{{ $a.Annotations.summary }}**
+      {{ $a.Annotations.description }}
+      {{ with $a.Labels.pod }}Pod: `{{ . }}` {{ end }}{{ with $a.Labels.node }}Node: `{{ . }}` {{ end }}{{ with $a.Labels.instance }}Instance: `{{ . }}`{{ end }}
+      {{ with $a.Annotations.runbook_url }}[Runbook]({{ . }}) {{ end }}{{ with $a.Annotations.dashboard_url }}[Dashboard]({{ . }}){{ end }}
+      {{ end }}{{ end }}{{ if gt (len .Alerts) 8 }}
+      ... and {{ len .Alerts }} alerts in total, see https://grafana.arffornia.com/alerting/list
       {{ end }}
-      {{ .GroupLabels.alertname }}
-      {{ end }}
-
-      {{ define "discord.message" }}
-      {{ range .Alerts }}
-      **Alert:** {{ .Annotations.summary }}
-      **Description:** {{ .Annotations.description }}
-      **Severity:** `{{ .Labels.severity }}`
-      **Namespace:** `{{ .Labels.namespace }}`
-      **Pod:** `{{ .Labels.pod }}`
-      **Node:** `{{ .Labels.instance }}`
-      --------------------------------
-      {{ end }}
-      {{ end }}
-
-additionalPrometheusRulesMap:
-  rule-name:
-    groups:
-      - name: arffornia.servers
-        rules:
-          # Alert: Minecraft Server Down
-          - alert: MinecraftServerDown
-            expr: up{namespace=~"arffornia-server-.*"} == 0
-            for: 1m
-            labels:
-              severity: critical
-              app: minecraft
-            annotations:
-              summary: "MC Server: {{ $labels.instance }} is DOWN"
-              description: "Server in namespace {{ $labels.namespace }} is unreachable."
-
-          # Alert: TPS < 15 (Performance Issue)
-          - alert: MinecraftLowTPS
-            expr: rate(mc_server_tick_seconds_count[1m]) < 15
-            for: 2m
-            labels:
-              severity: warning
-              app: minecraft
-            annotations:
-              summary: "Low TPS on {{ $labels.namespace }}"
-              description: "Server {{ $labels.namespace }} is lagging. Current TPS: {{ $value
-                }}."
-
-      - name: infra
-        rules:
-          # Alert: High Ping / Latency (Node Level)
-          - alert: HighNetworkLatency
-            expr: >
-              rate(node_network_receive_drop_total{device!~"veth.*|weave|vxlan.*|datapath|lo"}[5m])
-              /
-              rate(node_network_receive_packets_total{device!~"veth.*|weave|vxlan.*|datapath|lo"}[5m])
-              > 0.005
-            for: 5m
-            labels:
-              severity: warning
-            annotations:
-              summary: "Network Packet Drop Detected"
-              description: "Node {{ $labels.instance }} (interface {{ $labels.device }}) is
-                dropping packets."
-
-          # Alert: PVC > 75% Full
-          - alert: PersistentVolumeFillingUp
-            expr: kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes >
-              0.75
-            for: 5m
-            labels:
-              severity: warning
-            annotations:
-              summary: "PVC {{ $labels.persistentvolumeclaim }} > 75% Full"
-              description: "Storage for {{ $labels.persistentvolumeclaim }} in namespace {{
-                $labels.namespace }} is running low."
-
-          # Alert: Service/Proxy Down (General)
-          - alert: CriticalServiceDown
-            expr: up{job=~"arffornia-proxy-velocity|ingress-nginx.*|keycloak|vault"} == 0
-            for: 1m
-            labels:
-              severity: critical
-            annotations:
-              summary: "Service {{ $labels.job }} is DOWN"
-              description: "Critical infrastructure service {{ $labels.job }} is not
-                responding."
-
-          # Alert: Pod Crash Loop (Optimized generic rule)
-          - alert: PodCrashLooping
-            expr: increase(kube_pod_container_status_restarts_total[10m]) > 3
-            for: 5m
-            labels:
-              severity: warning
-            annotations:
-              summary: "Pod {{ $labels.pod }} is crash looping"
-              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has
-                restarted more than 3 times in the last 10 minutes."
+      {{- end }}

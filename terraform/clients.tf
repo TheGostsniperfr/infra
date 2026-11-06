@@ -33,10 +33,6 @@ resource "keycloak_openid_client" "arffornia_openid_client" {
     "https://adminer.${var.base_domain}",
     "http://localhost:3000/"
   ]
-
-  authentication_flow_binding_overrides {
-    browser_id = keycloak_authentication_flow.browser_openid_client.id
-  }
 }
 
 # -----------------------------------------------------------------------------
@@ -88,10 +84,6 @@ resource "keycloak_openid_client" "vault" {
     "https://vault.${var.base_domain}/ui/vault/auth/oidc/oidc/callback",
     "http://localhost:8250/oidc/callback"
   ]
-
-  authentication_flow_binding_overrides {
-    browser_id = keycloak_authentication_flow.browser_openid_client.id
-  }
 }
 
 resource "keycloak_openid_client_default_scopes" "vault_scopes" {
@@ -101,5 +93,72 @@ resource "keycloak_openid_client_default_scopes" "vault_scopes" {
     "profile",
     "email",
     "groups"
+  ]
+}
+
+# -----------------------------------------------------------------------------
+# OIDC CLIENT: GitLab
+# -----------------------------------------------------------------------------
+resource "keycloak_openid_client" "gitlab" {
+  realm_id                     = keycloak_realm.arffornia.id
+  client_id                    = "gitlab"
+  name                         = "GitLab"
+  enabled                      = true
+  access_type                  = "CONFIDENTIAL"
+  standard_flow_enabled        = true
+  direct_access_grants_enabled = false
+
+  valid_redirect_uris = [
+    "https://gitlab.${var.base_domain}/users/auth/openid_connect/callback"
+  ]
+
+  valid_post_logout_redirect_uris = [
+    "https://gitlab.${var.base_domain}/"
+  ]
+}
+
+resource "keycloak_openid_client_default_scopes" "gitlab_scopes" {
+  realm_id  = keycloak_realm.arffornia.id
+  client_id = keycloak_openid_client.gitlab.id
+  default_scopes = [
+    "profile",
+    "email",
+    keycloak_openid_client_scope.groups.name
+  ]
+}
+
+# -----------------------------------------------------------------------------
+# OIDC CLIENT: Grafana
+# -----------------------------------------------------------------------------
+resource "keycloak_openid_client" "grafana" {
+  realm_id                     = keycloak_realm.arffornia.id
+  client_id                    = "grafana"
+  name                         = "Grafana"
+  enabled                      = true
+  access_type                  = "CONFIDENTIAL"
+  standard_flow_enabled        = true
+  direct_access_grants_enabled = false
+  pkce_code_challenge_method   = "S256"
+
+  valid_redirect_uris = [
+    "https://grafana.${var.base_domain}/login/generic_oauth"
+  ]
+
+  valid_post_logout_redirect_uris = [
+    "https://grafana.${var.base_domain}/login"
+  ]
+
+  web_origins = [
+    "https://grafana.${var.base_domain}"
+  ]
+}
+
+resource "keycloak_openid_client_default_scopes" "grafana_scopes" {
+  realm_id  = keycloak_realm.arffornia.id
+  client_id = keycloak_openid_client.grafana.id
+  default_scopes = [
+    "profile",
+    "email",
+    keycloak_openid_client_scope.groups.name
   ]
 }

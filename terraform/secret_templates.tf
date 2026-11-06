@@ -327,6 +327,16 @@ variable "keycloak_admin_password_var" {
   type        = string
   sensitive   = true
 }
+variable "keycloak_smtp_user_var" {
+  description = "Gmail address Keycloak sends mail from (SMTP username)."
+  type        = string
+  sensitive   = true
+}
+variable "keycloak_smtp_password_var" {
+  description = "Google app password of that Gmail account."
+  type        = string
+  sensitive   = true
+}
 variable "postgres_keycloak_user_var" {
   description = "Postgres username for the Keycloak database."
   type        = string
@@ -586,6 +596,29 @@ resource "vault_kv_secret_v2" "cert_manager_cloudflare_api_token_secret" {
 }
 
 # -----------------------------------------------------------------------------
+# Logging Secrets (Loki on Garage)
+# -----------------------------------------------------------------------------
+variable "loki_s3_access_key_var" {
+  description = "Garage access key ID of loki-key."
+  type        = string
+  sensitive   = true
+}
+variable "loki_s3_secret_key_var" {
+  description = "Garage secret key of loki-key."
+  type        = string
+  sensitive   = true
+}
+
+resource "vault_kv_secret_v2" "logging_loki_s3_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "logging/loki-s3"
+  data_json = jsonencode({
+    AWS_ACCESS_KEY_ID     = var.loki_s3_access_key_var
+    AWS_SECRET_ACCESS_KEY = var.loki_s3_secret_key_var
+  })
+}
+
+# -----------------------------------------------------------------------------
 # Monitoring Secrets (Discord)
 # -----------------------------------------------------------------------------
 variable "discord_webhook_general_var" {
@@ -604,6 +637,29 @@ variable "discord_webhook_arffornia_var" {
   description = "Discord Webhook URL for Alertmanager Arffornia alerts."
   type        = string
   sensitive   = true
+}
+
+# Read-only Postgres role for the Arffornia Business dashboard. The role itself is created by
+# hand with this password (k8s/config/monitoring/README.md), Terraform only owns the value.
+resource "random_password" "grafana_arffornia_db" {
+  length  = 32
+  special = false
+}
+
+resource "vault_kv_secret_v2" "monitoring_grafana_arffornia_db_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "monitoring/grafana-arffornia-db"
+  data_json = jsonencode({
+    password = random_password.grafana_arffornia_db.result
+  })
+}
+
+resource "vault_kv_secret_v2" "monitoring_grafana_oidc_secret" {
+  mount = vault_mount.kvv2.path
+  name  = "monitoring/grafana-oidc"
+  data_json = jsonencode({
+    client_secret = keycloak_openid_client.grafana.client_secret
+  })
 }
 
 resource "vault_kv_secret_v2" "monitoring_discord_secret" {
@@ -761,5 +817,214 @@ resource "vault_kv_secret_v2" "argocd_oidc_secret" {
 
   data_json = jsonencode({
     "oidc.keycloak.clientSecret" = keycloak_openid_client.argocd.client_secret
+  })
+}
+
+
+# -----------------------------------------------------------------------------
+# GitLab Secrets
+# -----------------------------------------------------------------------------
+# The chart's shared-secrets job is disabled: every secret GitLab reads is generated here,
+# so a rebuild from scratch (DRP) gets the exact same values back from Vault.
+# Formats: https://docs.gitlab.com/charts/installation/secrets/#manual-secret-creation-optional
+
+variable "postgres_gitlab_user_var" {
+  description = "Postgres user for GitLab."
+  type        = string
+  sensitive   = true
+}
+variable "postgres_gitlab_password_var" {
+  description = "Postgres password for GitLab."
+  type        = string
+  sensitive   = true
+}
+variable "gitlab_s3_access_key_var" {
+  description = "Garage access key ID of gitlab-key."
+  type        = string
+  sensitive   = true
+}
+variable "gitlab_s3_secret_key_var" {
+  description = "Garage secret key of gitlab-key."
+  type        = string
+  sensitive   = true
+}
+variable "gitlab_runner_token_var" {
+  description = "Instance runner authentication token (glrt-...). Null until the runner is created in the GitLab UI."
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+# Rails keys encrypt database columns (CI variables, 2FA secrets, tokens...). Without them a
+# database restore is unusable, so Terraform must never recreate them.
+resource "random_id" "gitlab_rails" {
+  for_each    = toset(["secret_key_base", "otp_key_base", "db_key_base", "encrypted_settings_key_base"])
+  byte_length = 64
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "random_password" "gitlab_rails" {
+  for_each = toset([
+    "active_record_encryption_primary_key",
+    "active_record_encryption_deterministic_key",
+    "active_record_encryption_key_derivation_salt",
+  ])
+  length  = 32
+  special = false
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "tls_private_key" "gitlab_rails_oidc" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+# Tokens shared between GitLab components. Formats follow the chart's shared-secrets job.
+resource "random_password" "gitlab" {
+  for_each = {
+    redis                 = 32
+    root                  = 64
+    shell                 = 64
+    gitaly                = 64
+    registry_http         = 128
+    registry_notification = 32
+  }
+  length  = each.value
+  special = false
+}
+
+resource "random_id" "gitlab" {
+  for_each = {
+    kas             = 32
+    kas_private_api = 32
+    kas_websocket   = 72
+    workhorse       = 32
+  }
+  byte_length = each.value
+}
+
+# gitlab-shell SSH host keys
+resource "tls_private_key" "gitlab_ssh_host" {
+  for_each = {
+    rsa     = { algorithm = "RSA", ecdsa_curve = null }
+    ecdsa   = { algorithm = "ECDSA", ecdsa_curve = "P256" }
+    ed25519 = { algorithm = "ED25519", ecdsa_curve = null }
+  }
+  algorithm   = each.value.algorithm
+  rsa_bits    = each.value.algorithm == "RSA" ? 3072 : null
+  ecdsa_curve = each.value.ecdsa_curve
+}
+
+# Signs the JWTs Rails issues for the container registry
+resource "tls_private_key" "gitlab_registry_auth" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "tls_self_signed_cert" "gitlab_registry_auth" {
+  private_key_pem       = tls_private_key.gitlab_registry_auth.private_key_pem
+  validity_period_hours = 87600
+  allowed_uses          = ["digital_signature"]
+
+  subject {
+    common_name = "gitlab-issuer"
+  }
+}
+
+locals {
+  gitlab_vault_secrets = {
+    "postgres/gitlab" = {
+      username = var.postgres_gitlab_user_var
+      password = var.postgres_gitlab_password_var
+    }
+    "gitlab/s3" = {
+      access_key = var.gitlab_s3_access_key_var
+      secret_key = var.gitlab_s3_secret_key_var
+    }
+    "gitlab/oidc" = {
+      client_secret = keycloak_openid_client.gitlab.client_secret
+    }
+    "gitlab/redis" = {
+      password = random_password.gitlab["redis"].result
+    }
+    "gitlab/rails" = {
+      "secrets.yml" = yamlencode({
+        production = {
+          secret_key_base                              = random_id.gitlab_rails["secret_key_base"].hex
+          otp_key_base                                 = random_id.gitlab_rails["otp_key_base"].hex
+          db_key_base                                  = random_id.gitlab_rails["db_key_base"].hex
+          encrypted_settings_key_base                  = random_id.gitlab_rails["encrypted_settings_key_base"].hex
+          openid_connect_signing_key                   = tls_private_key.gitlab_rails_oidc.private_key_pem
+          active_record_encryption_primary_key         = [random_password.gitlab_rails["active_record_encryption_primary_key"].result]
+          active_record_encryption_deterministic_key   = [random_password.gitlab_rails["active_record_encryption_deterministic_key"].result]
+          active_record_encryption_key_derivation_salt = random_password.gitlab_rails["active_record_encryption_key_derivation_salt"].result
+        }
+      })
+    }
+    "gitlab/root" = {
+      password = random_password.gitlab["root"].result
+    }
+    "gitlab/shell" = {
+      secret = random_password.gitlab["shell"].result
+    }
+    "gitlab/shell-host-keys" = merge([
+      for type, key in tls_private_key.gitlab_ssh_host : {
+        "ssh_host_${type}_key"     = key.private_key_openssh
+        "ssh_host_${type}_key.pub" = key.public_key_openssh
+      }
+    ]...)
+    "gitlab/gitaly" = {
+      token = random_password.gitlab["gitaly"].result
+    }
+    "gitlab/kas" = {
+      kas_shared_secret = random_id.gitlab["kas"].b64_std
+    }
+    "gitlab/kas-private-api" = {
+      kas_private_api_secret = random_id.gitlab["kas_private_api"].b64_std
+    }
+    "gitlab/kas-websocket" = {
+      kas_websocket_token_secret = random_id.gitlab["kas_websocket"].b64_std
+    }
+    "gitlab/workhorse" = {
+      shared_secret = random_id.gitlab["workhorse"].b64_std
+    }
+    "gitlab/registry-auth" = {
+      "registry-auth.key" = tls_private_key.gitlab_registry_auth.private_key_pem
+      "registry-auth.crt" = tls_self_signed_cert.gitlab_registry_auth.cert_pem
+    }
+    "gitlab/registry-http" = {
+      secret = base64encode(lower(random_password.gitlab["registry_http"].result))
+    }
+    "gitlab/registry-notification" = {
+      secret = jsonencode([random_password.gitlab["registry_notification"].result])
+    }
+  }
+}
+
+resource "vault_kv_secret_v2" "gitlab" {
+  for_each = local.gitlab_vault_secrets
+
+  mount     = vault_mount.kvv2.path
+  name      = each.key
+  data_json = jsonencode(each.value)
+}
+
+resource "vault_kv_secret_v2" "gitlab_runner" {
+  count = var.gitlab_runner_token_var == null ? 0 : 1
+
+  mount = vault_mount.kvv2.path
+  name  = "gitlab/runner"
+  data_json = jsonencode({
+    runner_token = var.gitlab_runner_token_var
   })
 }

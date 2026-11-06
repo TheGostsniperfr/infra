@@ -1,0 +1,27 @@
+# Envoy Gateway metrics. The proxies (one per Gateway) carry the user-facing traffic: request
+# rate, 5xx and latency per backend. The controller only translates Gateway API resources.
+# Feature: https://gateway.envoyproxy.io/docs/tasks/observability/proxy-metric/
+# Controller: https://gateway.envoyproxy.io/docs/tasks/observability/gateway-observability/
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: envoy-proxy
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: proxy
+      app.kubernetes.io/managed-by: envoy-gateway
+  podMetricsEndpoints:
+    - port: metrics
+      path: /stats/prometheus
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: envoy-gateway
+spec:
+  selector:
+    matchLabels:
+      control-plane: envoy-gateway
+  endpoints:
+    - port: metrics
