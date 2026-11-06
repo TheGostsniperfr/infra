@@ -66,7 +66,7 @@ resource "random_bytes" "previews_app_key" {
 }
 
 resource "random_password" "playtest" {
-  for_each = toset(["staging_db", "staging_svc_id", "staging_svc_secret", "slot_rcon", "previews_db"])
+  for_each = toset(["staging_db", "staging_svc_secret", "slot_rcon", "previews_db"])
 
   length  = 32
   special = false
@@ -96,12 +96,15 @@ resource "vault_kv_secret_v2" "arffornia_staging_db" {
   })
 }
 
+# The website stores service account ids in a uuid column (service_accounts.client_id).
+resource "random_uuid" "staging_svc_id" {}
+
 # The service account the test slot uses on the staging API (synced by the staging website).
 resource "vault_kv_secret_v2" "arffornia_staging_svc" {
   mount = vault_mount.kvv2.path
   name  = "arffornia/staging/svc"
   data_json = jsonencode({
-    SVC_ID       = "staging-${random_password.playtest["staging_svc_id"].result}"
+    SVC_ID       = random_uuid.staging_svc_id.result
     SVC_PASSWORD = random_password.playtest["staging_svc_secret"].result
   })
 }
