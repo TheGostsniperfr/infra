@@ -1,0 +1,48 @@
+# The website chart for staging: the image built from main (`main`, Preview images workflow).
+replicaCount: 1
+
+images:
+  frontend:
+    repository: ghcr.io/arffornia/nginx_arffornia_website
+    pullPolicy: Always
+    tag: "main"
+  backend:
+    repository: ghcr.io/arffornia/arffornia_website
+    pullPolicy: Always
+    tag: "main"
+    port: 9000
+    host: "127.0.0.1"
+
+# The test slot's service account (svc-secret); the seed Job migrates first (wave 0).
+syncServiceAccounts:
+  enabled: true
+
+migrateAndSeedDB:
+  enabled: false
+
+envFrom:
+  - secretRef:
+      name: website-secret
+  - secretRef:
+      name: db-secret
+  - secretRef:
+      name: svc-secret
+  - configMapRef:
+      name: arffornia-website-config
+
+ingress:
+  enabled: false
+
+# Chart 0.1.1 gives both containers the same resources.
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 384Mi
+
+# No item texture volume: the textures come from the prod exporter, staging shows placeholders.
+itemTextures:
+  persistence:
+    enabled: false

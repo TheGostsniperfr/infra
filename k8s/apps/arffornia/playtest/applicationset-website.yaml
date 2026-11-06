@@ -1,0 +1,73 @@
+# The website slots (spec 016): pr1-pr3.arffornia.com, one app per envs/pr<k>.yaml in
+# Arffornia_Playtest (written by `playtest up <Website PR>`, removed by `playtest down` or the
+# reaper; the app and its namespace's workload go with it). Each app is:
+#   - the PR's own chart (charts/arffornia-website at the PR head SHA) with infra's values and the
+#     PR's images (pr-<n>-<sha7>, Preview images workflow);
+#   - its Postgres, seed Job (PR image), config and route (k8s/config/arffornia/playtest/website).
+# The slot name comes from the file name, never from its content; the namespace is fixed per slot
+# and the `playtest` project allows nothing else.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: playtest-website
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/Arffornia/Arffornia_Playtest.git
+        revision: envs
+        files:
+          - path: envs/pr1.yaml
+          - path: envs/pr2.yaml
+          - path: envs/pr3.yaml
+  template:
+    metadata:
+      name: 'playtest-{{ trimSuffix ".yaml" .path.filename }}'
+      annotations:
+        playtest.arffornia.com/prs: "{{ .prsText }}"
+        playtest.arffornia.com/expires: "{{ .expires }}"
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: playtest
+      sources:
+        - repoURL: https://github.com/Arffornia/Arffornia_Website.git
+          targetRevision: "{{ .head }}"
+          path: charts/arffornia-website
+          helm:
+            releaseName: arffornia-website
+            skipTests: true
+            valueFiles:
+              - $infra/k8s/config/arffornia/playtest/website/values.yaml
+            parameters:
+              - name: images.backend.tag
+                value: "{{ .imageTag }}"
+              - name: images.frontend.tag
+                value: "{{ .imageTag }}"
+        - repoURL: https://github.com/TheGostsniperfr/infra.git
+          targetRevision: HEAD
+          ref: infra
+        - repoURL: https://github.com/TheGostsniperfr/infra.git
+          targetRevision: HEAD
+          path: 'k8s/config/arffornia/playtest/website/overlays/{{ trimSuffix ".yaml" .path.filename }}'
+          kustomize:
+            images:
+              - "ghcr.io/arffornia/arffornia_website:{{ .imageTag }}"
+      destination:
+        name: in-cluster
+        namespace: 'arffornia-{{ trimSuffix ".yaml" .path.filename }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
+      # offhours-guard scales the website down at night.
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          jsonPointers:
+            - /spec/replicas

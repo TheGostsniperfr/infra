@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pack-files
+  labels:
+    app.kubernetes.io/name: pack-files
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pack-files
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pack-files
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: pack-files
+          # tree-<12> = the git tree hash of envfiles/ in Arffornia_Playtest (content-addressed).
+          image: ghcr.io/arffornia/playtest-envfiles:tree-000429c48b85
+          imagePullPolicy: IfNotPresent
+          env:
+            # The ref and the mod tag come from the pod annotations, so the pack slot's
+            # ApplicationSet changes them (and rolls the pod) with commonAnnotations only.
+            - name: PROVISIONING_REF
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['playtest.arffornia.com/provisioning-ref']
+            - name: MOD_TAG
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['playtest.arffornia.com/mod-tag']
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: profile
+              mountPath: /etc/pack-files
+              readOnly: true
+            - name: confd
+              mountPath: /etc/nginx/conf.d
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: profile
+          configMap:
+            name: pack-files-profile
+        - name: confd
+          emptyDir:
+            sizeLimit: 1Mi
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi

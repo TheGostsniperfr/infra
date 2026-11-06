@@ -1,0 +1,23 @@
+# The test slot's fixed parts (spec 016): what PR code must never control. The workload (server
+# + pack-files) is in ../playtest/pack, deployed by the ApplicationSet `playtest-pack`.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: arffornia-slot
+
+resources:
+  - namespace.yaml
+  - quota.yaml
+  - secret.yaml
+  - service-lb.yaml
+  - networkpolicy.yaml
+  - offhours-guard.yaml
+
+helmGlobals:
+  chartHome: ../../../../charts
+
+helmCharts:
+  - name: secure-route
+    releaseName: arffornia-slot-routes
+    namespace: arffornia-slot
+    valuesFile: values-secure-route.yaml

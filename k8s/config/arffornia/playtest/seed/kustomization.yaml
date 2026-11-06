@@ -1,0 +1,8 @@
+# Migrates and seeds a test website's database (E2ESeeder, deterministic, no personal data), on
+# every Argo CD sync. Idempotent: `migrate` is non-destructive and the seeder only runs on an
+# empty `users` table. The image is overridden by each user (staging: `main`; slots: the PR's).
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - seed-job.yaml

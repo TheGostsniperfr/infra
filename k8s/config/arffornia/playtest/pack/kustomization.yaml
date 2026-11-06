@@ -1,0 +1,32 @@
+# The pack slot workload (spec 016): the test server and its pack-files, in arffornia-slot.
+# Deployed by the ApplicationSet `playtest-pack` (k8s/apps/arffornia/playtest), project
+# `playtest`. With no envs/slot.yaml in Arffornia_Playtest it runs main with the `edge` mod
+# (the staging server); a file there swaps the Provisioning ref and the mod tag through the two
+# annotations below, which also roll both pods (the config-updater runs again).
+# The namespace, quota, secrets, LoadBalancer and route are in ../../slot (infra-owned).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: arffornia-slot
+
+commonAnnotations:
+  playtest.arffornia.com/provisioning-ref: refs/heads/main
+  playtest.arffornia.com/mod-tag: edge
+
+resources:
+  - config.yaml
+  - profile.yaml
+
+components:
+  - ../pack-files
+
+helmCharts:
+  - name: minecraft
+    repo: oci://ghcr.io/itzg/minecraft-server-charts
+    version: 4.26.3
+    releaseName: arffornia-slot
+    namespace: arffornia-slot
+    # Same server base as prod (image, NeoForge, probes, security context), then the slot.
+    valuesFile: ../../server/base/values.yaml
+    additionalValuesFiles:
+      - values.yaml

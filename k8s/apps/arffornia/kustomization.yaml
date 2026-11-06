@@ -8,3 +8,6 @@ resources:
   - server/
   - proxy/
   - arffornia-bluemap-web.yaml
+  # Spec 016: staging, the test slot and the playtest slots.
+  - staging.yaml
+  - playtest/

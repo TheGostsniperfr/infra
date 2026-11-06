@@ -1,0 +1,17 @@
+# Cap per env (spec 016, D5): 0.5 CPU / 768 MiB reserved (requests). Limits leave room for the
+# seed Job and one rolling update of the website; anything beyond stays Pending.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: slot-quota
+spec:
+  hard:
+    requests.cpu: 500m
+    requests.memory: 768Mi
+    limits.cpu: "2"
+    limits.memory: 1536Mi
+    pods: "6"
+    services.loadbalancers: "0"
+    services.nodeports: "0"
+    persistentvolumeclaims: "1"
+    requests.storage: 1Gi

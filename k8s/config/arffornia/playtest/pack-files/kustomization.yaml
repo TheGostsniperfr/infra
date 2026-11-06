@@ -1,0 +1,9 @@
+# pack-files (Arffornia/Arffornia_Playtest envfiles/): serves Arffornia_Provisioning at a ref with
+# the Arffornia mod retagged and the test profile applied. A component: staging and the pack slot
+# include it with their own profile and ref.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - deployment.yaml
+  - service.yaml

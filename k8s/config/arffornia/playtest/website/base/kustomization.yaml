@@ -1,0 +1,12 @@
+# What a website playtest slot runs next to the PR's chart: its Postgres, the seed Job (the
+# image is set to the PR's by the ApplicationSet, kustomize.images), the config and the route.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - config.yaml
+  - route.yaml
+
+components:
+  - ../../postgres
+  - ../../seed

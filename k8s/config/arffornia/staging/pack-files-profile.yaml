@@ -1,0 +1,20 @@
+# What staging's pack-files rewrites for the beta launcher (Staging environment): the mod's API
+# URL points at staging. The launcher kind only; the test server has its own (../playtest/pack).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pack-files-profile
+data:
+  profile.json: |
+    {
+      "mods": [{ "owner": "Arffornia", "repoName": "Arffornia_Mods" }],
+      "files": [
+        {
+          "kinds": ["launcher"],
+          "path": "config/arffornia-common.toml",
+          "replace": [
+            { "from": "https://arffornia.com/api", "to": "https://staging.arffornia.com/api" }
+          ]
+        }
+      ]
+    }

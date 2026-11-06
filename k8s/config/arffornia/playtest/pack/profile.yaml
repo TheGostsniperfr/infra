@@ -1,0 +1,50 @@
+# What pack-files rewrites for the test slot (see Arffornia_Playtest envfiles/njs/pack.js).
+# Server files point at staging; the launcher files point the beta launcher at the staging API.
+# The mod config moves to arffornia-server.toml with Provisioning #35, so both files are listed.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pack-files-profile
+data:
+  profile.json: |
+    {
+      "mods": [{ "owner": "Arffornia", "repoName": "Arffornia_Mods" }],
+      "files": [
+        {
+          "kinds": ["server"],
+          "path": "config/arffornia-common.toml",
+          "replace": [
+            { "from": "https://arffornia.com/api", "to": "http://arffornia-website-chart.arffornia-staging.svc.cluster.local/api" },
+            { "from": "postgres-cluster.postgres.svc.cluster.local", "to": "postgres.arffornia-staging.svc.cluster.local" }
+          ]
+        },
+        {
+          "kinds": ["server"],
+          "path": "config/arffornia-server.toml",
+          "replace": [
+            { "from": "postgres-cluster.postgres.svc.cluster.local", "to": "postgres.arffornia-staging.svc.cluster.local" }
+          ]
+        },
+        {
+          "kinds": ["server"],
+          "path": "config/luckperms/luckperms.conf",
+          "replace": [
+            { "from": "storage-method = \"postgresql\"", "to": "storage-method = \"h2\"" }
+          ]
+        },
+        {
+          "kinds": ["server"],
+          "path": "config/neoforwarding-server.toml",
+          "replace": [
+            { "from": "enableForwarding = true", "to": "enableForwarding = false" }
+          ]
+        },
+        {
+          "kinds": ["launcher"],
+          "path": "config/arffornia-common.toml",
+          "replace": [
+            { "from": "https://arffornia.com/api", "to": "https://staging.arffornia.com/api" }
+          ]
+        }
+      ]
+    }

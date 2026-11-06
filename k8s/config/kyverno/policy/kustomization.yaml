@@ -3,6 +3,8 @@ kind: Kustomization
 
 namespace: kyverno
 
-# resources:
+resources:
+  # Test environments (spec 016): staging, the test slot and the website playtest slots.
+  - arffornia-envs.yaml
 #   - require-team-label-validation-policy.yaml
 #   # - add-team-label-mutating-policy.yaml

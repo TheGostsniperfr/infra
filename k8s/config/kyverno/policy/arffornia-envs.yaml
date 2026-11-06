@@ -1,0 +1,339 @@
+# Test environments (spec 016): every namespace labelled `arffornia.com/env` (arffornia-staging,
+# arffornia-slot, arffornia-pr1..pr3). They run code from PRs, so these policies hold whatever
+# that code deploys, on top of the namespace ResourceQuota and the `playtest` AppProject.
+#
+# 1. Baseline, generated in each namespace and kept in sync: a LimitRange and default-deny
+#    NetworkPolicies. Allowed: the same namespace, DNS, the internet on 80/443 (mod downloads,
+#    Mojang, GitHub), and ingress from the shared gateway. Never the LAN, other namespaces (prod,
+#    Vault, Postgres) or the cluster network; the infra-owned exceptions are in each namespace.
+# 2. Guard: images from ghcr.io/arffornia, itzg or postgres only; routes for the namespace's own
+#    hostname only; VaultSecrets for the namespace's own Vault role and paths only; no
+#    LoadBalancer or NodePort except the test slot's own (infra-owned).
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: arffornia-env-baseline
+  annotations:
+    policies.kyverno.io/title: Arffornia test environments, baseline
+    policies.kyverno.io/description: LimitRange and default-deny NetworkPolicies in every namespace labelled arffornia.com/env.
+spec:
+  background: true
+  rules:
+    - name: limit-range
+      match:
+        any:
+          - resources:
+              kinds: [Namespace]
+              selector:
+                matchExpressions:
+                  - {key: arffornia.com/env, operator: Exists}
+      generate:
+        generateExisting: true
+        synchronize: true
+        apiVersion: v1
+        kind: LimitRange
+        name: arffornia-env-limits
+        namespace: "{{request.object.metadata.name}}"
+        data:
+          spec:
+            limits:
+              - type: Container
+                default: {cpu: 250m, memory: 256Mi}
+                defaultRequest: {cpu: 25m, memory: 64Mi}
+                max: {cpu: "4", memory: 16Gi}
+    - name: default-deny
+      match:
+        any:
+          - resources:
+              kinds: [Namespace]
+              selector:
+                matchExpressions:
+                  - {key: arffornia.com/env, operator: Exists}
+      generate:
+        generateExisting: true
+        synchronize: true
+        apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        name: arffornia-env-default-deny
+        namespace: "{{request.object.metadata.name}}"
+        data:
+          spec:
+            podSelector: {}
+            policyTypes: [Ingress, Egress]
+    - name: allow-same-namespace
+      match:
+        any:
+          - resources:
+              kinds: [Namespace]
+              selector:
+                matchExpressions:
+                  - {key: arffornia.com/env, operator: Exists}
+      generate:
+        generateExisting: true
+        synchronize: true
+        apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        name: arffornia-env-same-namespace
+        namespace: "{{request.object.metadata.name}}"
+        data:
+          spec:
+            podSelector: {}
+            policyTypes: [Ingress, Egress]
+            ingress:
+              - from:
+                  - podSelector: {}
+            egress:
+              - to:
+                  - podSelector: {}
+    - name: allow-dns
+      match:
+        any:
+          - resources:
+              kinds: [Namespace]
+              selector:
+                matchExpressions:
+                  - {key: arffornia.com/env, operator: Exists}
+      generate:
+        generateExisting: true
+        synchronize: true
+        apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        name: arffornia-env-dns
+        namespace: "{{request.object.metadata.name}}"
+        data:
+          spec:
+            podSelector: {}
+            policyTypes: [Egress]
+            egress:
+              - to:
+                  - namespaceSelector:
+                      matchLabels:
+                        kubernetes.io/metadata.name: kube-system
+                    podSelector:
+                      matchLabels:
+                        k8s-app: kube-dns
+                ports:
+                  - {protocol: UDP, port: 53}
+                  - {protocol: TCP, port: 53}
+    - name: allow-internet-web
+      match:
+        any:
+          - resources:
+              kinds: [Namespace]
+              selector:
+                matchExpressions:
+                  - {key: arffornia.com/env, operator: Exists}
+      generate:
+        generateExisting: true
+        synchronize: true
+        apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        name: arffornia-env-internet
+        namespace: "{{request.object.metadata.name}}"
+        data:
+          spec:
+            podSelector: {}
+            policyTypes: [Egress]
+            egress:
+              - to:
+                  - ipBlock:
+                      cidr: 0.0.0.0/0
+                      except:
+                        - 10.0.0.0/8
+                        - 172.16.0.0/12
+                        - 192.168.0.0/16
+                        - 100.64.0.0/10
+                        - 169.254.0.0/16
+                ports:
+                  - {protocol: TCP, port: 80}
+                  - {protocol: TCP, port: 443}
+    - name: allow-gateway
+      match:
+        any:
+          - resources:
+              kinds: [Namespace]
+              selector:
+                matchExpressions:
+                  - {key: arffornia.com/env, operator: Exists}
+      generate:
+        generateExisting: true
+        synchronize: true
+        apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        name: arffornia-env-gateway
+        namespace: "{{request.object.metadata.name}}"
+        data:
+          spec:
+            podSelector: {}
+            policyTypes: [Ingress]
+            ingress:
+              - from:
+                  - namespaceSelector:
+                      matchLabels:
+                        kubernetes.io/metadata.name: envoy-gateway-system
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: arffornia-env-guard
+  annotations:
+    policies.kyverno.io/title: Arffornia test environments, guard
+    policies.kyverno.io/description: Images, hostnames, Vault paths and Service types allowed in namespaces labelled arffornia.com/env.
+    # Pods only: no autogen rules, so Argo CD does not fight Kyverno over this policy.
+    pod-policies.kyverno.io/autogen-controllers: none
+spec:
+  background: false
+  rules:
+    - name: images
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaceSelector:
+                matchExpressions:
+                  - {key: arffornia.com/env, operator: Exists}
+      validate:
+        failureAction: Enforce
+        message: "Test environments run only ghcr.io/arffornia/*, itzg/* and postgres images."
+        pattern:
+          spec:
+            =(initContainers):
+              - image: "ghcr.io/arffornia/* | itzg/* | docker.io/itzg/* | postgres:* | docker.io/library/postgres:*"
+            containers:
+              - image: "ghcr.io/arffornia/* | itzg/* | docker.io/itzg/* | postgres:* | docker.io/library/postgres:*"
+
+    - name: route-hostnames-staging
+      match:
+        any:
+          - resources:
+              kinds: [gateway.networking.k8s.io/v1/HTTPRoute]
+              namespaces: [arffornia-staging]
+      validate:
+        failureAction: Enforce
+        message: "arffornia-staging may only route staging.arffornia.com."
+        deny:
+          conditions:
+            any:
+              - {key: "{{ length(request.object.spec.hostnames || `[]`) }}", operator: Equals, value: 0}
+              - {key: "{{ request.object.spec.hostnames || `[]` }}", operator: AnyNotIn, value: [staging.arffornia.com]}
+    - name: route-hostnames-slot
+      match:
+        any:
+          - resources:
+              kinds: [gateway.networking.k8s.io/v1/HTTPRoute]
+              namespaces: [arffornia-slot]
+      validate:
+        failureAction: Enforce
+        message: "arffornia-slot may only route test.arffornia.com."
+        deny:
+          conditions:
+            any:
+              - {key: "{{ length(request.object.spec.hostnames || `[]`) }}", operator: Equals, value: 0}
+              - {key: "{{ request.object.spec.hostnames || `[]` }}", operator: AnyNotIn, value: [test.arffornia.com]}
+    - name: route-hostnames-previews
+      match:
+        any:
+          - resources:
+              kinds: [gateway.networking.k8s.io/v1/HTTPRoute]
+              namespaces: [arffornia-pr1, arffornia-pr2, arffornia-pr3]
+      validate:
+        failureAction: Enforce
+        message: "arffornia-pr<k> may only route pr<k>.arffornia.com."
+        deny:
+          conditions:
+            any:
+              - {key: "{{ length(request.object.spec.hostnames || `[]`) }}", operator: Equals, value: 0}
+              - {key: "{{ request.object.spec.hostnames || `[]` }}", operator: AnyNotIn, value: ["{{ replace_all(request.namespace, 'arffornia-', '') }}.arffornia.com"]}
+    - name: route-hostnames-other
+      match:
+        any:
+          - resources:
+              kinds: [gateway.networking.k8s.io/v1/HTTPRoute]
+              namespaceSelector:
+                matchExpressions:
+                  - {key: arffornia.com/env, operator: Exists}
+      exclude:
+        any:
+          - resources:
+              namespaces: [arffornia-staging, arffornia-slot, arffornia-pr1, arffornia-pr2, arffornia-pr3]
+      validate:
+        failureAction: Enforce
+        message: "This test namespace has no hostname."
+        deny: {}
+
+    - name: vault-staging
+      match:
+        any:
+          - resources:
+              kinds: [ricoberger.de/v1alpha1/VaultSecret]
+              namespaces: [arffornia-staging]
+      validate:
+        failureAction: Enforce
+        message: "arffornia-staging reads only kvv2/arffornia/staging/* with arffornia-staging-role."
+        pattern:
+          spec:
+            vaultRole: arffornia-staging-role
+            path: "kvv2/arffornia/staging/*"
+    - name: vault-slot
+      match:
+        any:
+          - resources:
+              kinds: [ricoberger.de/v1alpha1/VaultSecret]
+              namespaces: [arffornia-slot]
+      validate:
+        failureAction: Enforce
+        message: "arffornia-slot reads only the staging database and service account and kvv2/arffornia/slot/*, with arffornia-slot-role."
+        pattern:
+          spec:
+            vaultRole: arffornia-slot-role
+            path: "kvv2/arffornia/staging/db | kvv2/arffornia/staging/svc | kvv2/arffornia/slot/*"
+    - name: vault-previews
+      match:
+        any:
+          - resources:
+              kinds: [ricoberger.de/v1alpha1/VaultSecret]
+              namespaces: [arffornia-pr1, arffornia-pr2, arffornia-pr3]
+      validate:
+        failureAction: Enforce
+        message: "arffornia-pr<k> reads only kvv2/arffornia/previews/* with arffornia-previews-role."
+        pattern:
+          spec:
+            vaultRole: arffornia-previews-role
+            path: "kvv2/arffornia/previews/*"
+    - name: vault-other
+      match:
+        any:
+          - resources:
+              kinds: [ricoberger.de/v1alpha1/VaultSecret]
+              namespaceSelector:
+                matchExpressions:
+                  - {key: arffornia.com/env, operator: Exists}
+      exclude:
+        any:
+          - resources:
+              namespaces: [arffornia-staging, arffornia-slot, arffornia-pr1, arffornia-pr2, arffornia-pr3]
+      validate:
+        failureAction: Enforce
+        message: "This test namespace reads no Vault secret."
+        deny: {}
+
+    - name: service-types
+      match:
+        any:
+          - resources:
+              kinds: [Service]
+              namespaceSelector:
+                matchExpressions:
+                  - {key: arffornia.com/env, operator: Exists}
+      exclude:
+        any:
+          # The test slot's own address, owned by the infra app `arffornia-slot` (not `playtest`).
+          - resources:
+              namespaces: [arffornia-slot]
+              names: [test-slot-minecraft]
+      validate:
+        failureAction: Enforce
+        message: "Test environments expose nothing outside the cluster: ClusterIP Services only."
+        pattern:
+          spec:
+            =(type): ClusterIP

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: arffornia-pr3
+  labels:
+    prod-gateway-access: "true"
+    # Test environment: Kyverno adds a LimitRange and default-deny NetworkPolicies, pins the
+    # images, the hostname (pr3.arffornia.com) and the Vault paths (previews only).
+    arffornia.com/env: preview

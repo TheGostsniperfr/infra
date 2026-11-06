@@ -1,0 +1,21 @@
+# Added to Kyverno's default-deny set (k8s/config/kyverno/policy/arffornia-envs.yaml): the test
+# slot reaches the staging API and the staging database (the mod's shop link), nothing else.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-test-slot
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: arffornia-slot
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 5432

@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: arffornia-pr1
+
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: ConfigMap
+      name: arffornia-website-config
+    patch: |-
+      - op: replace
+        path: /data/APP_URL
+        value: https://pr1.arffornia.com
+      - op: replace
+        path: /data/AZURE_OAUTH_REDIRECT_URI
+        value: https://pr1.arffornia.com/login/connect
+  - target:
+      kind: HTTPRoute
+      name: website
+    patch: |-
+      - op: replace
+        path: /spec/hostnames
+        value: [pr1.arffornia.com]

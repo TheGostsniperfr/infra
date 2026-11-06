@@ -1,0 +1,16 @@
+# Spec 016 (Arffornia/docs, "Testable build"): the test slot and the website playtest slots.
+# - arffornia-slot, arffornia-previews: the fixed parts (namespaces, quotas, secrets, the test
+#   slot's LoadBalancer and route), project default, like every infra app;
+# - playtest-pack, playtest-website: ApplicationSets over Arffornia/Arffornia_Playtest `envs/`
+#   (one file per slot), in the restricted project `playtest`.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: argocd
+
+resources:
+  - appproject.yaml
+  - arffornia-slot.yaml
+  - arffornia-previews.yaml
+  - applicationset-pack.yaml
+  - applicationset-website.yaml

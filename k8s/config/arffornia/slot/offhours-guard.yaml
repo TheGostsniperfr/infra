@@ -1,0 +1,12 @@
+# Sleeps with prod (spec 016, D6). The env file stays, so the slot comes back at 07:00.
+apiVersion: guard.3istor.com/v1alpha1
+kind: OffhoursSchedule
+metadata:
+  name: arffornia-slot
+spec:
+  sleepAt: "0 3 * * *" # 03:00 Europe/Paris
+  wakeAt: "0 7 * * *" # 07:00 Europe/Paris
+  timezone: "Europe/Paris"
+  targetRefs:
+    - name: arffornia-slot-minecraft
+    - name: pack-files

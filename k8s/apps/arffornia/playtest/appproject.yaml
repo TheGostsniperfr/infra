@@ -1,0 +1,42 @@
+# What a playtest environment may deploy. The Applications here run PR code (a Website PR's chart
+# and images, a Provisioning ref, a mod jar), so: only the slot namespaces, no cluster-scoped
+# object, and an allow-list of namespaced kinds that excludes VaultSecret, NetworkPolicy,
+# ResourceQuota, LimitRange, RBAC, Argo CD and Kyverno objects. Kyverno
+# (k8s/config/kyverno/policy/arffornia-envs.yaml) adds images, hostnames and Service types.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: playtest
+  namespace: argocd
+spec:
+  description: Spec 016 playtest slots (pr1-pr3 and the test slot). PR code, capped and isolated.
+  sourceRepos:
+    - https://github.com/TheGostsniperfr/infra.git
+    - https://github.com/Arffornia/Arffornia_Website.git
+  destinations:
+    - name: in-cluster
+      namespace: arffornia-pr1
+    - name: in-cluster
+      namespace: arffornia-pr2
+    - name: in-cluster
+      namespace: arffornia-pr3
+    - name: in-cluster
+      namespace: arffornia-slot
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Secret
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: ServiceAccount
+    - group: ""
+      kind: PersistentVolumeClaim
+    - group: apps
+      kind: Deployment
+    - group: batch
+      kind: Job
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute

@@ -1,0 +1,26 @@
+routes:
+  staging:
+    hostnames:
+      - "staging.arffornia.com"
+    rules:
+      # The pack from main with the edge mod, for the beta launcher's Staging environment.
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /pack/
+        filters:
+          - type: URLRewrite
+            urlRewrite:
+              path:
+                type: ReplacePrefixMatch
+                replacePrefixMatch: /
+        backendRefs:
+          - name: pack-files
+            port: 80
+      - backendRefs:
+          - name: arffornia-website-chart
+            port: 80
+    auth:
+      enabled: false
+    ipFilter:
+      enabled: false
