@@ -20,6 +20,12 @@ spec:
       kind: Application
       jqPathExpressions:
         - .metadata.finalizers[]? | select(startswith("pre-delete-finalizer.argocd.argoproj.io"))
+    # argocd-image-updater pins staging's `main` digests here (write-back argocd).
+    - group: argoproj.io
+      kind: Application
+      name: arffornia-staging
+      jsonPointers:
+        - /spec/source/kustomize
   project: default
   source:
     repoURL: https://github.com/TheGostsniperfr/infra.git
