@@ -30,3 +30,25 @@ spec:
   destination:
     name: in-cluster
     namespace: arffornia-staging
+---
+# The `main` tag is mutable: the digest strategy rolls staging out on every new main image.
+# Write-back `argocd` pins the digests in the Application spec, not in Git.
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: arffornia-staging
+  namespace: argocd
+spec:
+  applicationRefs:
+    - namePattern: arffornia-staging
+      commonUpdateSettings:
+        updateStrategy: digest
+        platforms:
+          - linux/amd64
+      images:
+        - alias: backend
+          imageName: ghcr.io/arffornia/arffornia_website:main
+        - alias: frontend
+          imageName: ghcr.io/arffornia/nginx_arffornia_website:main
+  writeBackConfig:
+    method: argocd
