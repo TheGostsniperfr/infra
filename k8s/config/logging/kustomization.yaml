@@ -11,7 +11,7 @@ resources:
 helmCharts:
   - name: loki
     repo: https://grafana.github.io/helm-charts
-    version: 7.3.0
+    version: 7.5.0
     releaseName: loki
     namespace: logging
     valuesFile: loki-values.yaml
@@ -21,7 +21,7 @@ helmCharts:
 
   - name: alloy
     repo: https://grafana.github.io/helm-charts
-    version: 1.14.0
+    version: 1.14.3
     releaseName: alloy
     namespace: logging
     valuesFile: alloy-values.yaml
