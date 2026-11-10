@@ -1,8 +1,10 @@
 {{- range $app, $cfg := .Values.apps }}
 {{- $ns := printf "%s-%s" $.Values.team $app }}
-# App {{ $app }} of team {{ $.Values.team }}. Its CI deploys here through the team's agent: the
-# Role below in this namespace, nothing else. Pod Security `baseline` is enforced by Kubernetes
-# itself; `restricted` by the Kyverno Policy further down, which only exempts the Spilo image.
+# App {{ $app }} of team {{ $.Values.team }}. Argo CD deploys its components here (argocd.yaml); no
+# team member and no pipeline has rights in it. Pod Security `baseline` is enforced by Kubernetes
+# itself; `restricted` by the Kyverno Policy in guardrails.yaml, which only exempts the Spilo image.
+# platform.arffornia.com/team: only cluster admins label namespaces, so the network policies of
+# network.yaml can trust it to recognise the team's other apps.
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -10,62 +12,10 @@ metadata:
   labels:
     team: {{ $.Values.team }}
     app: {{ $app }}
+    platform.arffornia.com/team: {{ $.Values.team }}
     prod-gateway-access: "true"
     pod-security.kubernetes.io/enforce: baseline
     pod-security.kubernetes.io/warn: restricted
----
-# What a pipeline may deploy. Not `edit`: no NetworkPolicy (the team would open its own isolation),
-# no Ingress, no exec or port-forward. Secrets: Helm stores its releases in them.
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: app-deployer
-  namespace: {{ $ns }}
-rules:
-  - apiGroups: [""]
-    resources: ["services", "configmaps", "secrets", "serviceaccounts", "persistentvolumeclaims"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["get", "list", "watch", "delete"]
-  - apiGroups: [""]
-    resources: ["pods/log", "events", "endpoints"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["apps"]
-    resources: ["deployments", "statefulsets"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  - apiGroups: ["apps"]
-    resources: ["replicasets"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["batch"]
-    resources: ["jobs", "cronjobs"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  - apiGroups: ["autoscaling"]
-    resources: ["horizontalpodautoscalers"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  - apiGroups: ["policy"]
-    resources: ["poddisruptionbudgets"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  - apiGroups: ["gateway.networking.k8s.io"]
-    resources: ["httproutes"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  - apiGroups: ["acid.zalan.do"]
-    resources: ["postgresqls"]
-    verbs: ["get", "list", "watch"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: {{ include "gitlab-team.agent" $ }}-deployer
-  namespace: {{ $ns }}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: app-deployer
-subjects:
-  - kind: ServiceAccount
-    name: {{ include "gitlab-team.agent" $ }}
-    namespace: {{ include "gitlab-team.agent" $ }}
 ---
 apiVersion: v1
 kind: ResourceQuota
@@ -86,138 +36,6 @@ spec:
     - type: Container
       {{- toYaml $.Values.limitRange | nindent 6 }}
 ---
-# Only the gateway, the namespace itself and the postgres-operator (Patroni API) may connect in
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: ingress-from-gateway-only
-  namespace: {{ $ns }}
-spec:
-  podSelector: {}
-  policyTypes: ["Ingress"]
-  ingress:
-    - from:
-        - podSelector: {}
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: envoy-gateway-system
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: postgres-operator
----
-# Out: DNS, the namespace itself (its database) and the web outside the LAN, as the arffornia-*
-# environments (k8s/config/kyverno/policy/arffornia-envs.yaml). Not Vault, not the other databases.
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: egress-web-only
-  namespace: {{ $ns }}
-spec:
-  podSelector: {}
-  policyTypes: ["Egress"]
-  egress:
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-          podSelector:
-            matchLabels:
-              k8s-app: kube-dns
-      ports:
-        - {port: 53, protocol: UDP}
-        - {port: 53, protocol: TCP}
-    - to:
-        - podSelector: {}
-    - to:
-        - ipBlock:
-            cidr: 0.0.0.0/0
-            except: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10", "169.254.0.0/16"]
-      ports:
-        - {port: 80, protocol: TCP}
-        - {port: 443, protocol: TCP}
----
-{{- if $cfg.database }}
-# Patroni elects its leader through the Kubernetes API. With Cilium an ipBlock never matches the
-# API server, hence the entity.
-# https://docs.cilium.io/en/stable/security/policy/language/#entities-based
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
-metadata:
-  name: database-to-apiserver
-  namespace: {{ $ns }}
-spec:
-  endpointSelector:
-    matchLabels:
-      application: spilo
-  egress:
-    - toEntities: ["kube-apiserver"]
----
-{{- end }}
-# Admission rules the team cannot change (Kyverno Policies are not in its Role).
-# Feature: https://kyverno.io/docs/policy-types/cluster-policy/validate/#pod-security
-apiVersion: kyverno.io/v1
-kind: Policy
-metadata:
-  name: app-guardrails
-  namespace: {{ $ns }}
-spec:
-  validationFailureAction: Enforce
-  background: false # its reports controller cannot read HTTPRoutes, as for arffornia-env-guard
-  rules:
-    # Only the app's own images, built by its pipelines, and the operator's database image
-    - name: images
-      match:
-        any:
-          - resources:
-              kinds: ["Pod"]
-      validate:
-        message: "Images must come from {{ $.Values.registryHost }}/apps/{{ $.Values.team }}/{{ $app }}/"
-        foreach:
-          - list: "request.object.spec.[containers, initContainers, ephemeralContainers][]"
-            deny:
-              conditions:
-                all:
-                  - key: "{{ "{{" }} element.image {{ "}}" }}"
-                    operator: AnyNotIn
-                    value:
-                      - "{{ $.Values.registryHost }}/apps/{{ $.Values.team }}/{{ $app }}/*"
-                      - {{ $.Values.database.image | quote }}
-    - name: pod-security-restricted
-      match:
-        any:
-          - resources:
-              kinds: ["Pod"]
-      validate:
-        podSecurity:
-          level: restricted
-          version: latest
-          exclude:
-            - controlName: Privilege Escalation
-              images: [{{ $.Values.database.image | quote }}]
-            - controlName: Capabilities
-              images: [{{ $.Values.database.image | quote }}]
-            - controlName: Running as Non-root
-              images: [{{ $.Values.database.image | quote }}]
-            - controlName: Seccomp
-              images: [{{ $.Values.database.image | quote }}]
-    # Only the app's own name: anything else could take over another site behind the gateway
-    - name: route-hostnames
-      match:
-        any:
-          - resources:
-              kinds: ["gateway.networking.k8s.io/v1/HTTPRoute"]
-      validate:
-        message: "The only hostname allowed is {{ $app }}-{{ $.Values.team }}.{{ $.Values.baseDomain }}"
-        deny:
-          conditions:
-            any:
-              - key: "{{ "{{" }} request.object.spec.hostnames || `[]` {{ "}}" }}"
-                operator: AnyNotIn
-                value: ["{{ $app }}-{{ $.Values.team }}.{{ $.Values.baseDomain }}"]
-              - key: "{{ "{{" }} length(request.object.spec.hostnames || `[]`) {{ "}}" }}"
-                operator: Equals
-                value: 0
----
 # Pull secret for the team's images: group deploy token (read_registry), created by Terraform
 # Vault path: kvv2/gitlab-agents/<team>-registry  keys: username, password
 apiVersion: ricoberger.de/v1alpha1
@@ -227,7 +45,7 @@ metadata:
   namespace: {{ $ns }}
 spec:
   path: kvv2/gitlab-agents/{{ $.Values.team }}-registry
-  vaultRole: gitlab-agents-role
+  vaultRole: apps-{{ $ns }}
   keys:
     - username
     - password

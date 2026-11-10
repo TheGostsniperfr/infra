@@ -13,12 +13,10 @@
 # source of truth; GitLab only holds what Terraform pushes.
 #
 # One agent per team, not one per cluster: GitLab recommends a single agent with impersonation,
-# but impersonation is Premium/Ultimate. On the free tier a CI job acts with the agent's own
-# service account, so isolation between teams comes from separate agents whose service accounts
-# only have rights in their team's namespaces (k8s/config/gitlab-agents).
+# but impersonation is Premium/Ultimate; separate agents keep the teams apart on the free tier.
+# The agents no longer deploy (no ci_access, no rights in the app namespaces): Argo CD does.
 # Feature: https://docs.gitlab.com/user/clusters/agent/
 # Multi-tenancy: https://docs.gitlab.com/user/clusters/agent/install/#install-multiple-agents-in-your-cluster
-# CI access: https://docs.gitlab.com/user/clusters/agent/ci_cd_workflow/
 # Provider: https://registry.terraform.io/providers/gitlabhq/gitlab/19.5.0/docs
 
 variable "gitlab_admin_token_var" {
@@ -84,8 +82,11 @@ resource "gitlab_cluster_agent" "team" {
   name    = each.key
 }
 
-# protected_branches_only: only pipelines on protected branches (main, preprod) can use the agent
-# https://docs.gitlab.com/user/clusters/agent/ci_cd_workflow/#restrict-access-to-the-agent-to-protected-branches
+# No ci_access: pipelines no longer deploy, Argo CD does (charts/gitlab-team, argocd.yaml). The
+# agent stays connected for what only it can do: workspaces (Premium), operational container
+# scanning (Ultimate), the Kubernetes dashboard. Each needs its own block here and its own rights.
+# Why: k8s/config/gitlab-agents/SECURITY.md
+# https://docs.gitlab.com/user/clusters/agent/work_with_agent/#configure-your-agent
 resource "gitlab_repository_file" "team_agent_config" {
   for_each = local.gitlab_teams
 
@@ -94,14 +95,7 @@ resource "gitlab_repository_file" "team_agent_config" {
   file_path      = ".gitlab/agents/${each.key}/config.yaml"
   encoding       = "text"
   commit_message = "chore: update agent config from the infra repo"
-  content = yamlencode({
-    ci_access = {
-      groups = [{
-        id                      = gitlab_group.team[each.key].full_path
-        protected_branches_only = true
-      }]
-    }
-  })
+  content        = yamlencode({})
 }
 
 resource "gitlab_cluster_agent_token" "team" {

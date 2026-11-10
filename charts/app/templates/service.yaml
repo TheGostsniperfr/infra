@@ -1,0 +1,14 @@
+{{- if .Values.image.digest }}
+# http://<component>:<port> for the app's other components
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "app.name" . }}
+spec:
+  selector:
+    app.kubernetes.io/name: {{ include "app.name" . }}
+  ports:
+    - name: http
+      port: {{ .Values.port }}
+      targetPort: http
+{{- end }}

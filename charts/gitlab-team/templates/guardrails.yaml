@@ -1,0 +1,185 @@
+{{- range $app, $cfg := .Values.apps }}
+{{- $ns := printf "%s-%s" $.Values.team $app }}
+{{- $images := printf "%s/apps/%s/%s/*" $.Values.registryHost $.Values.team $app }}
+# Admission rules of the app's namespace. They hold even for objects that do not come from
+# charts/app: whoever creates them, a cluster admin excepted, Kyverno refuses what breaks them.
+# Kyverno also writes the rules for Deployments, Jobs... from the Pod ones (autogen), so a refused
+# image fails the Argo CD sync instead of a ReplicaSet.
+# Policies: https://kyverno.io/docs/policy-types/cluster-policy/
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: app-guardrails
+  namespace: {{ $ns }}
+spec:
+  validationFailureAction: Enforce
+  background: false # its reports controller cannot read HTTPRoutes, as for arffornia-env-guard
+  rules:
+    # Only the app's own images, built by its pipelines, and the operator's database image
+    - name: images
+      match:
+        any:
+          - resources:
+              kinds: ["Pod"]
+      validate:
+        message: "Images must come from {{ $.Values.registryHost }}/apps/{{ $.Values.team }}/{{ $app }}/"
+        foreach:
+          - list: "request.object.spec.[containers, initContainers, ephemeralContainers][]"
+            deny:
+              conditions:
+                all:
+                  - key: "{{ "{{" }} element.image {{ "}}" }}"
+                    operator: AnyNotIn
+                    value:
+                      - {{ $images | quote }}
+                      - {{ $.Values.database.image | quote }}
+    # Signed by the app's key, which only a pipeline on `main` of the app's projects can use
+    # (Vault transit, terraform/apps.tf). A pushed image, or one built from a branch, is refused.
+    # https://kyverno.io/docs/policy-types/cluster-policy/verify-images/sigstore/
+    - name: signed-images
+      match:
+        any:
+          - resources:
+              kinds: ["Pod"]
+      verifyImages:
+        - imageReferences: [{{ $images | quote }}]
+          failureAction: Enforce
+          verifyDigest: true
+          mutateDigest: false
+          required: true
+          imageRegistryCredentials:
+            secrets: [registry-pull-{{ $.Values.team }}]
+          attestors:
+            - entries:
+                - keys:
+                    secret:
+                      name: cosign-{{ $ns }}
+                      namespace: kyverno
+                    # Signed with a key, not keyless: no public transparency log to check
+                    rekor:
+                      ignoreTlog: true
+                    ctlog:
+                      ignoreSCT: true
+    - name: pod-security-restricted
+      match:
+        any:
+          - resources:
+              kinds: ["Pod"]
+      validate:
+        podSecurity:
+          level: restricted
+          version: latest
+          exclude:
+            - controlName: Privilege Escalation
+              images: [{{ $.Values.database.image | quote }}]
+            - controlName: Capabilities
+              images: [{{ $.Values.database.image | quote }}]
+            - controlName: Running as Non-root
+              images: [{{ $.Values.database.image | quote }}]
+            - controlName: Seccomp
+              images: [{{ $.Values.database.image | quote }}]
+    # The database's service account may create Services and Endpoints and patch Pods, and its
+    # label opens the Kubernetes API (network.yaml): only the database image may use them
+    - name: database-identity
+      match:
+        any:
+          - resources:
+              kinds: ["Pod"]
+      preconditions:
+        any:
+          - key: "{{ "{{" }} request.object.spec.serviceAccountName || '' {{ "}}" }}"
+            operator: Equals
+            value: postgres-pod
+          - key: "{{ "{{" }} request.object.metadata.labels.application || '' {{ "}}" }}"
+            operator: Equals
+            value: spilo
+      validate:
+        message: "The service account postgres-pod and the label application=spilo are reserved to {{ $.Values.database.image }}"
+        foreach:
+          - list: "request.object.spec.[containers, initContainers, ephemeralContainers][]"
+            deny:
+              conditions:
+                all:
+                  - key: "{{ "{{" }} element.image {{ "}}" }}"
+                    operator: NotEquals
+                    value: {{ $.Values.database.image | quote }}
+    # ExternalName would alias another site or an internal name behind the gateway; external IPs
+    # would attract traffic meant for other addresses. NodePort and LoadBalancer: the quota.
+    - name: services
+      match:
+        any:
+          - resources:
+              kinds: ["Service"]
+      validate:
+        message: "Services are ClusterIP, without externalIPs"
+        deny:
+          conditions:
+            any:
+              - key: "{{ "{{" }} request.object.spec.type || 'ClusterIP' {{ "}}" }}"
+                operator: NotEquals
+                value: ClusterIP
+              - key: "{{ "{{" }} length(request.object.spec.externalIPs || `[]`) {{ "}}" }}"
+                operator: GreaterThan
+                value: 0
+    # Only the app's name: anything else could take over another site behind the gateway
+    - name: route-hostnames
+      match:
+        any:
+          - resources:
+              kinds: ["gateway.networking.k8s.io/v1/HTTPRoute"]
+      validate:
+        message: "The only hostname allowed is {{ $app }}-{{ $.Values.team }}.{{ $.Values.baseDomain }}"
+        deny:
+          conditions:
+            any:
+              - key: "{{ "{{" }} request.object.spec.hostnames || `[]` {{ "}}" }}"
+                operator: AnyNotIn
+                value: ["{{ $app }}-{{ $.Values.team }}.{{ $.Values.baseDomain }}"]
+              - key: "{{ "{{" }} length(request.object.spec.hostnames || `[]`) {{ "}}" }}"
+                operator: Equals
+                value: 0
+    # The Vault Secrets Operator reads Vault with one service account for every namespace: the
+    # role named in a VaultSecret is the only thing that limits which secrets it copies here
+    - name: vault-role
+      match:
+        any:
+          - resources:
+              kinds: ["ricoberger.de/v1alpha1/VaultSecret"]
+      validate:
+        message: "VaultSecrets in {{ $ns }} use the Vault role apps-{{ $ns }}"
+        pattern:
+          spec:
+            vaultRole: apps-{{ $ns }}
+---
+# Public key of the app's signing key (Vault transit), read by the rule signed-images
+# Vault path: kvv2/gitlab-agents/{{ $ns }}-cosign  keys: cosign.pub
+apiVersion: ricoberger.de/v1alpha1
+kind: VaultSecret
+metadata:
+  name: cosign-{{ $ns }}
+  namespace: kyverno
+spec:
+  path: kvv2/gitlab-agents/{{ $ns }}-cosign
+  vaultRole: gitlab-agents-role
+  keys:
+    - cosign.pub
+  type: Opaque
+---
+{{- end }}
+# Kyverno reads the signatures from the registry with the team's pull token; its credentials must
+# live in Kyverno's namespace.
+# Vault path: kvv2/gitlab-agents/<team>-registry  keys: username, password
+apiVersion: ricoberger.de/v1alpha1
+kind: VaultSecret
+metadata:
+  name: registry-pull-{{ .Values.team }}
+  namespace: kyverno
+spec:
+  path: kvv2/gitlab-agents/{{ .Values.team }}-registry
+  vaultRole: gitlab-agents-role
+  keys:
+    - username
+    - password
+  templates:
+    .dockerconfigjson: '{"auths":{"{{ .Values.registryHost }}":{"username":"{% .Secrets.username %}","password":"{% .Secrets.password %}"}}}'
+  type: kubernetes.io/dockerconfigjson

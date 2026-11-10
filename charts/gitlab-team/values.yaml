@@ -1,7 +1,15 @@
 # Set by the ApplicationSet k8s/apps/gitlab-agents.yaml from k8s/config/gitlab-agents/teams/<team>.yaml
 team: ""
-# <app>: {database: bool}
+# <app>: {database: bool, roles: ...}
 apps: {}
+# Every app has these components, each its own GitLab project forked from a template
+# (terraform/apps.tf) and its own Argo CD Application rendering charts/app
+components: [backend, frontend]
+
+# Argo CD reads the platform chart here and the app's deploy repository on GitLab
+infraRepo: https://github.com/TheGostsniperfr/infra.git
+gitlabUrl: https://gitlab.arffornia.com
+oidcIssuer: https://auth.arffornia.com/realms/arffornia
 
 # Hostname of the GitLab registry, for the image pull secret of every app namespace
 registryHost: gitlab-registry.arffornia.com

@@ -1,0 +1,97 @@
+{{- range $app, $cfg := .Values.apps }}
+{{- $ns := printf "%s-%s" $.Values.team $app }}
+# Network policies only restrict the pods they select, so these isolate the app's namespace even
+# though the rest of the cluster has no default deny. Same team, other app: allowed both ways,
+# except to the databases (pods labelled `application`, set by the postgres-operator).
+# In: the gateway, the namespace itself, the postgres-operator (Patroni API), the team's apps
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ingress
+  namespace: {{ $ns }}
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector: {}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: postgres-operator
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ingress-from-team
+  namespace: {{ $ns }}
+spec:
+  podSelector:
+    matchExpressions:
+      - {key: application, operator: DoesNotExist}
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              platform.arffornia.com/team: {{ $.Values.team }}
+---
+# Out: DNS, the namespace itself (its database), the team's other apps, and the web outside the
+# LAN on 80/443, as the arffornia-* environments (k8s/config/kyverno/policy/arffornia-envs.yaml).
+# Not Vault, not the other teams, not the other databases.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: egress
+  namespace: {{ $ns }}
+spec:
+  podSelector: {}
+  policyTypes: ["Egress"]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - {port: 53, protocol: UDP}
+        - {port: 53, protocol: TCP}
+    - to:
+        - podSelector: {}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              platform.arffornia.com/team: {{ $.Values.team }}
+          podSelector:
+            matchExpressions:
+              - {key: application, operator: DoesNotExist}
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10", "169.254.0.0/16"]
+      ports:
+        - {port: 80, protocol: TCP}
+        - {port: 443, protocol: TCP}
+---
+{{- if $cfg.database }}
+# Patroni elects its leader through the Kubernetes API. With Cilium an ipBlock never matches the
+# API server, hence the entity. Kyverno (guardrails.yaml) keeps the label for the Spilo image.
+# https://docs.cilium.io/en/stable/security/policy/language/#entities-based
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: database-to-apiserver
+  namespace: {{ $ns }}
+spec:
+  endpointSelector:
+    matchLabels:
+      application: spilo
+  egress:
+    - toEntities: ["kube-apiserver"]
+---
+{{- end }}
+{{- end }}

@@ -1,0 +1,46 @@
+# One component of an app, rendered by Argo CD (Application <team>-<app>-<component>, from
+# charts/gitlab-team). Values come from two places, see values.schema.json:
+#   - `platform`: set by the platform in the Application. Argo CD gives it precedence over the
+#     team's file, so a team cannot change its name, host, registry or database.
+#   - everything else: the file <component>.yaml of the app's deploy repository, written by the
+#     component's pipeline from its deploy.yaml plus the digest it built and signed.
+# Values precedence: https://argo-cd.readthedocs.io/en/stable/user-guide/helm/#values
+
+platform:
+  team: ""
+  app: ""
+  component: ""
+  host: ""          # <app>-<team>.<baseDomain>
+  registry: ""      # images are <registry>/apps/<team>/<app>/<component>@<digest>
+  oidcIssuer: ""
+  oidcClientId: ""
+  database: false   # the app has a database (teams/<team>.yaml)
+
+# Written by the pipeline. Nothing is deployed until there is one.
+image:
+  digest: ""
+
+port: 8080
+replicas: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 256Mi
+# Plain variables. DB_*, OIDC_* and POD_NAMESPACE are reserved for the platform.
+env: {}
+# Variables read from Vault, kvv2/apps/<team>/<app>, one key per variable
+secrets: []
+# DB_HOST, DB_USER, DB_PASSWORD of the app's database
+database: false
+# OIDC_ISSUER, OIDC_CLIENT_ID of the app's Keycloak client
+oidc: false
+# Publish on https://<platform.host><route.path>; without it, only the app's other components
+# reach this one, at http://<component>:<port>
+route: {}
+# HTTP paths of the probes; empty means no probe of that kind
+health:
+  startup: ""
+  readiness: ""
+  liveness: ""
