@@ -75,7 +75,7 @@ global:
 
   # Runner: authentication token from Vault, not the deprecated registration token
   # Chart: https://docs.gitlab.com/charts/installation/secrets/#gitlab-runner-secret
-  # Same port inside and outside: the router forwards TCP 5522 to 192.168.1.85:5522
+  # Same port inside and outside: the router forwards TCP 5522 to 192.168.1.240:5522
   shell:
     port: 5522
 
@@ -215,7 +215,7 @@ gitlab:
     service:
       type: LoadBalancer
       annotations:
-        metallb.universe.tf/loadBalancerIPs: 192.168.1.85
+        metallb.universe.tf/loadBalancerIPs: 192.168.1.240 # Outside the box's DHCP range (.1-.199)
     resources:
       limits:
         memory: 256Mi
