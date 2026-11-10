@@ -1,6 +1,6 @@
 # CI job pods run here, not in `gitlab`: a job is code pushed by any team member, it must not sit
 # next to Redis, Gitaly or Postgres. Nothing can reach a job, and a job reaches only the cluster
-# DNS and the internet (GitLab, the registry and KAS through their public URLs).
+# DNS, the image builder and the internet (GitLab, the registry and KAS through their public URLs).
 # https://docs.gitlab.com/runner/executors/kubernetes/
 apiVersion: v1
 kind: Namespace
@@ -26,6 +26,13 @@ spec:
       ports:
         - {protocol: UDP, port: 53}
         - {protocol: TCP, port: 53}
+    # The platform's image builder (buildkitd.yaml)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gitlab-ci-builders
+      ports:
+        - {protocol: TCP, port: 1234}
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
