@@ -228,3 +228,14 @@ resource "vault_policy" "gitlab_policy" {
     mount_path = vault_mount.kvv2.path
   })
 }
+
+# -----------------------------------------------------------------------------
+# GitLab Agents Policy
+# -----------------------------------------------------------------------------
+
+resource "vault_policy" "gitlab_agents_policy" {
+  name = "gitlab-agents-policy"
+  policy = templatefile("${path.module}/policies/gitlab_agents.hcl", {
+    mount_path = vault_mount.kvv2.path
+  })
+}

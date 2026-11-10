@@ -36,6 +36,11 @@ terraform {
       source  = "hashicorp/tls"
       version = "4.4.1"
     }
+
+    gitlab = {
+      source  = "gitlabhq/gitlab"
+      version = "19.5.0"
+    }
   }
 }
 
@@ -58,4 +63,10 @@ provider "vault" {
 provider "cloudflare" {
   # Configuration options
   api_token = var.cloudflare_api_token_secret_var
+}
+
+# Admin personal access token of the GitLab instance (scope `api`), see gitlab.tf
+provider "gitlab" {
+  base_url = "https://gitlab.${var.base_domain}/api/v4/"
+  token    = var.gitlab_admin_token_var
 }

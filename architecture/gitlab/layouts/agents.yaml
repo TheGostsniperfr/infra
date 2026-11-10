@@ -1,0 +1,39 @@
+apiVersion: noodle/v1alpha1
+kind: Layout
+canvas: {width: 2960, height: 1600}
+lanes:
+  tf-vault: {x: 320}
+elements:
+  z-workstation: {x: 40, y: 560, w: 260, h: 200}
+  z-cluster: {x: 360, y: 160, w: 2560, h: 860}
+  g-ci: {x: 40, y: 60, w: 300, h: 240}
+  g-gateway: {x: 580, y: 60, w: 300, h: 240}
+  g-gitlab: {x: 1120, y: 60, w: 320, h: 240}
+  g-agent-demo: {x: 1680, y: 60, w: 300, h: 240}
+  g-control-plane: {x: 2220, y: 60, w: 300, h: 240}
+  g-app-demo: {x: 2220, y: 380, w: 300, h: 380}
+  g-secrets: {x: 40, y: 380, w: 300, h: 400}
+  terraform: {x: 20, y: 70, w: 220, h: 90}
+  ci-job: {x: 30, y: 90, w: 240, h: 110}
+  envoy: {x: 30, y: 90, w: 240, h: 110}
+  kas: {x: 20, y: 80, w: 280, h: 130}
+  agentk-demo: {x: 30, y: 90, w: 240, h: 110}
+  kube-apiserver: {x: 30, y: 90, w: 240, h: 110}
+  rb-demo: {x: 30, y: 60, w: 240, h: 100}
+  demo-workloads: {x: 30, y: 230, w: 240, h: 110}
+  vso: {x: 30, y: 70, w: 240, h: 100}
+  vault: {x: 30, y: 250, w: 240, h: 100}
+edges:
+  c-ci-job-envoy: {from: ci-job.right@70px, to: envoy.left@70px}
+  c-envoy-kas: {from: envoy.right@45px, to: kas.left@55px}
+  c-envoy-kas-proxy: {from: envoy.right@95px, to: kas.left@105px}
+  c-agentk-kas: {from: agentk-demo.left@70px, to: kas.right@80px, against_flow: true}
+  c-agentk-apiserver: {from: agentk-demo.right@70px, to: kube-apiserver.left@70px}
+  c-terraform-vault: {from: terraform.right, to: vault.left@50px, waypoints: [lane:tf-vault]}
+  c-vso-vault: {from: vso.bottom, to: vault.top}
+  r-rb-demo-agentk: {from: rb-demo.left, to: agentk-demo.bottom, waypoints: [[2190, 660]]}
+cards:
+  card-steps: {x: 40, y: 1060, w: 900, h: 230}
+  card-background: {x: 970, y: 1060, w: 900, h: 170}
+  card-isolation: {x: 970, y: 1250, w: 900, h: 190}
+  card-legend: {x: 1900, y: 1060, w: 1020, h: 500}

@@ -8,6 +8,14 @@ meta:
   - "Not drawn: Puma, Sidekiq and KAS also call Gitaly and Garage; Registry notifies Rails; Toolbox and the migrations Job"
   - "Out of scope: optional modules (Pages, Zoekt, Geo...), the target cluster's own resources"
   - "v0.1 · source: k8s/config/gitlab, terraform/secret_templates.tf"
+include:
+  - z-internet/**
+  - z-target-cluster/**
+  - z-cluster
+  - g-gateway/**
+  - g-secrets/**
+  - g-gitlab/**
+  - g-data/**
 steps:
   - c-developer-envoy
   - c-envoy-workhorse
@@ -50,6 +58,7 @@ cards:
       - "[D] KAS validates the agent token with Rails, then serves kubectl and GitOps"
       - "[E] The runner polls the public API for jobs, then starts one pod per job"
 labels:
+  c-envoy-kas-proxy: ""
   c-agentk-envoy: ""
   c-envoy-kas: ""
   c-kas-puma: ""
