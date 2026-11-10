@@ -7,7 +7,6 @@ resources:
   - secret.yaml
   - redis.yaml
   - ci-jobs-namespace.yaml
-  - buildkitd.yaml
 
 helmGlobals:
   chartHome: ../../../charts
