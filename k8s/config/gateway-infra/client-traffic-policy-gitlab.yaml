@@ -1,0 +1,24 @@
+# Envoy Gateway decodes %2F in paths and redirects by default (escapedSlashesAction:
+# UnescapeAndRedirect). GitLab's API needs them intact (`/api/v4/projects/group%2Fproject`, file
+# paths): with the default every such call got a 307 to a path GitLab answers 404 to. Same settings
+# as the GitLab chart's own Gateway API mode (webservice clientTrafficPolicy.main), minus
+# headers.host.stripTrailingHostDot which Envoy Gateway 1.7 does not have.
+# Chart: https://gitlab.com/gitlab-org/charts/gitlab/-/blob/v10.5.4/charts/gitlab/charts/webservice/values.yaml
+# Envoy Gateway: https://gateway.envoyproxy.io/v1.7/api/extension_types/#pathsettings
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: gitlab-web
+  namespace: gateway-infra
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: shared-gateway
+      sectionName: https-gitlab
+  path:
+    escapedSlashesAction: KeepUnchanged
+  # Envoy Gateway's HTTP/2 windows (64KiB per stream) cap a high-latency git push over HTTP/2
+  http2:
+    initialStreamWindowSize: 8Mi
+    initialConnectionWindowSize: 16Mi
