@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------------
 # GitLab: tenant groups and agents for Kubernetes
 # -----------------------------------------------------------------------------
-# Teams are the files k8s/config/gitlab-agents/teams/<team>.yaml (the name is the file name); the
-# same files drive the ApplicationSet that deploys the agents (k8s/apps/gitlab-agents.yaml).
+# Teams are the files k8s/config/app-platform/teams/<team>.yaml (the name is the file name); the
+# same files drive the ApplicationSet that deploys the agents (k8s/apps/app-platform-teams.yaml).
 # Every team gets a GitLab group `apps/<team>` for its applications and its own agent, registered
 # in `apps/platform/agent-<team>`. That project is outside the team's group on purpose: whoever can
 # push to it can change the agent's config (which projects and branches may use it) or create a
@@ -26,7 +26,7 @@ variable "gitlab_admin_token_var" {
 }
 
 locals {
-  gitlab_teams_dir = "${path.module}/../k8s/config/gitlab-agents/teams"
+  gitlab_teams_dir = "${path.module}/../k8s/config/app-platform/teams"
   gitlab_teams = {
     for f in fileset(local.gitlab_teams_dir, "*.yaml") :
     trimsuffix(f, ".yaml") => yamldecode(file("${local.gitlab_teams_dir}/${f}"))
@@ -82,10 +82,10 @@ resource "gitlab_cluster_agent" "team" {
   name    = each.key
 }
 
-# No ci_access: pipelines no longer deploy, Argo CD does (charts/gitlab-team, argocd.yaml). The
+# No ci_access: pipelines no longer deploy, Argo CD does (charts/platform-team, argocd.yaml). The
 # agent stays connected for what only it can do: workspaces (Premium), operational container
 # scanning (Ultimate), the Kubernetes dashboard. Each needs its own block here and its own rights.
-# Why: k8s/config/gitlab-agents/SECURITY.md
+# Why: k8s/config/app-platform/SECURITY.md
 # https://docs.gitlab.com/user/clusters/agent/work_with_agent/#configure-your-agent
 resource "gitlab_repository_file" "team_agent_config" {
   for_each = local.gitlab_teams

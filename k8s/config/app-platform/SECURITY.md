@@ -47,7 +47,7 @@ the `deploy` repository, or stealing a GitLab token is not enough.
 | CI | Jobs in `gitlab-ci-jobs`: nothing reaches them, they reach DNS and the internet only | `k8s/config/gitlab/ci-jobs-namespace.yaml` |
 | Vault | Signing key never leaves Vault; role bound to `namespace_path`, `ref=main`, `ref_protected=true`; token valid 5 minutes | `terraform/apps.tf` |
 | Vault | Each app namespace reads only its own path, through a role Kyverno pins | `terraform/apps.tf`, `guardrails.yaml` |
-| Argo CD | One project per app: one namespace, 4 kinds, no cluster-scoped object | `charts/gitlab-team/templates/argocd.yaml` |
+| Argo CD | One project per app: one namespace, 4 kinds, no cluster-scoped object | `charts/platform-team/templates/argocd.yaml` |
 | Chart | Values limited by a schema; security context, image path, service account fixed | `charts/app` |
 | Admission | Images: the app's registry path only, plus the database image | `guardrails.yaml`, rule `images` |
 | Admission | Images signed by the app's key | rule `signed-images` |
@@ -56,7 +56,7 @@ the `deploy` repository, or stealing a GitLab token is not enough.
 | Admission | Services ClusterIP only, no external IPs; no NodePort or LoadBalancer by quota | rule `services`, quota |
 | Admission | HTTPRoutes on `<app>-<team>.arffornia.com` only | rule `route-hostnames` |
 | Admission | VaultSecrets only with the app's role | rule `vault-role` |
-| Resources | Quota and default limits per app | `charts/gitlab-team/values.yaml` |
+| Resources | Quota and default limits per app | `charts/platform-team/values.yaml` |
 
 Admission rules hold for every object in the namespace, whoever creates it: they back up the
 chart and the Argo CD project, they do not rely on them.
@@ -72,7 +72,7 @@ namespace, so the isolation holds without a cluster-wide default deny.
 | Gateway | yes, through HTTPRoutes | | | | | |
 
 The database also reaches the Kubernetes API, for Patroni's leader election. Only the database
-image may carry the label that opens it. Files: `charts/gitlab-team/templates/network.yaml`.
+image may carry the label that opens it. Files: `charts/platform-team/templates/network.yaml`.
 
 ## Secrets
 

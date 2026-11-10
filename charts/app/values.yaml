@@ -1,5 +1,5 @@
 # One component of an app, rendered by Argo CD (Application <team>-<app>-<component>, from
-# charts/gitlab-team). Values come from two places, see values.schema.json:
+# charts/platform-team). Values come from two places, see values.schema.json:
 #   - `platform`: set by the platform in the Application. Argo CD gives it precedence over the
 #     team's file, so a team cannot change its name, host, registry or database.
 #   - everything else: the file <component>.yaml of the app's deploy repository, written by the

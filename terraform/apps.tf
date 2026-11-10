@@ -1,12 +1,12 @@
 # -----------------------------------------------------------------------------
-# Platform: applications of the teams (k8s/config/gitlab-agents/teams/<team>.yaml, key `apps`)
+# Platform: applications of the teams (k8s/config/app-platform/teams/<team>.yaml, key `apps`)
 # -----------------------------------------------------------------------------
 # For every app: GitLab group apps/<team>/<app> with a backend and a frontend project forked from
 # the templates and a `deploy` project, a key in Vault that only the pipelines on `main` of the
 # app can sign images with, a Keycloak client with the roles member and manager, and the name
 # <app>-<team>.arffornia.com. Argo CD deploys what `deploy` holds; its namespace, database,
-# Argo CD project and Kyverno rules come from the ApplicationSet (charts/gitlab-team).
-# Guide: k8s/config/gitlab-agents/GUIDE.md. Security model: k8s/config/gitlab-agents/SECURITY.md.
+# Argo CD project and Kyverno rules come from the ApplicationSet (charts/platform-team).
+# Guide: k8s/config/app-platform/GUIDE.md. Security model: k8s/config/app-platform/SECURITY.md.
 # Templates are custom project templates on Premium; here they are plain projects that every
 # component is forked from.
 
@@ -197,7 +197,7 @@ resource "vault_kv_secret_v2" "team_repo" {
 # cosign signs through Vault transit: the private key never leaves Vault. A pipeline logs in
 # with its GitLab id_token, and the role only accepts one from a protected `main` of the app's
 # group: a branch, a merge request or a laptop cannot sign. Kyverno checks the signature with
-# the public key (charts/gitlab-team, guardrails.yaml).
+# the public key (charts/platform-team, guardrails.yaml).
 # cosign and Vault: https://github.com/sigstore/cosign/blob/main/KMS.md#hashicorp-vault
 # GitLab id_tokens: https://docs.gitlab.com/ci/secrets/id_token_authentication/
 

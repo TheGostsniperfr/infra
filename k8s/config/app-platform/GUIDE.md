@@ -59,7 +59,7 @@ What that does, system by system, as it would be done by hand:
    - Client roles `member` and `manager`.
    - Groups `app-<team>-<app>-members` and `-managers` with these roles, and their users.
 4. **Cloudflare** (`terraform/apps.tf`): a proxied CNAME `<app>-<team>`.
-5. **Kubernetes** (Argo CD, `charts/gitlab-team`)
+5. **Kubernetes** (Argo CD, `charts/platform-team`)
    - Namespace `<team>-<app>`: quota, LimitRange, network policies, Kyverno rules, registry pull
      secret, Postgres database.
    - Argo CD project `app-<team>-<app>`, and one Application per component.

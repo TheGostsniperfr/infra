@@ -11,7 +11,7 @@ metadata:
   name: app-{{ $ns }}
   namespace: argocd
 spec:
-  description: App {{ $app }} of team {{ $.Values.team }} (charts/gitlab-team)
+  description: App {{ $app }} of team {{ $.Values.team }} (charts/platform-team)
   sourceRepos:
     - {{ $.Values.infraRepo }}
     - {{ $deployRepo }}

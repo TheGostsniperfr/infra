@@ -1,13 +1,13 @@
-# One Application per team, from k8s/config/gitlab-agents/teams/<team>.yaml (the team name is the
-# file name, never its content). Each Application is:
+# App platform: one Application `team-<team>` per file k8s/config/app-platform/teams/<team>.yaml
+# (the team name is the file name, never its content). Each Application is:
 #   - the official gitlab-agent chart, with the values shared by every team (agent-values.yaml);
-#   - charts/gitlab-team: the agent's namespace and token, and per app its namespace, guardrails,
+#   - charts/platform-team: the agent's namespace and token, and per app its namespace, guardrails,
 #     Argo CD project and the Applications that deploy it (charts/app).
 # The same files drive terraform/gitlab.tf (GitLab group, agent, token), see the README there.
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: gitlab-agents
+  name: app-platform-teams
   namespace: argocd
 spec:
   # A team's Application holds its namespaces and databases: removing or renaming it must not
@@ -22,10 +22,10 @@ spec:
         repoURL: https://github.com/TheGostsniperfr/infra.git
         revision: HEAD
         files:
-          - path: k8s/config/gitlab-agents/teams/*.yaml
+          - path: k8s/config/app-platform/teams/*.yaml
   template:
     metadata:
-      name: 'gitlab-agent-{{ trimSuffix ".yaml" .path.filename }}'
+      name: 'team-{{ trimSuffix ".yaml" .path.filename }}'
       annotations:
         argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
     spec:
@@ -37,15 +37,15 @@ spec:
           helm:
             releaseName: 'gitlab-agent-{{ trimSuffix ".yaml" .path.filename }}'
             valueFiles:
-              - $infra/k8s/config/gitlab-agents/agent-values.yaml
+              - $infra/k8s/config/app-platform/agent-values.yaml
         - repoURL: https://github.com/TheGostsniperfr/infra.git
           targetRevision: HEAD
           ref: infra
         - repoURL: https://github.com/TheGostsniperfr/infra.git
           targetRevision: HEAD
-          path: charts/gitlab-team
+          path: charts/platform-team
           helm:
-            releaseName: 'gitlab-team-{{ trimSuffix ".yaml" .path.filename }}'
+            releaseName: 'platform-team-{{ trimSuffix ".yaml" .path.filename }}'
             values: |
               team: {{ trimSuffix ".yaml" .path.filename }}
               apps: {{ toJson .apps }}

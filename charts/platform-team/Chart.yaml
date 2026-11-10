@@ -1,5 +1,5 @@
 apiVersion: v2
-name: gitlab-team
-description: Namespaces, RBAC, quota and agent token of one team deploying through its GitLab agent
+name: platform-team
+description: "Per team of the app platform: its GitLab agent, and per app its namespace, database, guardrails, Argo CD project and component Applications"
 type: application
 version: 0.1.0

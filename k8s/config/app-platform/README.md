@@ -1,7 +1,7 @@
 # App platform: teams, agents and Argo CD
 
 A team is a GitLab group `apps/<team>`: its members, and one subgroup per application. Its apps
-are deployed by Argo CD from their `deploy` repositories (`charts/gitlab-team`, `charts/app`).
+are deployed by Argo CD from their `deploy` repositories (`charts/platform-team`, `charts/app`).
 Each team also gets a GitLab agent (`agentk`), connected but without CI access or rights in the
 app namespaces: it is kept for what only it can do. Why: [`SECURITY.md`](SECURITY.md).
 
@@ -46,9 +46,9 @@ The full list, with the secrets and the attacks: [`SECURITY.md`](SECURITY.md).
 |---|---|
 | `teams/<team>.yaml` | The team: display name and application namespaces. The only file to add per team |
 | `agent-values.yaml` | Values of the official `gitlab-agent` chart, shared by every team |
-| `../../../charts/gitlab-team` | Per team: agent namespace and token, app namespaces, network policies, Kyverno rules, Argo CD projects and Applications |
+| `../../../charts/platform-team` | Per team: agent namespace and token, app namespaces, network policies, Kyverno rules, Argo CD projects and Applications |
 | `../../../charts/app` | The platform chart of one component, with the schema of what a team may set |
-| `../../apps/gitlab-agents.yaml` | ApplicationSet: one Application `gitlab-agent-<team>` per file in `teams/` |
+| `../../apps/app-platform-teams.yaml` | ApplicationSet `app-platform-teams`: one Application `team-<team>` per file in `teams/` |
 | `../../../terraform/gitlab.tf` | Per file in `teams/`: GitLab group, agent project, agent, config, token in Vault |
 | `../../../terraform/apps.tf` | Per app: repositories, deploy token, signing key and Vault roles, Keycloak client, DNS |
 
@@ -57,7 +57,7 @@ The full list, with the secrets and the attacks: [`SECURITY.md`](SECURITY.md).
 1. Add `teams/<team>.yaml` (copy `teams/demo.yaml`) in a PR.
 2. `terraform apply` on the PR: group `apps/<team>`, project `apps/platform/agent-<team>`, the
    agent, its config and its token in `kvv2/gitlab-agents/<team>`, the team's deploy tokens.
-3. Merge: the ApplicationSet creates `gitlab-agent-<team>`: the agent, and per app its namespace,
+3. Merge: the ApplicationSet creates `team-<team>`: the agent, and per app its namespace,
    Argo CD project and Applications.
 4. Once each of the team's people has signed in, approve them (Admin > Users > Pending approval)
    and add them to `apps/<team>` only, never to `apps` or `apps/platform`.
