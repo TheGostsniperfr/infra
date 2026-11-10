@@ -16,8 +16,8 @@ To create and deploy an app, read [`GUIDE.md`](GUIDE.md).
    `apps/platform/agent-<team>:<team>` (`KUBECONFIG` is injected by GitLab).
 3. Its `kubectl` calls go to KAS (`https://gitlab-kas.arffornia.com/k8s-proxy`), which relays them
    through the tunnel; `agentk` sends them to the API server **with its own service account**.
-4. That service account only has `edit` in the team's namespaces (`charts/gitlab-team`), so the
-   job can do nothing else.
+4. That service account only has the Role `app-deployer` in the team's app namespaces
+   (`charts/gitlab-team`), so the job can do nothing else.
 
 ## Isolation model: one agent per team
 
@@ -42,14 +42,7 @@ RoleBindings to the groups `gitlab:project:<id>` instead of to the agents' servi
 
 ## What is restricted, and where
 
-| Rule | Where |
-|---|---|
-| Only projects of group `apps/<team>` may use the agent | `ci_access.groups` in the agent config, written by `terraform/gitlab.tf` |
-| The team cannot change its agent's config or create a token for it | the agent project is `apps/platform/agent-<team>`, outside the team's group; only platform admins are members of `apps` and `apps/platform` |
-| Only pipelines on protected branches (`main`, `preprod`) may use it | `protected_branches_only: true`, same place |
-| The agent can only touch its team's namespaces | `rbac.create: false` in `agent-values.yaml`, RoleBindings in `charts/gitlab-team` |
-| No cluster-wide right at all | operational container scanning (Ultimate) disabled: it grants a ClusterRole that reads every Secret |
-| A team cannot starve the cluster, no LoadBalancer | `ResourceQuota` and `LimitRange` per namespace |
+The full list, with the secrets: [`GUIDE.md`, Secrets and isolation](GUIDE.md#secrets-and-isolation).
 
 The agent config lives in GitLab (`apps/platform/agent-<team>`, `.gitlab/agents/<team>/config.yaml`),
 because KAS only reads it there, but it is written by Terraform: change it in `terraform/gitlab.tf`,
@@ -82,7 +75,8 @@ RBAC of `charts/gitlab-team`, which GitLab users cannot see or change.
 
 ```sh
 SA=system:serviceaccount:gitlab-agent-demo:gitlab-agent-demo
-kubectl auth can-i create deployments -n demo-sandbox --as=$SA   # yes
+kubectl auth can-i create deployments -n demo-timetrack --as=$SA  # yes
+kubectl auth can-i update networkpolicies -n demo-timetrack --as=$SA # no
 kubectl auth can-i get secrets -n gitlab --as=$SA                # no
 kubectl auth can-i list namespaces --as=$SA                      # no
 ```
