@@ -1,5 +1,13 @@
 garage:
   replicationFactor: 1
+  # Single node: a corrupted metadata DB cannot be rebuilt from peers (happened on 2026-11-10
+  # after a power cut, see README). fsync trades write speed for crash safety, and snapshots
+  # give a consistent copy to restore. Snapshots land in /mnt/meta/snapshots, the last two are kept.
+  # https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/#metadata_fsync
+  # https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/#metadata_auto_snapshot_interval
+  metadataAutoSnapshotInterval: "6h"
+  additionalTopLevelConfig: |
+    metadata_fsync = true
 deployment:
   replicaCount: 1
 persistence:
