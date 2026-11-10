@@ -7,4 +7,5 @@ resources:
   # - github.com/kubernetes-sigs/gateway-api/config/crd/experimental?ref=v1.5.0
   - namespace.yaml
   - gateway.yaml
+  - client-traffic-policy-gitlab.yaml
   - certificate.yaml
