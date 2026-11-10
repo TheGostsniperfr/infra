@@ -33,6 +33,13 @@ locals {
   }
 }
 
+# Top-level groups are created by Terraform only: a user's own group would be a namespace outside
+# `apps`, with its own runners settings and visibility, that no one reviews.
+# https://docs.gitlab.com/administration/settings/account_and_limit_settings/#prevent-new-users-from-creating-top-level-groups
+resource "gitlab_application_settings" "this" {
+  can_create_group = false
+}
+
 resource "gitlab_group" "apps" {
   name             = "Apps"
   path             = "apps"

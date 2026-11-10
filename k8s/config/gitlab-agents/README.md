@@ -59,7 +59,8 @@ The full list, with the secrets and the attacks: [`SECURITY.md`](SECURITY.md).
    agent, its config and its token in `kvv2/gitlab-agents/<team>`, the team's deploy tokens.
 3. Merge: the ApplicationSet creates `gitlab-agent-<team>`: the agent, and per app its namespace,
    Argo CD project and Applications.
-4. Add the team's people to `apps/<team>` only, never to `apps` or `apps/platform`.
+4. Once each of the team's people has signed in, approve them (Admin > Users > Pending approval)
+   and add them to `apps/<team>` only, never to `apps` or `apps/platform`.
 
 ## Check the isolation
 

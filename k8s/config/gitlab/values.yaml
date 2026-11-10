@@ -128,7 +128,9 @@ global:
     initialDefaults:
       signupEnabled: false
 
-    # SSO: Keycloak realm `arffornia`. Users are created on first login.
+    # SSO: Keycloak realm `arffornia`. Users are created on first login, blocked until an admin
+    # approves them (Admin > Users > Pending approval): every realm user could sign in otherwise,
+    # and run jobs on the shared runner.
     # The sign-in page redirects to Keycloak; root signs in at /users/sign_in?auto_sign_in=false
     # Feature: https://docs.gitlab.com/administration/auth/oidc/#configure-keycloak
     # Options: https://docs.gitlab.com/integration/omniauth/
@@ -137,7 +139,7 @@ global:
       enabled: true
       autoSignInWithProvider: openid_connect
       allowSingleSignOn: [openid_connect]
-      blockAutoCreatedUsers: false
+      blockAutoCreatedUsers: true
       autoLinkUser: [openid_connect]
       syncProfileFromProvider: [openid_connect]
       syncProfileAttributes: [email]
