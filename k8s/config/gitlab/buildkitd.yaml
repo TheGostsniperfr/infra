@@ -1,0 +1,89 @@
+# Image builds for every team's CI. Building needs mounts that unprivileged job pods cannot do on
+# these nodes (Ubuntu 24.04 AppArmor: BuildKit rootless and Buildah both fail in a job pod), so
+# one platform-managed BuildKit daemon builds for them. It is privileged; the teams' Dockerfile
+# RUN steps still execute in BuildKit's own unprivileged containers, not in the daemon. Only the
+# CI jobs namespace may connect. The build cache is shared between teams.
+# https://github.com/moby/buildkit#kubernetes
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gitlab-ci-builders
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: buildkitd
+  namespace: gitlab-ci-builders
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: buildkitd
+  template:
+    metadata:
+      labels:
+        app: buildkitd
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: buildkitd
+          image: moby/buildkit:v0.34.2
+          args:
+            - --addr
+            - unix:///run/buildkit/buildkitd.sock
+            - --addr
+            - tcp://0.0.0.0:1234
+            - --oci-worker-gc
+            - --oci-worker-gc-keepstorage
+            - "15000"
+          ports:
+            - name: buildkit
+              containerPort: 1234
+          readinessProbe:
+            exec:
+              command: ["buildctl", "debug", "workers"]
+            periodSeconds: 30
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              memory: 4Gi
+          volumeMounts:
+            - name: cache
+              mountPath: /var/lib/buildkit
+      volumes:
+        - name: cache
+          emptyDir:
+            sizeLimit: 20Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: buildkitd
+  namespace: gitlab-ci-builders
+spec:
+  selector:
+    app: buildkitd
+  ports:
+    - name: buildkit
+      port: 1234
+      targetPort: buildkit
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: only-ci-jobs
+  namespace: gitlab-ci-builders
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gitlab-ci-jobs
+      ports:
+        - {protocol: TCP, port: 1234}
