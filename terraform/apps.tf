@@ -71,6 +71,35 @@ resource "gitlab_project" "template" {
   visibility_level = "private"
 }
 
+# --- GitLab: shared CI ---
+# The jobs every component runs after its tests (check deploy.yaml, build, sign, release), as a
+# CI/CD component the apps include at a version: a fix is one tag here and a version bump there,
+# instead of an edit in every fork. Teams read it (include needs read access), only platform
+# admins change it, and only they create its version tags.
+# Feature: https://docs.gitlab.com/ci/components/
+
+resource "gitlab_project" "platform_ci" {
+  namespace_id     = gitlab_group.platform.id
+  name             = "ci"
+  path             = "ci"
+  description      = "CI/CD components of the app platform, included by every app at a version. Platform admins only."
+  visibility_level = "private"
+}
+
+resource "gitlab_tag_protection" "platform_ci" {
+  project             = gitlab_project.platform_ci.id
+  tag                 = "*"
+  create_access_level = "maintainer"
+}
+
+resource "gitlab_project_share_group" "platform_ci" {
+  for_each = local.gitlab_teams
+
+  project      = gitlab_project.platform_ci.id
+  group_id     = gitlab_group.team[each.key].id
+  group_access = "reporter"
+}
+
 # --- GitLab: apps ---
 
 resource "gitlab_group" "app" {
