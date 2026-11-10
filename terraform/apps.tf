@@ -4,7 +4,7 @@
 # For every app: GitLab group apps/<team>/<app> with a backend and a frontend project forked from
 # the templates, the CI variables its pipelines need, a Keycloak client with the roles member and
 # manager, and the name <app>-<team>.arffornia.com. Its namespace, database and RBAC come from the
-# ApplicationSet (charts/gitlab-team). Guide: k8s/config/gitlab-agents/README.md.
+# ApplicationSet (charts/gitlab-team). Guide: k8s/config/gitlab-agents/GUIDE.md.
 # Templates are custom project templates on Premium; here they are plain projects that every
 # component is forked from.
 
