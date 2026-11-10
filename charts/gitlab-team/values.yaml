@@ -5,21 +5,26 @@ apps: {}
 
 # Hostname of the GitLab registry, for the image pull secret of every app namespace
 registryHost: gitlab-registry.arffornia.com
+# Apps are published as <app>-<team>.<baseDomain>, the only hostname their HTTPRoutes may use
+baseDomain: arffornia.com
 
 # Per-app database (Zalando postgres-operator), one instance: a demo, no backup
 database:
   version: "17"
+  # The image the postgres-operator runs, exempted from Pod Security `restricted` (it runs as root)
+  image: ghcr.io/zalando/spilo-17:4.0-p3
   size: 2Gi
   storageClass: longhorn
 
-# Per app namespace: a team cannot starve the cluster, and gets no LoadBalancer IP
-# (the MetalLB pool only has 10 addresses)
+# Per app namespace: a team cannot starve the cluster, and gets neither a LoadBalancer IP (the
+# MetalLB pool only has 10 addresses) nor a NodePort (it would bypass the gateway)
 quota:
   requests.cpu: "2"
   requests.memory: 4Gi
   limits.memory: 8Gi
   pods: "20"
   services.loadbalancers: "0"
+  services.nodeports: "0"
 # Defaults for containers that set no resources
 limitRange:
   defaultRequest:
