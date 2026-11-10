@@ -169,7 +169,7 @@ gitlab:
       enabled: false # Helm test Pod gets a random name on every render, Argo CD never converges
     resources:
       limits:
-        memory: 3G # chart
+        memory: 4G # Measured 2.7Gi idle with 2 Puma workers: the chart's 3G gets OOMKilled
     workhorse:
       resources:
         limits:
