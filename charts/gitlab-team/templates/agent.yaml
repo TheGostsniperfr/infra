@@ -1,0 +1,48 @@
+# Namespace of the team's agent. The agent only needs leader election in its own namespace.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ include "gitlab-team.agent" . }}
+  labels:
+    team: {{ .Values.team }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gitlab-agent-self
+  namespace: {{ include "gitlab-team.agent" . }}
+rules:
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gitlab-agent-self
+  namespace: {{ include "gitlab-team.agent" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gitlab-agent-self
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "gitlab-team.agent" . }}
+    namespace: {{ include "gitlab-team.agent" . }}
+---
+# Agent token, created by Terraform (gitlab_cluster_agent_token.team["<team>"])
+# Vault path: kvv2/gitlab-agents/<team>  keys: token
+apiVersion: ricoberger.de/v1alpha1
+kind: VaultSecret
+metadata:
+  name: gitlab-agent-token
+  namespace: {{ include "gitlab-team.agent" . }}
+spec:
+  path: kvv2/gitlab-agents/{{ .Values.team }}
+  vaultRole: gitlab-agents-role
+  keys:
+    - token
+  type: Opaque

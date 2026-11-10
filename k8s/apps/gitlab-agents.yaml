@@ -1,25 +1,57 @@
+# One Application per team, from k8s/config/gitlab-agents/teams/<team>.yaml (the team name is the
+# file name, never its content). Each Application is:
+#   - the official gitlab-agent chart, with the values shared by every team (agent-values.yaml);
+#   - charts/gitlab-team: the agent's namespace and token, the team's namespaces, RBAC and quota.
+# The same files drive terraform/gitlab.tf (GitLab group, agent, token), see the README there.
 apiVersion: argoproj.io/v1alpha1
-kind: Application
+kind: ApplicationSet
 metadata:
   name: gitlab-agents
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/compare-options: ServerSideDiff=true
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
 spec:
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - ServerSideApply=true
-      - CreateNamespace=true
-  project: default
-  source:
-    repoURL: https://github.com/TheGostsniperfr/infra.git
-    targetRevision: HEAD
-    path: k8s/config/gitlab-agents
-  destination:
-    name: in-cluster
-    namespace: gitlab-agents
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/TheGostsniperfr/infra.git
+        revision: HEAD
+        files:
+          - path: k8s/config/gitlab-agents/teams/*.yaml
+  template:
+    metadata:
+      name: 'gitlab-agent-{{ trimSuffix ".yaml" .path.filename }}'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      sources:
+        - repoURL: https://charts.gitlab.io
+          chart: gitlab-agent
+          targetRevision: 2.33.0
+          helm:
+            releaseName: 'gitlab-agent-{{ trimSuffix ".yaml" .path.filename }}'
+            valueFiles:
+              - $infra/k8s/config/gitlab-agents/agent-values.yaml
+        - repoURL: https://github.com/TheGostsniperfr/infra.git
+          targetRevision: HEAD
+          ref: infra
+        - repoURL: https://github.com/TheGostsniperfr/infra.git
+          targetRevision: HEAD
+          path: charts/gitlab-team
+          helm:
+            releaseName: 'gitlab-team-{{ trimSuffix ".yaml" .path.filename }}'
+            values: |
+              team: {{ trimSuffix ".yaml" .path.filename }}
+              namespaces:
+              {{- range .namespaces }}
+                - {{ . }}
+              {{- end }}
+      destination:
+        name: in-cluster
+        namespace: 'gitlab-agent-{{ trimSuffix ".yaml" .path.filename }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - ServerSideApply=true

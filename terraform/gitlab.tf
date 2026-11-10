@@ -1,9 +1,16 @@
 # -----------------------------------------------------------------------------
 # GitLab: tenant groups and agents for Kubernetes
 # -----------------------------------------------------------------------------
+# Teams are the files k8s/config/gitlab-agents/teams/<team>.yaml (the name is the file name); the
+# same files drive the ApplicationSet that deploys the agents (k8s/apps/gitlab-agents.yaml).
 # Every team gets a GitLab group `apps/<team>` for its applications and its own agent, registered
-# in `apps/<team>/k8s-agent`. The agent's config (.gitlab/agents/<team>/config.yaml) is written
-# here, so this repo stays the source of truth; GitLab only holds what Terraform pushes.
+# in `apps/platform/agent-<team>`. That project is outside the team's group on purpose: whoever can
+# push to it can change the agent's config (which projects and branches may use it) or create a
+# token for it. Only platform admins are members of `apps` and `apps/platform`; team members are
+# added to `apps/<team>` only. GitLab requires the agent and the groups it authorizes to share the
+# top-level group, hence `apps/platform` and not a separate top-level group.
+# The agent's config (.gitlab/agents/<team>/config.yaml) is written here, so this repo stays the
+# source of truth; GitLab only holds what Terraform pushes.
 #
 # One agent per team, not one per cluster: GitLab recommends a single agent with impersonation,
 # but impersonation is Premium/Ultimate. On the free tier a CI job acts with the agent's own
@@ -21,12 +28,10 @@ variable "gitlab_admin_token_var" {
 }
 
 locals {
-  # namespaces: Kubernetes namespaces the team's agent may deploy to (RBAC in k8s/config/gitlab-agents/teams/<team>)
+  gitlab_teams_dir = "${path.module}/../k8s/config/gitlab-agents/teams"
   gitlab_teams = {
-    demo = {
-      name       = "Demo"
-      namespaces = ["demo-sandbox"]
-    }
+    for f in fileset(local.gitlab_teams_dir, "*.yaml") :
+    trimsuffix(f, ".yaml") => yamldecode(file("${local.gitlab_teams_dir}/${f}"))
   }
 }
 
@@ -37,11 +42,19 @@ resource "gitlab_group" "apps" {
   visibility_level = "private"
 }
 
+resource "gitlab_group" "platform" {
+  parent_id        = gitlab_group.apps.id
+  name             = "Platform"
+  path             = "platform"
+  description      = "Agents for Kubernetes of every team. Platform admins only, managed by Terraform."
+  visibility_level = "private"
+}
+
 resource "gitlab_group" "team" {
   for_each = local.gitlab_teams
 
   parent_id        = gitlab_group.apps.id
-  name             = each.value.name
+  name             = each.value.displayName
   path             = each.key
   visibility_level = "private"
 }
@@ -49,9 +62,9 @@ resource "gitlab_group" "team" {
 resource "gitlab_project" "team_agent" {
   for_each = local.gitlab_teams
 
-  namespace_id           = gitlab_group.team[each.key].id
-  name                   = "k8s-agent"
-  path                   = "k8s-agent"
+  namespace_id           = gitlab_group.platform.id
+  name                   = "agent-${each.key}"
+  path                   = "agent-${each.key}"
   description            = "Agent for Kubernetes of team ${each.key}. Managed by Terraform in the infra repo: do not edit here."
   visibility_level       = "private"
   initialize_with_readme = true

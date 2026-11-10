@@ -4,7 +4,7 @@ type: topology
 title: Arffornia · GitLab · Agent for Kubernetes
 subtitle: How a team's CI job deploys to its namespace, and why it cannot reach anything else.
 meta:
-  - "Scope: one team (demo) and its agent; every team gets the same pieces (k8s/config/gitlab-agents)"
+  - "Scope: one team (demo) and its agent; every team file in k8s/config/gitlab-agents/teams gets the same pieces"
   - "Not drawn: Terraform also writes the agent and .gitlab/agents/demo/config.yaml through the GitLab API; Argo CD deploys the agent"
   - "Out of scope: how the CI job pod is started by the runner, GitLab internals (see view runtime)"
   - "v0.1 · source: terraform/gitlab.tf, k8s/config/gitlab-agents"
@@ -39,7 +39,7 @@ cards:
     title: "Request path · data plane: kubectl apply from a pipeline"
     color: emerald
     lines:
-      - "[1] The job runs kubectl with the KUBECONFIG GitLab injects (context apps/demo/k8s-agent:demo)"
+      - "[1] The job runs kubectl with the KUBECONFIG GitLab injects (context apps/platform/agent-demo:demo)"
       - "[2] Envoy proxies /k8s-proxy to KAS"
       - "[3] KAS relays the call through the tunnel agentk opened beforehand"
       - "[4] agentk sends it to the API server as its own service account"

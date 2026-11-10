@@ -1,0 +1,7 @@
+# Team `demo` (the team name is the file name). Read by Terraform (terraform/gitlab.tf: GitLab
+# group apps/demo, its agent, token) and by the ApplicationSet k8s/apps/gitlab-agents.yaml
+# (agent Deployment, namespaces, RBAC). See ../README.md.
+displayName: Demo
+# One namespace per application. The team's agent gets `edit` in these and nowhere else.
+namespaces:
+  - demo-sandbox

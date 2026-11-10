@@ -1,4 +1,4 @@
-# GitLab agent (agentk) of team `demo`
+# GitLab agent (agentk), values shared by every team (k8s/apps/gitlab-agents.yaml)
 # Chart: https://docs.gitlab.com/user/clusters/agent/install/#install-the-agent-with-helm
 # Values reference: https://gitlab.com/gitlab-org/charts/gitlab-agent/-/blob/v2.33.0/values.yaml
 
@@ -6,15 +6,15 @@ config:
   # In-cluster KAS, not wss://gitlab-kas.arffornia.com: the tunnel must not depend on DNS,
   # Cloudflare or the shared-gateway (the 2026-11-10 public IP change broke everything public)
   kasAddress: ws://gitlab-kas.gitlab.svc.cluster.local:8150
-  # Token from Vault (secret.yaml), never in values
-  secretName: gitlab-agent-token
+  # Token from Vault, never in values
+  secretName: gitlab-agent-token # VaultSecret from charts/gitlab-team
   # Operational container scanning (Ultimate) is on by default and grants a cluster-wide
   # ClusterRole that can list and get every Secret: off, it is useless on the free tier
   operational_container_scanning:
     enabled: false
 
 # The chart binds cluster-admin by default ("You should not use this on production systems").
-# The agent's rights are the RoleBindings in app-namespaces.yaml, nothing cluster-wide.
+# The agent's rights are the RoleBindings of charts/gitlab-team, nothing cluster-wide.
 # https://docs.gitlab.com/user/clusters/agent/install/#customize-the-helm-installation
 rbac:
   create: false
