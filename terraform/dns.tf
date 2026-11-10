@@ -60,14 +60,14 @@ resource "cloudflare_dns_record" "minecraft_srv_record" {
 locals {
   cluster_cnames = {
     # Proxied (Orange Cloud)
-    "adminer"     = true
-    "argocd"      = true
-    "grafana"     = true
-    "longhorn"    = true
-    "n8n"         = true
-    "nextcloud"   = true
-    "vault"       = true
-    "vaultwarden" = true
+    "adminer"        = true
+    "argocd"         = true
+    "grafana"        = true
+    "longhorn"       = true
+    "n8n"            = true
+    "nextcloud"      = true
+    "vault"          = true
+    "vaultwarden"    = true
     "www"            = true
     "map"            = true
     "coder"          = true
@@ -126,6 +126,28 @@ resource "cloudflare_dns_record" "coder_wildcard_dns" {
   content = "origin.${var.domain_name}"
   ttl     = 1
   proxied = true
+}
+
+#########################################################################
+
+######################## Zone settings ##################################
+
+# Full (strict): Cloudflare reaches the origin over HTTPS and checks its certificate (the Let's
+# Encrypt wildcard of the shared-gateway). It was Flexible: proxied traffic reached the origin in
+# clear text on port 80, and a gateway-side HTTP to HTTPS redirect would loop.
+# https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/full-strict/
+resource "cloudflare_zone_setting" "ssl" {
+  zone_id    = var.cloudflare_zone_id
+  setting_id = "ssl"
+  value      = "strict"
+}
+
+# Proxied names: Cloudflare redirects HTTP to HTTPS itself. DNS-only names are redirected by the
+# shared-gateway (k8s/config/gateway-infra).
+resource "cloudflare_zone_setting" "always_use_https" {
+  zone_id    = var.cloudflare_zone_id
+  setting_id = "always_use_https"
+  value      = "on"
 }
 
 #########################################################################
