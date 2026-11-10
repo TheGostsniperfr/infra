@@ -37,6 +37,10 @@ kind: Application
 metadata:
   name: {{ $ns }}-{{ $component }}
   namespace: argocd
+  # Compare with what the API server would store: it defaults fields of HTTPRoutes (group, kind,
+  # weight) that the chart does not set. Kyverno's annotations are part of that dry run too.
+  annotations:
+    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
