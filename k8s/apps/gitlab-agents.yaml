@@ -44,10 +44,7 @@ spec:
             releaseName: 'gitlab-team-{{ trimSuffix ".yaml" .path.filename }}'
             values: |
               team: {{ trimSuffix ".yaml" .path.filename }}
-              namespaces:
-              {{- range .namespaces }}
-                - {{ . }}
-              {{- end }}
+              apps: {{ toJson .apps }}
       destination:
         name: in-cluster
         namespace: 'gitlab-agent-{{ trimSuffix ".yaml" .path.filename }}'

@@ -1,8 +1,18 @@
 # Set by the ApplicationSet k8s/apps/gitlab-agents.yaml from k8s/config/gitlab-agents/teams/<team>.yaml
 team: ""
-namespaces: []
+# <app>: {database: bool}
+apps: {}
 
-# Per application namespace: a team cannot starve the cluster, and gets no LoadBalancer IP
+# Hostname of the GitLab registry, for the image pull secret of every app namespace
+registryHost: gitlab-registry.arffornia.com
+
+# Per-app database (Zalando postgres-operator), one instance: a demo, no backup
+database:
+  version: "17"
+  size: 2Gi
+  storageClass: longhorn
+
+# Per app namespace: a team cannot starve the cluster, and gets no LoadBalancer IP
 # (the MetalLB pool only has 10 addresses)
 quota:
   requests.cpu: "2"
