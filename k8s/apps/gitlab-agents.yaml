@@ -1,7 +1,8 @@
 # One Application per team, from k8s/config/gitlab-agents/teams/<team>.yaml (the team name is the
 # file name, never its content). Each Application is:
 #   - the official gitlab-agent chart, with the values shared by every team (agent-values.yaml);
-#   - charts/gitlab-team: the agent's namespace and token, the team's namespaces, RBAC and quota.
+#   - charts/gitlab-team: the agent's namespace and token, and per app its namespace, guardrails,
+#     Argo CD project and the Applications that deploy it (charts/app).
 # The same files drive terraform/gitlab.tf (GitLab group, agent, token), see the README there.
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet

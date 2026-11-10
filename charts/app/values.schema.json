@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "team": {"type": "string"},
+        "app": {"type": "string"},
+        "component": {"type": "string"},
+        "host": {"type": "string"},
+        "registry": {"type": "string"},
+        "oidcIssuer": {"type": "string"},
+        "oidcClientId": {"type": "string"},
+        "database": {"type": "boolean"}
+      }
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "digest": {"type": "string", "pattern": "^(sha256:[a-f0-9]{64})?$"}
+      }
+    },
+    "port": {"type": "integer", "minimum": 1024, "maximum": 65535},
+    "replicas": {"type": "integer", "minimum": 0, "maximum": 3},
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requests": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cpu": {"type": "string", "pattern": "^[0-9]+m?$"},
+            "memory": {"type": "string", "pattern": "^[0-9]+(Mi|Gi)$"}
+          }
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "memory": {"type": "string", "pattern": "^[0-9]+(Mi|Gi)$"}
+          }
+        }
+      }
+    },
+    "env": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[A-Z_][A-Z0-9_]*$",
+        "not": {"pattern": "^(DB_|OIDC_|POD_NAMESPACE$)"}
+      },
+      "additionalProperties": {"type": "string"}
+    },
+    "secrets": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z_][A-Z0-9_]*$",
+        "not": {"pattern": "^(DB_|OIDC_|POD_NAMESPACE$)"}
+      }
+    },
+    "database": {"type": "boolean"},
+    "oidc": {"type": "boolean"},
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string", "pattern": "^/[A-Za-z0-9/_.-]*$"}
+      }
+    },
+    "health": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "startup": {"type": "string", "pattern": "^(/.*)?$"},
+        "readiness": {"type": "string", "pattern": "^(/.*)?$"},
+        "liveness": {"type": "string", "pattern": "^(/.*)?$"}
+      }
+    }
+  }
+}

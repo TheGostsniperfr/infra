@@ -1,0 +1,101 @@
+{{- range $app, $cfg := .Values.apps }}
+{{- $ns := printf "%s-%s" $.Values.team $app }}
+{{- $deployRepo := printf "%s/apps/%s/%s/deploy.git" $.Values.gitlabUrl $.Values.team $app }}
+# What Argo CD may deploy for the app: the platform chart, values from the app's deploy
+# repository, into the app's namespace only, and only these kinds. Network policies, quotas, RBAC,
+# Kyverno policies and every cluster-scoped object stay out of reach, whatever a values file says.
+# https://argo-cd.readthedocs.io/en/stable/user-guide/projects/
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: app-{{ $ns }}
+  namespace: argocd
+spec:
+  description: App {{ $app }} of team {{ $.Values.team }} (charts/gitlab-team)
+  sourceRepos:
+    - {{ $.Values.infraRepo }}
+    - {{ $deployRepo }}
+  destinations:
+    - name: in-cluster
+      namespace: {{ $ns }}
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+    - group: apps
+      kind: Deployment
+    - group: ""
+      kind: Service
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+    - group: ricoberger.de
+      kind: VaultSecret
+---
+{{- range $component := $.Values.components }}
+# The component as its pipeline last released it: charts/app with
+# apps/{{ $.Values.team }}/{{ $app }}/deploy:{{ $component }}.yaml. Until that file exists, nothing is deployed.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ $ns }}-{{ $component }}
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: app-{{ $ns }}
+  sources:
+    - repoURL: {{ $.Values.infraRepo }}
+      targetRevision: HEAD
+      path: charts/app
+      helm:
+        releaseName: {{ $component }}
+        valueFiles:
+          - $deploy/{{ $component }}.yaml
+        ignoreMissingValueFiles: true
+        # Precedence over the values file: the team cannot set these
+        valuesObject:
+          platform:
+            team: {{ $.Values.team }}
+            app: {{ $app }}
+            component: {{ $component }}
+            host: {{ $app }}-{{ $.Values.team }}.{{ $.Values.baseDomain }}
+            registry: {{ $.Values.registryHost }}
+            oidcIssuer: {{ $.Values.oidcIssuer }}
+            oidcClientId: {{ $ns }}
+            database: {{ $cfg.database | default false }}
+    - repoURL: {{ $deployRepo }}
+      targetRevision: main
+      ref: deploy
+  destination:
+    name: in-cluster
+    namespace: {{ $ns }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+---
+{{- end }}
+{{- end }}
+# Argo CD reads the deploy repositories of the team with a group deploy token (read_repository on
+# apps/<team>), created by Terraform. Credential template for every repository under that URL.
+# https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#repository-credentials
+# Vault path: kvv2/gitlab-agents/<team>-repo  keys: username, password
+apiVersion: ricoberger.de/v1alpha1
+kind: VaultSecret
+metadata:
+  name: repo-creds-apps-{{ .Values.team }}
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repo-creds
+spec:
+  path: kvv2/gitlab-agents/{{ .Values.team }}-repo
+  vaultRole: gitlab-agents-role
+  keys:
+    - username
+    - password
+  templates:
+    type: git
+    url: {{ .Values.gitlabUrl }}/apps/{{ .Values.team }}/
+    username: '{% .Secrets.username %}'
+    password: '{% .Secrets.password %}'
+  type: Opaque

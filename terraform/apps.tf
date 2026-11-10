@@ -2,9 +2,11 @@
 # Platform: applications of the teams (k8s/config/gitlab-agents/teams/<team>.yaml, key `apps`)
 # -----------------------------------------------------------------------------
 # For every app: GitLab group apps/<team>/<app> with a backend and a frontend project forked from
-# the templates, the CI variables its pipelines need, a Keycloak client with the roles member and
-# manager, and the name <app>-<team>.arffornia.com. Its namespace, database and RBAC come from the
-# ApplicationSet (charts/gitlab-team). Guide: k8s/config/gitlab-agents/GUIDE.md.
+# the templates and a `deploy` project, a key in Vault that only the pipelines on `main` of the
+# app can sign images with, a Keycloak client with the roles member and manager, and the name
+# <app>-<team>.arffornia.com. Argo CD deploys what `deploy` holds; its namespace, database,
+# Argo CD project and Kyverno rules come from the ApplicationSet (charts/gitlab-team).
+# Guide: k8s/config/gitlab-agents/GUIDE.md. Security model: k8s/config/gitlab-agents/SECURITY.md.
 # Templates are custom project templates on Premium; here they are plain projects that every
 # component is forked from.
 
@@ -38,21 +40,14 @@ locals {
     "${pair[0]}/${pair[1]}" => { app = pair[0], role = pair[1] }
   }
 
-  # Not secret: what the pipelines of apps/<team>/<app> need to deploy
+  # Not secret: what the pipelines of apps/<team>/<app> need to sign and release
   gitlab_app_variables = merge([
-    for key, a in local.gitlab_apps : merge(
-      {
-        "${key}/KUBE_CONTEXT"   = { app = key, name = "KUBE_CONTEXT", value = "apps/platform/agent-${a.team}:${a.team}" }
-        "${key}/APP_NAMESPACE"  = { app = key, name = "APP_NAMESPACE", value = a.namespace }
-        "${key}/APP_HOST"       = { app = key, name = "APP_HOST", value = a.host }
-        "${key}/OIDC_ISSUER"    = { app = key, name = "OIDC_ISSUER", value = "https://auth.${var.base_domain}/realms/${keycloak_realm.arffornia.realm}" }
-        "${key}/OIDC_CLIENT_ID" = { app = key, name = "OIDC_CLIENT_ID", value = a.client_id }
-      },
-      a.database ? {
-        "${key}/DB_SECRET" = { app = key, name = "DB_SECRET", value = "app.${a.app}-db.credentials.postgresql.acid.zalan.do" }
-        "${key}/DB_HOST"   = { app = key, name = "DB_HOST", value = "${a.app}-db" }
-      } : {}
-    )
+    for key, a in local.gitlab_apps : {
+      "${key}/DEPLOY_REPO"     = { app = key, name = "DEPLOY_REPO", value = "gitlab.${var.base_domain}/apps/${a.team}/${a.app}/deploy.git" }
+      "${key}/VAULT_ADDR"      = { app = key, name = "VAULT_ADDR", value = var.vault_url }
+      "${key}/VAULT_SIGN_ROLE" = { app = key, name = "VAULT_SIGN_ROLE", value = "sign-${a.namespace}" }
+      "${key}/SIGNING_KEY"     = { app = key, name = "SIGNING_KEY", value = "hashivault://apps-${a.namespace}" }
+    }
   ]...)
 }
 
@@ -112,7 +107,8 @@ resource "gitlab_group_variable" "app" {
   value = each.value.value
 }
 
-# Kubelet pulls the team's images with this token (read_registry on apps/<team> only)
+# Kubelet pulls the team's images, and Kyverno their signatures, with this token (read_registry on
+# apps/<team> only)
 resource "gitlab_group_deploy_token" "team_registry" {
   for_each = local.gitlab_teams
 
@@ -130,6 +126,181 @@ resource "vault_kv_secret_v2" "team_registry" {
     username = gitlab_group_deploy_token.team_registry[each.key].username
     password = gitlab_group_deploy_token.team_registry[each.key].token
   })
+}
+
+# --- GitLab: deploy repositories, read by Argo CD ---
+
+# One values file per component (charts/app), written by the component's pipeline on main. No CI
+# here. `main` is protected by default: only Maintainers and that pipeline push to it.
+resource "gitlab_project" "app_deploy" {
+  for_each = local.gitlab_apps
+
+  namespace_id           = gitlab_group.app[each.key].id
+  name                   = "deploy"
+  path                   = "deploy"
+  description            = "What Argo CD deploys: <component>.yaml per component, written by its pipeline on main. Revert a commit to roll back."
+  visibility_level       = "private"
+  initialize_with_readme = true
+  builds_access_level    = "disabled"
+}
+
+# Lets the release job push to `deploy`. Not the trust boundary: an image runs only if the app's
+# key signed it (Kyverno), and only a pipeline on main can use that key.
+resource "gitlab_project_access_token" "app_deploy" {
+  for_each = local.gitlab_apps
+
+  project      = gitlab_project.app_deploy[each.key].id
+  name         = "release"
+  description  = "Release jobs of apps/${each.key}: group CI variable DEPLOY_REPO_TOKEN."
+  scopes       = ["write_repository"]
+  access_level = "maintainer"
+  rotation_configuration = {
+    expiration_days    = 365
+    rotate_before_days = 30
+  }
+}
+
+# Protected: branch and merge request pipelines never see it. Hidden: not even Maintainers can
+# read it back from the settings.
+resource "gitlab_group_variable" "app_deploy_token" {
+  for_each = local.gitlab_apps
+
+  group     = gitlab_group.app[each.key].id
+  key       = "DEPLOY_REPO_TOKEN"
+  value     = gitlab_project_access_token.app_deploy[each.key].token
+  protected = true
+  masked    = true
+  hidden    = true
+}
+
+# Argo CD reads the deploy repositories with this token (read_repository on apps/<team>)
+resource "gitlab_group_deploy_token" "team_repo" {
+  for_each = local.gitlab_teams
+
+  group  = gitlab_group.team[each.key].id
+  name   = "argocd-read"
+  scopes = ["read_repository"]
+}
+
+resource "vault_kv_secret_v2" "team_repo" {
+  for_each = local.gitlab_teams
+
+  mount = vault_mount.kvv2.path
+  name  = "gitlab-agents/${each.key}-repo"
+  data_json = jsonencode({
+    username = gitlab_group_deploy_token.team_repo[each.key].username
+    password = gitlab_group_deploy_token.team_repo[each.key].token
+  })
+}
+
+# --- Vault: image signing ---
+# cosign signs through Vault transit: the private key never leaves Vault. A pipeline logs in
+# with its GitLab id_token, and the role only accepts one from a protected `main` of the app's
+# group: a branch, a merge request or a laptop cannot sign. Kyverno checks the signature with
+# the public key (charts/gitlab-team, guardrails.yaml).
+# cosign and Vault: https://github.com/sigstore/cosign/blob/main/KMS.md#hashicorp-vault
+# GitLab id_tokens: https://docs.gitlab.com/ci/secrets/id_token_authentication/
+
+resource "vault_mount" "transit" {
+  path        = "transit"
+  type        = "transit"
+  description = "Signing keys of the apps' images, never exported"
+}
+
+resource "vault_transit_secret_backend_key" "app_signing" {
+  for_each = local.gitlab_apps
+
+  backend    = vault_mount.transit.path
+  name       = "apps-${each.value.namespace}"
+  type       = "ecdsa-p256"
+  exportable = false
+}
+
+resource "vault_kv_secret_v2" "app_signing_public_key" {
+  for_each = local.gitlab_apps
+
+  mount = vault_mount.kvv2.path
+  name  = "gitlab-agents/${each.value.namespace}-cosign"
+  data_json = jsonencode({
+    "cosign.pub" = vault_transit_secret_backend_key.app_signing[each.key].keys[vault_transit_secret_backend_key.app_signing[each.key].latest_version - 1].public_key
+  })
+}
+
+resource "vault_jwt_auth_backend" "gitlab" {
+  description        = "GitLab CI id_tokens, for the apps' pipelines"
+  path               = "gitlab"
+  type               = "jwt"
+  oidc_discovery_url = "https://gitlab.${var.base_domain}"
+  bound_issuer       = "https://gitlab.${var.base_domain}"
+}
+
+resource "vault_policy" "app_signing" {
+  for_each = local.gitlab_apps
+
+  name   = "sign-${each.value.namespace}"
+  policy = <<-EOT
+    # Pipelines on main of apps/${each.key}: sign with the app's key, nothing else
+    path "${vault_mount.transit.path}/sign/apps-${each.value.namespace}" {
+      capabilities = ["update"]
+    }
+    path "${vault_mount.transit.path}/sign/apps-${each.value.namespace}/*" {
+      capabilities = ["update"]
+    }
+    path "${vault_mount.transit.path}/keys/apps-${each.value.namespace}" {
+      capabilities = ["read"]
+    }
+  EOT
+}
+
+resource "vault_jwt_auth_backend_role" "app_signing" {
+  for_each = local.gitlab_apps
+
+  backend         = vault_jwt_auth_backend.gitlab.path
+  role_name       = "sign-${each.value.namespace}"
+  role_type       = "jwt"
+  bound_audiences = [var.vault_url]
+  user_claim      = "user_login"
+  # Maintainers can protect other branches: `ref` pins the role to main itself
+  bound_claims_type = "string"
+  bound_claims = {
+    namespace_path = "apps/${each.key}"
+    ref            = "main"
+    ref_type       = "branch"
+    ref_protected  = "true"
+  }
+  token_policies = [vault_policy.app_signing[each.key].name]
+  token_ttl      = 300
+  token_max_ttl  = 600
+}
+
+# --- Vault: secrets of the apps ---
+# The Vault Secrets Operator reads every VaultSecret with its own service account; the role a
+# VaultSecret names is what limits it. Kyverno only lets the app's namespace name this role.
+
+resource "vault_policy" "app_secrets" {
+  for_each = local.gitlab_apps
+
+  name   = "apps-${each.value.namespace}"
+  policy = <<-EOT
+    # VaultSecrets of namespace ${each.value.namespace}: the app's secrets and the team's pull token
+    path "${vault_mount.kvv2.path}/data/apps/${each.key}" {
+      capabilities = ["read"]
+    }
+    path "${vault_mount.kvv2.path}/data/gitlab-agents/${each.value.team}-registry" {
+      capabilities = ["read"]
+    }
+  EOT
+}
+
+resource "vault_kubernetes_auth_backend_role" "app_secrets" {
+  for_each = local.gitlab_apps
+
+  backend                          = vault_auth_backend.kubernetes.path
+  role_name                        = "apps-${each.value.namespace}"
+  bound_service_account_names      = ["vault-secrets-operator"]
+  bound_service_account_namespaces = ["vault-secrets-operator"]
+  token_ttl                        = 86400
+  token_policies                   = [vault_policy.app_secrets[each.key].name]
 }
 
 # --- Keycloak: one public client per app (SPA with PKCE), roles in the token ---
