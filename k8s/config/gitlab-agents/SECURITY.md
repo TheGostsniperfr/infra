@@ -43,7 +43,7 @@ the `deploy` repository, or stealing a GitLab token is not enough.
 | GitLab | `main` protected: Maintainers only push and merge | GitLab default branch protection |
 | GitLab | Groups and projects private; teams are members of `apps/<team>` only | `terraform/gitlab.tf` |
 | GitLab | Agents have no CI access: no pipeline can reach the cluster | `terraform/gitlab.tf` |
-| CI | Builds without privileges (Kaniko) and without a layer cache | `.gitlab-ci.yml` of the templates |
+| CI | Builds without privileges (Kaniko) | `.gitlab-ci.yml` of the templates |
 | CI | Jobs in `gitlab-ci-jobs`: nothing reaches them, they reach DNS and the internet only | `k8s/config/gitlab/ci-jobs-namespace.yaml` |
 | Vault | Signing key never leaves Vault; role bound to `namespace_path`, `ref=main`, `ref_protected=true`; token valid 5 minutes | `terraform/apps.tf` |
 | Vault | Each app namespace reads only its own path, through a role Kyverno pins | `terraform/apps.tf`, `guardrails.yaml` |
@@ -94,7 +94,7 @@ None is stored in a repository, and none is readable by a team member.
 
 | An attacker who | Tries to | Is stopped by |
 |---|---|---|
-| Is a Developer | Push an image with the release tag, or poison a build cache | Deployments use a signed digest, not a tag; builds use no cache |
+| Is a Developer | Push an image with the release tag | Deployments use a signed digest, not a tag |
 | Is a Developer | Change `.gitlab-ci.yml` in a branch to sign or deploy | Vault only signs for `ref=main`, protected; the token is protected |
 | Is a Maintainer | Deploy a privileged pod, another image, a NodePort, another host | Schema, Argo CD project, Kyverno, quota |
 | Is a Maintainer | Give a pod the database's identity to reach the API and create Services | Rule `database-identity` |
@@ -112,6 +112,7 @@ None is stored in a repository, and none is readable by a team member.
 | One Maintainer alone ships to production | No mandatory approvals on Free | Ultimate: approval rules, Code Owners, protected environments |
 | Any Keycloak user gets a GitLab account and runs jobs on the shared runner | OmniAuth auto-creates users | `blockAutoCreatedUsers`, `defaultCanCreateGroup: false` (separate PR) |
 | A `main` pipeline signs whatever the code builds | That is the point of trusting `main` | Reviews; Ultimate pipeline execution policies to force jobs the team cannot remove |
+| A Developer can push a crafted layer to the build cache, which the next `main` build reuses and signs | The cache is in the project's registry, where Developers may push. Kept: builds without it are too slow. It only reaches that Developer's own app, and the registry's logs show who pushed | A cache only `main` pipelines write, in a registry Developers cannot push to |
 | Apps reach the whole internet on 443 | Exfiltration is possible | Cilium FQDN policies: each app declares its domains |
 | Shared runner, shared nodes, shared kernel | One cluster | Protected runners for `main`, dedicated nodes, or a cluster per sensitivity level |
 | Inside its namespace a team owns its app, its data, its database credentials | By design | |

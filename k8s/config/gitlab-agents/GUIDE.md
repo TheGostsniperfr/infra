@@ -76,7 +76,7 @@ Push or merge to `main`. The pipeline of the repository runs:
 | Stage | What | Branches |
 |---|---|---|
 | `test` | Unit tests, the backend's against a real Postgres. `deploy-config` checks `deploy.yaml` against the platform chart | All |
-| `build` | Builds the image with Kaniko, without privileges and without a layer cache, and pushes it to the GitLab registry | `main` |
+| `build` | Builds the image with Kaniko, without privileges, with a layer cache in the registry, and pushes it to the GitLab registry | `main` |
 | `sign` | Signs the image's digest with the app's key in Vault | `main` |
 | `release` | Writes `deploy.yaml` and the digest to `deploy/<component>.yaml`. Shows up in Operate > Environments | `main` |
 
@@ -127,7 +127,7 @@ forward instead, with a new commit.
 |---|---|---|
 | An app from one YAML entry: repositories, namespace, database, SSO, DNS, signing key | Self-service, without a PR and an admin's `terraform apply` | Deploying from the pipeline through the GitLab agent: the pipeline would hold the right to deploy. See `SECURITY.md` |
 | Tests, build, signature and release on every merge to `main`, deployment by Argo CD | One shared pipeline as a CI/CD component, so a fix reaches every app. Today a fork does not follow its template | Docker-in-Docker or a privileged BuildKit: a build could take over its node. Kaniko builds without privileges |
-| A platform chart: teams choose values, never manifests | Argo CD access for each team to its own apps, and the deployment status on the commit in GitLab | Kaniko layer cache: Developers can push to the registry, so they could poison it |
+| A platform chart: teams choose values, never manifests | Argo CD access for each team to its own apps, and the deployment status on the commit in GitLab | |
 | Rollback by Re-deploy in GitLab or by revert in `deploy` | Teams writing their own secrets in Vault | Backups of the apps' databases: it is a lab. Argo CD recreates a lost database, empty |
 | Sign-in with Keycloak, roles `member` and `manager` checked by the backend | Managers adding users themselves | High availability: one pod per component and one database instance, nothing here needs to stay up |
 | Teams and apps isolated, see `SECURITY.md` | Base images kept up to date by Renovate on the templates. A `preprod` environment | |
