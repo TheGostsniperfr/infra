@@ -10,7 +10,7 @@ disabled so a rebuild gets the same keys back. Architecture: `architecture/gitla
 | `gitlab.arffornia.com` | Web, API, Git over HTTPS | shared-gateway, Keycloak SSO |
 | `gitlab-registry.arffornia.com` | Container registry | shared-gateway |
 | `gitlab-kas.arffornia.com` | GitLab agent for Kubernetes (`wss://`) | shared-gateway |
-| `gitlab-ssh.arffornia.com:5522` | Git over SSH | MetalLB `192.168.1.86`, router rule below |
+| `gitlab-ssh.arffornia.com:5522` | Git over SSH | MetalLB `192.168.1.240`, router rule below |
 
 ## First install
 
@@ -40,8 +40,9 @@ disabled so a rebuild gets the same keys back. Architecture: `architecture/gitla
    `gitlab_s3_access_key_var`, `gitlab_s3_secret_key_var`.
 5. `terraform init` (new provider `hashicorp/tls`), then `terraform apply`.
    Root password: `kvv2/gitlab/root`. Sign in as root at `/users/sign_in?auto_sign_in=false`.
-6. Check that `192.168.1.86` is free: `kubectl get svc -A | grep LoadBalancer`. Services without
-   a pinned IP (like `postgres-lb`) take the first free one, which is how `.85` got lost.
+6. Check that `192.168.1.240` is free: `kubectl get svc -A | grep LoadBalancer`. The box hands
+   out `.1-.199` by DHCP and that cannot be changed, so a pinned MetalLB IP must come from the
+   pool ranges above `.199` (`.240-.243`, `.245-.250`).
 7. Runner: Admin > CI/CD > Runners > New instance runner, copy the `glrt-...` token into
    `gitlab_runner_token_var`, `terraform apply`, then
    `kubectl rollout restart deploy/gitlab-gitlab-runner -n gitlab`.
@@ -54,7 +55,7 @@ disabled so a rebuild gets the same keys back. Architecture: `architecture/gitla
 | Protocol | TCP |
 | External IP | empty |
 | External port | 5522 |
-| LAN device | `192.168.1.86` (typed as an IP: it is a MetalLB VIP, not a device) |
+| LAN device | `192.168.1.240` (typed as an IP: it is a MetalLB VIP, not a device) |
 | Internal port | 5522 |
 
 The same port is used inside and outside, so clone URLs work from the LAN, WireGuard and the
