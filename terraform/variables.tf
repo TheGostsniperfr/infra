@@ -19,7 +19,7 @@ variable "cloudflare_zone_id" {
 variable "dc_ip" {
   description = "The public IP address of the homelab network."
   type        = string
-  default     = "176.186.130.237"
+  default     = "176.132.254.63"
 }
 
 variable "domain_name" {
