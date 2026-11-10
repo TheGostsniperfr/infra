@@ -1,11 +1,12 @@
 # LoadBalancer service so the workstation runner can reach PostgreSQL on a LAN IP.
-# MetalLB assigns an IP from the pool (192.168.1.82-123 range).
-# After applying: kubectl get svc postgres-lb -n postgres → copy EXTERNAL-IP to .env
+# LAN only, no router rule.
 apiVersion: v1
 kind: Service
 metadata:
   name: postgres-lb
   namespace: postgres
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 192.168.1.246
 spec:
   type: LoadBalancer
   selector:

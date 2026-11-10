@@ -5,8 +5,7 @@ kind: Service
 metadata:
   name: test-slot-minecraft
   annotations:
-    # The last address of the first MetalLB pool range (the allocator fills it from the start).
-    metallb.universe.tf/loadBalancerIPs: 192.168.1.123
+    metallb.universe.tf/loadBalancerIPs: 192.168.1.245
 spec:
   type: LoadBalancer
   # MetalLB answers for the IP itself; no NodePort, which the slot quota (services.nodeports: 0) forbids.
