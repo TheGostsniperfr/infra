@@ -1,7 +1,8 @@
 # App platform: security and isolation
 
 What protects the cluster and the teams from each other, and what does not. Written to be
-presented: each control names the file that enforces it. How to use the platform: [`GUIDE.md`](GUIDE.md).
+presented: each control names the file that enforces it. How to use the platform:
+[`GUIDE.md`](GUIDE.md). How to change it without opening a hole: [`HANDBOOK.md`](HANDBOOK.md).
 
 ## The model
 
@@ -24,6 +25,12 @@ presented: each control names the file that enforces it. How to use the platform
 
 So to run code in production, someone must get it merged to `main`. Pushing an image, writing to
 the `deploy` repository, or stealing a GitLab token is not enough.
+
+Diagrams, from `architecture/app-platform`:
+[delivery](../../../architecture/diagrams/app-platform-delivery.light.png), what can refuse a
+release on its way;
+[isolation](../../../architecture/diagrams/app-platform-isolation.light.png), what a pod can
+reach. A `.dark` variant and the editable `.drawio` sit next to each.
 
 ## Who can do what
 
@@ -104,6 +111,27 @@ None is stored in a repository, and none is readable by a team member.
 | Steals a GitLab admin token | Reach the cluster | No path: GitLab has no access to the cluster |
 | Runs code in an app | Reach Vault, the LAN, other teams, other databases | Network policies |
 | Runs code in a CI job | Reach Gitaly, Redis, the LAN | Jobs namespace network policy |
+
+## Register of exceptions
+
+The model denies by default. Each line below allows something more, on purpose; each is where an
+unexpected case would hide, so each says what contains it. A change that adds one follows
+[`HANDBOOK.md`](HANDBOOK.md#the-rule-behind-every-recipe) and adds a line here.
+
+| Exception | Why | Contained by |
+|---|---|---|
+| The database image runs as root, exempt from 4 `restricted` controls | Spilo needs them | Only that pinned image is exempt (rule `pod-security-restricted`) |
+| The database's service account may create Services, Endpoints, ConfigMaps and patch Pods | Patroni elects its leader through the API | Reserved to the database image (rule `database-identity`) |
+| Pods labelled `application: spilo` reach the Kubernetes API | Same | Same rule; the label opens nothing else |
+| Apps reach the internet on 80 and 443 | Apps call external APIs | Private ranges excluded: no LAN, no cluster service. Exfiltration stays possible |
+| Apps of the same team reach each other | Asked for: apps of a team work together | Not their databases; never another team |
+| One Vault Secrets Operator identity for every namespace | Operator design | Each VaultSecret names a role; Kyverno pins the app's own (rule `vault-role`) |
+| Developers can write the Kaniko layer cache that `main` builds reuse | Build time | Only their own app; the registry logs who pushed. Accepted risk |
+| A Maintainer alone merges to `main`, so ships | Free tier: no mandatory approvals | Git history; Ultimate would require a review |
+| Team Applications run in Argo CD's `default` project | They create namespaces and the apps' projects | They render only charts of this repo, reviewed by PR |
+| Signing with a key, not keyless | Sigstore's public instance does not accept a self-hosted GitLab | Key never exported; only `main` of the app may use it |
+| GitLab agents stay connected | Kept for Workspaces, scanning, dashboard | No CI access, no rights outside their own namespace |
+| Kyverno does not re-check existing objects (`background: false`) | Its reports controller cannot read HTTPRoutes and VaultSecrets | Every create and update is checked; nothing is created otherwise |
 
 ## What remains
 

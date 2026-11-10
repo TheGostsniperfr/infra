@@ -1,0 +1,73 @@
+apiVersion: noodle/v1alpha1
+kind: View
+type: topology
+title: Arffornia · App platform · Isolation
+subtitle: What a pod of an app can reach, and what stops the rest.
+meta:
+  - "Scope: the namespace of one app (demo-timetrack); every app namespace gets the same policies · verified live 2026-11-10 from the backend pod"
+  - "Not drawn: DNS to kube-dns, allowed for every pod; the frontend has no egress need beyond it"
+  - "Out of scope: how releases reach the namespace (view delivery), GitLab internals (architecture/gitlab)"
+  - "v0.1 · source: charts/platform-team/templates/network.yaml, guardrails.yaml, charts/app"
+include:
+  - z-internet
+  - user
+  - z-web/**
+  - z-cluster
+  - g-gateway/**
+  - g-app
+  - frontend
+  - backend
+  - app-db
+  - netpols
+  - g-team-app/**
+  - g-other-team/**
+  - g-secrets
+  - vault
+  - g-control-plane/**
+steps:
+  - c-user-envoy
+  - c-envoy-frontend
+  - c-envoy-backend
+  - c-backend-db
+background:
+  - c-db-apiserver
+labels:
+  c-backend-appb: "call · HTTP"
+  c-backend-appb-db: "SQL"
+  c-backend-other: "HTTP"
+  c-backend-vault: "HTTPS"
+  c-backend-apiserver: "HTTPS"
+  c-backend-internet: "call · HTTPS"
+cards:
+  - id: card-steps
+    title: "Request path · data plane"
+    color: emerald
+    lines:
+      - "[1] The only way in is the gateway, on <app>-<team>.arffornia.com (Kyverno refuses any other hostname)"
+      - "[2] / goes to the frontend, which serves static files only"
+      - "[3] /api goes to the backend, which checks the Keycloak token and the role"
+      - "[4] The backend reads its database; credentials come from the operator's Secret"
+  - id: card-background
+    title: Background · control plane
+    color: indigo
+    lines:
+      - "[A] Patroni elects its leader through the API: only pods labelled application=spilo, only the Spilo image (rule database-identity)"
+  - id: card-flows
+    title: Flows out of an app pod
+    color: rose
+    lines:
+      - "Allowed: its own namespace, the other apps of its team (not their databases), the internet on 80 and 443"
+      - "Denied: other teams, other databases, Vault, the Kubernetes API, the LAN, every cluster service"
+      - "Network policies select every pod of the namespace: no cluster-wide default deny is needed"
+  - id: card-contract
+    title: Runtime contract
+    color: sky
+    lines:
+      - "Variables: POD_NAMESPACE; DB_HOST, DB_USER, DB_PASSWORD with database; OIDC_ISSUER, OIDC_CLIENT_ID with oidc"
+      - "Secrets: names listed in deploy.yaml, read from Vault kvv2/apps/<team>/<app> by the operator"
+      - "Sandbox: non-root, read-only root filesystem with /tmp, no capabilities, no service account token"
+      - "Images: the app's registry path, by digest, signed by its main pipeline"
+  - id: card-legend
+    title: Legend
+    color: slate
+    legend: true
