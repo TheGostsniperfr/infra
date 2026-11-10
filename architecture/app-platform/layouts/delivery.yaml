@@ -1,0 +1,47 @@
+apiVersion: noodle/v1alpha1
+kind: Layout
+canvas: {width: 2780, height: 1820}
+elements:
+  z-internet: {x: 40, y: 220, w: 220, h: 220}
+  z-workstation: {x: 40, y: 900, w: 220, h: 220}
+  z-cluster: {x: 340, y: 160, w: 2400, h: 1000}
+  developer: {x: 82, y: 100, w: 56, h: 56}
+  terraform: {x: 10, y: 95, w: 200, h: 90}
+  g-ci: {x: 40, y: 240, w: 300, h: 220}
+  ci-job: {x: 30, y: 80, w: 240, h: 110}
+  g-gitlab: {x: 580, y: 60, w: 320, h: 420}
+  gitlab-git: {x: 40, y: 60, w: 240, h: 130}
+  registry: {x: 40, y: 270, w: 240, h: 120}
+  g-secrets: {x: 580, y: 560, w: 320, h: 420}
+  vso: {x: 40, y: 60, w: 240, h: 100}
+  vault: {x: 40, y: 240, w: 240, h: 140}
+  g-argocd: {x: 1160, y: 60, w: 320, h: 580}
+  argocd-repo: {x: 40, y: 60, w: 240, h: 100}
+  argocd-controller: {x: 40, y: 250, w: 240, h: 100}
+  appproject: {x: 40, y: 430, w: 240, h: 110}
+  g-control-plane: {x: 1620, y: 60, w: 300, h: 220}
+  kube-apiserver: {x: 30, y: 80, w: 240, h: 100}
+  g-admission: {x: 1620, y: 360, w: 300, h: 260}
+  kyverno: {x: 30, y: 80, w: 240, h: 110}
+  g-app: {x: 2040, y: 60, w: 320, h: 560}
+  workloads: {x: 40, y: 70, w: 240, h: 110}
+  app-guardrails: {x: 40, y: 250, w: 240, h: 100}
+edges:
+  c-developer-gitlab: {from: developer.right, to: gitlab-git.left@68px}
+  c-ci-job-registry: {from: ci-job.right@80px, to: registry.left@70px}
+  c-ci-job-vault: {from: ci-job.bottom@120px, to: vault.left@75px, waypoints: [[530, 1035]], label_at: [745, 1035]}
+  c-ci-job-gitlab: {from: ci-job.right@20px, to: gitlab-git.left@110px, waypoints: [[800, 500], [800, 390]], label_at: [800, 445]}
+  c-argocd-repo-gitlab: {from: argocd-repo.left@50px, to: gitlab-git.right@50px, against_flow: true}
+  c-argocd-controller-apiserver: {from: argocd-controller.right@40px, to: kube-apiserver.left@50px, waypoints: [[1890, 510], [1890, 350]], label_at: [1890, 430]}
+  c-apiserver-kyverno: {from: kube-apiserver.bottom@210px, to: kyverno.top@210px}
+  c-kyverno-registry: {from: kyverno.bottom@60px, to: registry.right@80px, waypoints: [[2050, 860], [1400, 860], [1400, 570]], against_flow: true}
+  c-terraform-vault: {from: terraform.right@70px, to: vault.left@105px, label_at: [420, 1065]}
+  c-vso-vault: {from: vso.bottom, to: vault.top}
+  r-controller-appproject: {from: argocd-controller.bottom, to: appproject.top}
+  r-kyverno-guardrails: {from: kyverno.right@40px, to: app-guardrails.bottom, waypoints: [[2540, 640]]}
+  r-guardrails-workloads: {from: app-guardrails.top, to: workloads.bottom}
+cards:
+  card-steps: {x: 40, y: 1200, w: 1300, h: 280}
+  card-background: {x: 1380, y: 1200, w: 1360, h: 130}
+  card-refused: {x: 1380, y: 1350, w: 1360, h: 170}
+  card-legend: {x: 40, y: 1500, w: 1300, h: 280}

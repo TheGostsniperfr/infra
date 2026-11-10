@@ -1,0 +1,69 @@
+apiVersion: noodle/v1alpha1
+kind: View
+type: topology
+title: Arffornia · App platform · Delivery
+subtitle: How a merge to main reaches production, and what can refuse it on the way.
+meta:
+  - "Scope: one app (demo/timetrack), the same for every app · verified live 2026-11-10: release, signature check, unsigned image refused, rollback"
+  - "Not drawn: calls to GitLab and Vault use their public URLs through the shared gateway; the runner that starts the CI job; kubelet pulling the image"
+  - "Out of scope: GitLab internals (architecture/gitlab, view runtime), network isolation (view isolation)"
+  - "v0.1 · source: charts/app, charts/platform-team, terraform/apps.tf, apps/platform/ci"
+include:
+  - z-internet
+  - developer
+  - z-workstation/**
+  - z-cluster
+  - g-ci/**
+  - g-gitlab/**
+  - g-secrets/**
+  - g-argocd/**
+  - g-control-plane/**
+  - g-admission/**
+  - g-app
+  - workloads
+  - app-guardrails
+steps:
+  - c-developer-gitlab
+  - c-ci-job-registry
+  - c-ci-job-vault
+  - c-ci-job-gitlab
+  - c-argocd-repo-gitlab
+  - c-argocd-controller-apiserver
+  - c-apiserver-kyverno
+  - c-kyverno-registry
+labels:
+  c-ci-job-gitlab: "push deploy · HTTPS"
+background:
+  - c-terraform-vault
+  - c-vso-vault
+cards:
+  - id: card-steps
+    title: "Request path · data plane: a release"
+    color: emerald
+    lines:
+      - "[1] A Maintainer merges to main: only Maintainers may, so only they ship"
+      - "[2] Kaniko builds without privileges and pushes the image; cosign later pushes its .sig next to it"
+      - "[3] The job logs in to Vault with its id_token: the role only accepts main of this app. Vault signs the digest; the key never leaves"
+      - "[4] The job writes deploy.yaml + digest to deploy/<component>.yaml. The pipeline has no access to the cluster"
+      - "[5] repo-server renders the platform chart with that file; platform values win over the team's"
+      - "[6] The controller applies, within the AppProject: one namespace, Deployment, Service, HTTPRoute, VaultSecret"
+      - "[7] The API server asks Kyverno before storing the Deployment"
+      - "[8] Kyverno fetches the signature and checks it with the app's public key, then images, PSS, hostnames"
+  - id: card-background
+    title: Background · control plane
+    color: indigo
+    lines:
+      - "[A] Terraform creates the app's transit key, its JWT role and the public key in KV"
+      - "[B] VSO copies the public key into kyverno/cosign-<team>-<app>"
+  - id: card-refused
+    title: Refused on the way
+    color: rose
+    lines:
+      - "A branch or MR pipeline: Vault will not sign, the token is not there"
+      - "An image pushed by hand, or a tag: no signature, or no digest"
+      - "A key outside the schema of charts/app: the pipeline's deploy-config job"
+      - "A kind or namespace outside the AppProject: the Argo CD sync"
+  - id: card-legend
+    title: Legend
+    color: slate
+    legend: true

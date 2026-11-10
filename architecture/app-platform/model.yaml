@@ -1,0 +1,114 @@
+apiVersion: noodle/v1alpha1
+kind: Model
+elements:
+  # Zones
+  - {id: z-internet, kind: region, color: slate, icon: globe, title: INTERNET}
+  - {id: z-workstation, kind: region, color: slate, icon: rack, title: WORKSTATION}
+  - {id: z-cluster, kind: region, color: cyan, icon: kubernetes, title: ARFFORNIA CLUSTER}
+  - {id: g-ci, kind: group, parent: z-cluster, color: orange, icon: gitlab, title: CI JOBS, sub: gitlab-ci-jobs}
+  - {id: g-gitlab, kind: group, parent: z-cluster, color: amber, icon: gitlab, title: GITLAB, sub: gitlab}
+  - {id: g-secrets, kind: group, parent: z-cluster, color: violet, icon: vault, title: SECRETS, sub: vault · vault-secrets-operator}
+  - {id: g-argocd, kind: group, parent: z-cluster, color: indigo, icon: argo, title: GITOPS, sub: argocd}
+  - {id: g-control-plane, kind: group, parent: z-cluster, color: sky, icon: kubernetes, title: CONTROL PLANE}
+  - {id: g-admission, kind: group, parent: z-cluster, color: rose, icon: kyverno, title: ADMISSION, sub: kyverno}
+  - {id: z-web, kind: region, color: slate, icon: globe, title: INTERNET, sub: outbound}
+  - {id: g-gateway, kind: group, parent: z-cluster, color: emerald, icon: envoy-gateway, title: GATEWAY API, sub: gateway-infra}
+  - {id: g-team-app, kind: group, parent: z-cluster, color: sky, icon: k8s-ns, title: SAME TEAM · OTHER APP, sub: demo-<app-b>}
+  - {id: g-other-team, kind: group, parent: z-cluster, color: orange, icon: k8s-ns, title: OTHER TEAM, sub: <team-b>-<app>}
+  - {id: g-app, kind: group, parent: z-cluster, color: emerald, icon: k8s-ns, title: APP · TIMETRACK, sub: demo-timetrack}
+
+  # People and tools
+  - {id: user, kind: frontend, parent: z-internet, shape: actor, icon: user, title: User, desc: browser}
+  - {id: public-api, kind: external, parent: z-web, icon: globe, title: Public APIs, tech: "[any host]", desc: "Ports 80 and 443 only",
+     ports: [{name: https, protocol: TCP, port: 443}]}
+  - {id: developer, kind: frontend, parent: z-internet, shape: actor, icon: user, title: Maintainer, desc: merges to main}
+  - {id: terraform, kind: tool, parent: z-workstation, icon: terraform, title: Terraform, tech: "[terraform/apps.tf]",
+     desc: "Keys, roles, tokens"}
+
+  # CI
+  - {id: ci-job, kind: backend, parent: g-ci, icon: k8s-pod, title: Release jobs, tech: "[build · sign · release]",
+     desc: "Pipeline on main of the app", multiplicity: "one pod per CI job"}
+
+  # GitLab
+  - {id: gitlab-git, kind: backend, parent: g-gitlab, icon: git, title: GitLab · Git, tech: "[Workhorse · Gitaly]",
+     desc: "App repos and deploy repo",
+     ports: [{name: https, protocol: TCP, port: 443}]}
+  - {id: registry, kind: database, parent: g-gitlab, icon: docker, title: Registry, tech: "[apps/<team>/<app>/*]",
+     desc: "Images and .sig signatures",
+     ports: [{name: https, protocol: TCP, port: 443}]}
+
+  # Secrets
+  - {id: vso, kind: security, parent: g-secrets, icon: k8s-crd, title: Vault Secrets Operator, tech: "[VaultSecrets]",
+     desc: "cosign.pub into kyverno"}
+  - {id: vault, kind: database, parent: g-secrets, icon: vault, title: Vault, tech: "[transit · JWT gitlab]",
+     desc: "One signing key per app",
+     ports: [{name: api, protocol: TCP, port: 8200}]}
+
+  # GitOps
+  - {id: argocd-repo, kind: backend, parent: g-argocd, icon: argo, title: repo-server, tech: "[Argo CD 3.3]",
+     desc: "charts/app + deploy file"}
+  - {id: argocd-controller, kind: backend, parent: g-argocd, icon: argo, title: application-controller,
+     tech: "[Application per component]", desc: "Applies, prunes, self-heals"}
+  - {id: appproject, kind: security, parent: g-argocd, icon: k8s-crd, title: AppProject, tech: "[app-demo-timetrack]",
+     desc: "1 namespace, 4 kinds"}
+
+  # Control plane and admission
+  - {id: kube-apiserver, kind: backend, parent: g-control-plane, icon: kubernetes, title: kube-apiserver,
+     tech: "[admission webhooks]", desc: "Stores only what passes",
+     ports: [{name: https, protocol: TCP, port: 6443}]}
+  - {id: kyverno, kind: security, parent: g-admission, icon: kyverno, title: Kyverno, tech: "[admission controller]",
+     desc: "Signature, images, PSS...",
+     ports: [{name: webhook, protocol: TCP, port: 443}]}
+
+  # The app
+  - {id: workloads, kind: backend, parent: g-app, icon: k8s-deploy, title: backend · frontend, tech: "[Deployments]",
+     desc: "Images by digest only"}
+  - {id: envoy, kind: backend, parent: g-gateway, icon: envoy, title: shared-gateway, tech: "[Envoy Gateway]",
+     desc: "TLS, HTTPRoutes by path",
+     ports: [{name: https, protocol: TCP, port: 443}]}
+  - {id: frontend, kind: frontend, parent: g-app, icon: k8s-pod, title: frontend, tech: "[nginx · static files]",
+     desc: "Route /", ports: [{name: http, protocol: TCP, port: 8080}]}
+  - {id: backend, kind: backend, parent: g-app, icon: k8s-pod, title: backend, tech: "[Quarkus]",
+     desc: "Route /api, checks the token", ports: [{name: http, protocol: TCP, port: 8080}]}
+  - {id: app-db, kind: database, parent: g-app, shape: cylinder, icon: postgresql, title: timetrack-db, tech: "[Spilo · Patroni]",
+     desc: "The app's database", ports: [{name: pg, protocol: TCP, port: 5432}]}
+  - {id: netpols, kind: security, parent: g-app, icon: cilium, title: Network policies, tech: "[ingress · egress · team]",
+     desc: "Deny all but listed flows"}
+  - {id: appb-backend, kind: backend, parent: g-team-app, icon: k8s-pod, title: <app-b>-backend, tech: "[any component]",
+     desc: "Same team", ports: [{name: http, protocol: TCP, port: 8080}]}
+  - {id: appb-db, kind: database, parent: g-team-app, shape: cylinder, icon: postgresql, title: <app-b>-db, tech: "[Spilo]",
+     desc: "Its database", ports: [{name: pg, protocol: TCP, port: 5432}]}
+  - {id: other-app, kind: backend, parent: g-other-team, icon: k8s-pod, title: <team-b>-backend, tech: "[any component]",
+     desc: "Another team", ports: [{name: http, protocol: TCP, port: 8080}]}
+  - {id: app-guardrails, kind: security, parent: g-app, icon: kyverno, title: app-guardrails, tech: "[Kyverno Policy]",
+     desc: "The rules of this namespace"}
+
+connections:
+  - {id: c-developer-gitlab, from: developer, to: gitlab-git, kind: flow, port: https, protocol: HTTPS, verb: merge MR}
+  - {id: c-ci-job-registry, from: ci-job, to: registry, kind: flow, port: https, protocol: HTTPS, verb: push image + .sig}
+  - {id: c-ci-job-vault, from: ci-job, to: vault, kind: auth, port: api, protocol: HTTPS, verb: login id_token · sign}
+  - {id: c-ci-job-gitlab, from: ci-job, to: gitlab-git, kind: flow, port: https, protocol: HTTPS, verb: push deploy file}
+  - {id: c-argocd-repo-gitlab, from: argocd-repo, to: gitlab-git, kind: flow, port: https, protocol: HTTPS, verb: fetch deploy}
+  - {id: c-argocd-controller-apiserver, from: argocd-controller, to: kube-apiserver, kind: flow, port: https, protocol: HTTPS, verb: apply}
+  - {id: c-apiserver-kyverno, from: kube-apiserver, to: kyverno, kind: flow, port: webhook, protocol: HTTPS, verb: admission review}
+  - {id: c-kyverno-registry, from: kyverno, to: registry, kind: flow, port: https, protocol: HTTPS, verb: fetch .sig}
+  - {id: c-terraform-vault, from: terraform, to: vault, kind: flow, port: api, protocol: HTTPS, verb: "keys, roles"}
+  - {id: c-vso-vault, from: vso, to: vault, kind: async, port: api, protocol: HTTPS, verb: read public key}
+
+  # Isolation
+  - {id: c-user-envoy, from: user, to: envoy, kind: flow, port: https, protocol: HTTPS, verb: GET}
+  - {id: c-envoy-frontend, from: envoy, to: frontend, kind: flow, port: http, protocol: HTTP, verb: route /}
+  - {id: c-envoy-backend, from: envoy, to: backend, kind: flow, port: http, protocol: HTTP, verb: route /api}
+  - {id: c-backend-db, from: backend, to: app-db, kind: flow, port: pg, protocol: SQL, verb: query}
+  - {id: c-db-apiserver, from: app-db, to: kube-apiserver, kind: async, port: https, protocol: HTTPS, verb: leader election}
+  - {id: c-backend-appb, from: backend, to: appb-backend, kind: flow, port: http, protocol: HTTP, verb: call}
+  - {id: c-backend-internet, from: backend, to: public-api, kind: flow, port: https, protocol: HTTPS, verb: call}
+  - {id: c-backend-appb-db, from: backend, to: appb-db, kind: flow, port: pg, protocol: SQL, verb: query, denied: true, enforced_by: [netpols]}
+  - {id: c-backend-other, from: backend, to: other-app, kind: flow, port: http, protocol: HTTP, verb: call, denied: true, enforced_by: [netpols]}
+  - {id: c-backend-vault, from: backend, to: vault, kind: flow, port: api, protocol: HTTPS, verb: read, denied: true, enforced_by: [netpols]}
+  - {id: c-backend-apiserver, from: backend, to: kube-apiserver, kind: flow, port: https, protocol: HTTPS, verb: call, denied: true, enforced_by: [netpols]}
+
+references:
+  - {id: r-controller-appproject, from: argocd-controller, to: appproject, kind: project}
+  - {id: r-kyverno-guardrails, from: kyverno, to: app-guardrails, kind: policy}
+  - {id: r-guardrails-workloads, from: app-guardrails, to: workloads, kind: validates}

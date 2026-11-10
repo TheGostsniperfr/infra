@@ -8,11 +8,6 @@ elements:
   - {id: g-gateway, kind: group, parent: z-cluster, color: emerald, icon: envoy-gateway, title: GATEWAY API, sub: gateway-infra}
   - {id: g-secrets, kind: group, parent: z-cluster, color: rose, icon: vault, title: SECRETS, sub: vault · vault-secrets-operator}
   - {id: g-gitlab, kind: group, parent: z-cluster, color: orange, icon: gitlab, title: GITLAB, sub: namespace gitlab · chart 10.5.4}
-  - {id: z-workstation, kind: region, color: slate, icon: rack, title: WORKSTATION}
-  - {id: g-ci, kind: group, parent: z-cluster, color: orange, icon: gitlab, title: CI JOBS, sub: namespace gitlab}
-  - {id: g-agent-demo, kind: group, parent: z-cluster, color: amber, icon: gitlab, title: AGENT · TEAM DEMO, sub: namespace gitlab-agent-demo}
-  - {id: g-control-plane, kind: group, parent: z-cluster, color: sky, icon: kubernetes, title: CONTROL PLANE}
-  - {id: g-app-demo, kind: group, parent: z-cluster, color: emerald, icon: k8s-ns, title: APPS · TEAM DEMO, sub: namespace demo-sandbox}
   - {id: g-data, kind: group, parent: z-cluster, color: violet, icon: k8s-ns, title: STATE, sub: gitlab · postgres · garage-s3}
 
   # Clients
@@ -50,20 +45,6 @@ elements:
   - {id: runner, kind: backend, parent: g-gitlab, icon: gitlab, title: GitLab Runner, tech: "[Go · Kubernetes executor]",
      desc: "One pod per CI job"}
 
-  # Agents for Kubernetes
-  - {id: terraform, kind: tool, parent: z-workstation, icon: terraform, title: Terraform, tech: "[terraform/gitlab.tf]",
-     desc: "Agent and its token"}
-  - {id: ci-job, kind: backend, parent: g-ci, icon: k8s-pod, title: CI job, tech: "[project in apps/demo]",
-     desc: "kubectl with GitLab context", multiplicity: "one pod per CI job"}
-  - {id: agentk-demo, kind: backend, parent: g-agent-demo, icon: gitlab, title: agentk, tech: "[gitlab-agent 2.33.0]",
-     desc: "Tunnel to KAS, uses own SA"}
-  - {id: kube-apiserver, kind: backend, parent: g-control-plane, icon: kubernetes, title: kube-apiserver, tech: "[Kubernetes 1.30]",
-     desc: "Checks RBAC of the agent SA",
-     ports: [{name: https, protocol: TCP, port: 6443}]}
-  - {id: rb-demo, kind: security, parent: g-app-demo, icon: k8s-crd, title: RoleBinding edit, tech: "[agent SA, this ns only]",
-     desc: "The agent's only write right"}
-  - {id: demo-workloads, kind: backend, parent: g-app-demo, icon: k8s-deploy, title: Team workloads, tech: "[ResourceQuota, LimitRange]",
-     desc: "Deployed by pipelines", multiplicity: "one namespace per app"}
 
   # State
   - {id: gitaly, kind: database, parent: g-data, shape: cylinder, icon: git, title: Gitaly, tech: "[Go gRPC · PVC 20Gi]",
@@ -80,11 +61,7 @@ elements:
      ports: [{name: s3, protocol: TCP, port: 3900}]}
 
 connections:
-  - {id: c-ci-job-envoy, from: ci-job, to: envoy, kind: flow, port: https, protocol: HTTPS, verb: kubectl via /k8s-proxy}
   - {id: c-envoy-kas-proxy, from: envoy, to: kas, kind: flow, port: k8s-proxy, protocol: HTTP, verb: proxy}
-  - {id: c-agentk-kas, from: agentk-demo, to: kas, kind: tunnel, port: agent, protocol: WS, verb: open tunnel}
-  - {id: c-agentk-apiserver, from: agentk-demo, to: kube-apiserver, kind: flow, port: https, protocol: HTTPS, verb: apply as agent SA}
-  - {id: c-terraform-vault, from: terraform, to: vault, kind: flow, port: api, protocol: HTTPS, verb: store agent token}
   - {id: c-developer-envoy, from: developer, to: envoy, kind: flow, port: https, protocol: HTTPS, verb: git push}
   - {id: c-envoy-workhorse, from: envoy, to: workhorse, kind: flow, port: http, protocol: HTTP, verb: proxy}
   - {id: c-workhorse-puma, from: workhorse, to: puma, kind: flow, port: http, protocol: HTTP, verb: authorize}
@@ -102,5 +79,3 @@ connections:
   - {id: c-kas-puma, from: kas, to: puma, kind: auth, port: http, protocol: HTTP, verb: check agent token}
   - {id: c-runner-envoy, from: runner, to: envoy, kind: async, port: https, protocol: HTTPS, verb: poll jobs}
   - {id: c-vso-vault, from: vso, to: vault, kind: async, port: api, protocol: HTTPS, verb: read secrets}
-references:
-  - {id: r-rb-demo-agentk, from: rb-demo, to: agentk-demo, kind: subject}
