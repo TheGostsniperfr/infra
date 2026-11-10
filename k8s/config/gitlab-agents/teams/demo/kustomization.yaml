@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - agent-namespace.yaml
+  - secret.yaml
+  - app-namespaces.yaml
+
+helmGlobals:
+  chartHome: ../../../../../charts
+
+helmCharts:
+  - name: gitlab-agent
+    repo: https://charts.gitlab.io
+    version: "2.33.0"
+    releaseName: gitlab-agent-demo
+    namespace: gitlab-agent-demo
+    valuesFile: values.yaml

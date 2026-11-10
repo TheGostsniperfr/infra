@@ -7,6 +7,7 @@ lanes:
   runner-back: {x: 720}
   to-registry: {x: 740}
   to-kas: {x: 760}
+  to-kas-proxy: {x: 780}
   garage-registry: {x: 1470}
   garage-workhorse: {x: 1490}
   kas-up: {x: 1512}
@@ -42,6 +43,7 @@ edges:
   c-envoy-workhorse: {from: envoy.right@20px, to: workhorse.left@70px}
   c-envoy-registry: {from: envoy.right@50px, to: registry.left, waypoints: [lane:to-registry], label_at: [880, 770]}
   c-envoy-kas: {from: envoy.right@80px, to: kas.left, waypoints: [lane:to-kas], label_at: [890, 1070]}
+  c-envoy-kas-proxy: {from: envoy.right@65px, to: kas.left@80px, waypoints: [lane:to-kas-proxy]}
   c-workhorse-puma: {from: workhorse.right@50px, to: puma.left@50px}
   c-workhorse-gitaly: {from: workhorse.right@15px, to: gitaly.top@120px, waypoints: [[1320, 365], [1320, 310], [2220, 310]]}
   c-gitaly-puma: {from: gitaly.left@25px, to: puma.right@25px, against_flow: true}

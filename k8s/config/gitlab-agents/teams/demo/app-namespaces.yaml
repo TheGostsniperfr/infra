@@ -1,0 +1,51 @@
+# Namespaces team demo deploys to, one per application. The team's agent gets `edit` here and
+# nowhere else: a CI job of team demo cannot read or change another team's namespace.
+# The list must match `namespaces` of the team in terraform/gitlab.tf.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-sandbox
+  labels:
+    team: demo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gitlab-agent-demo-edit
+  namespace: demo-sandbox
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+subjects:
+  - kind: ServiceAccount
+    name: gitlab-agent-demo
+    namespace: gitlab-agent-demo
+---
+# A team cannot starve the cluster, and pods without resources get sane defaults
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: team-quota
+  namespace: demo-sandbox
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.memory: 8Gi
+    pods: "20"
+    services.loadbalancers: "0"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: defaults
+  namespace: demo-sandbox
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 50m
+        memory: 128Mi
+      default:
+        memory: 512Mi
