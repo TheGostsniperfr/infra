@@ -1,7 +1,14 @@
 # Team `demo` (the team name is the file name). Read by Terraform (terraform/gitlab.tf: GitLab
-# group apps/demo, its agent, token) and by the ApplicationSet k8s/apps/gitlab-agents.yaml
-# (agent Deployment, namespaces, RBAC). See ../README.md.
+# groups and projects, agent, Keycloak clients, DNS) and by the ApplicationSet
+# k8s/apps/gitlab-agents.yaml (agent, app namespaces, databases). See ../README.md.
 displayName: Demo
-# One namespace per application. The team's agent gets `edit` in these and nowhere else.
-namespaces:
-  - demo-sandbox
+
+# One entry per application: GitLab group apps/demo/<app> with a backend and a frontend project
+# created from the templates, namespace demo-<app>, https://<app>-demo.arffornia.com
+apps:
+  timetrack:
+    database: true
+    # Keycloak users (realm arffornia) holding each role of the app
+    roles:
+      manager: [brian]
+      member: [brian]

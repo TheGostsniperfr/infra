@@ -1,0 +1,136 @@
+{{- range $app, $cfg := .Values.apps }}
+{{- $ns := printf "%s-%s" $.Values.team $app }}
+# App {{ $app }} of team {{ $.Values.team }}. Its CI deploys here through the team's agent, which
+# gets `edit` and HTTPRoutes in this namespace and nothing else.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $ns }}
+  labels:
+    team: {{ $.Values.team }}
+    app: {{ $app }}
+    prod-gateway-access: "true"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "gitlab-team.agent" $ }}-edit
+  namespace: {{ $ns }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "gitlab-team.agent" $ }}
+    namespace: {{ include "gitlab-team.agent" $ }}
+---
+# `edit` has no Gateway API resources: the app publishes itself with an HTTPRoute
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gateway-routes
+  namespace: {{ $ns }}
+rules:
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["httproutes"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "gitlab-team.agent" $ }}-gateway-routes
+  namespace: {{ $ns }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gateway-routes
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "gitlab-team.agent" $ }}
+    namespace: {{ include "gitlab-team.agent" $ }}
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: app-quota
+  namespace: {{ $ns }}
+spec:
+  hard:
+    {{- toYaml $.Values.quota | nindent 4 }}
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: defaults
+  namespace: {{ $ns }}
+spec:
+  limits:
+    - type: Container
+      {{- toYaml $.Values.limitRange | nindent 6 }}
+---
+# Only the gateway, the namespace itself and the postgres-operator (Patroni API) may connect in
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ingress-from-gateway-only
+  namespace: {{ $ns }}
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector: {}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: postgres-operator
+---
+# Pull secret for the team's images: group deploy token (read_registry), created by Terraform
+# Vault path: kvv2/gitlab-agents/<team>-registry  keys: username, password
+apiVersion: ricoberger.de/v1alpha1
+kind: VaultSecret
+metadata:
+  name: registry-pull
+  namespace: {{ $ns }}
+spec:
+  path: kvv2/gitlab-agents/{{ $.Values.team }}-registry
+  vaultRole: gitlab-agents-role
+  keys:
+    - username
+    - password
+  templates:
+    .dockerconfigjson: '{"auths":{"{{ $.Values.registryHost }}":{"username":"{% .Secrets.username %}","password":"{% .Secrets.password %}"}}}'
+  type: kubernetes.io/dockerconfigjson
+---
+{{- if $cfg.database }}
+# Database of the app. The operator writes the credentials to the Secret
+# app.{{ $app }}-db.credentials.postgresql.acid.zalan.do in this namespace (keys username, password).
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+metadata:
+  name: {{ $app }}-db
+  namespace: {{ $ns }}
+spec:
+  teamId: {{ $.Values.team }}
+  numberOfInstances: 1
+  postgresql:
+    version: {{ $.Values.database.version | quote }}
+  volume:
+    size: {{ $.Values.database.size }}
+    storageClass: {{ $.Values.database.storageClass }}
+  users:
+    app: []
+  databases:
+    app: app
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+---
+{{- end }}
+{{- end }}

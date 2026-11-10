@@ -272,11 +272,33 @@ gitlab-runner:
       memory: 128Mi # chart
     limits:
       memory: 256Mi # chart
+  # Jobs run in gitlab-ci-jobs (ci-jobs-namespace.yaml); the runner's Role lives there only, with
+  # the permissions the Kubernetes executor needs (the chart's default is every core resource)
+  # https://docs.gitlab.com/runner/executors/kubernetes/#configure-runner-api-permissions
+  rbac:
+    create: true
+    rules:
+      - resources: ["pods"]
+        verbs: ["create", "delete", "get", "list", "watch"]
+      - resources: ["pods/attach", "pods/exec"]
+        verbs: ["create", "delete", "get", "patch"]
+      - resources: ["pods/log"]
+        verbs: ["get", "list"]
+      - resources: ["secrets"]
+        verbs: ["create", "delete", "get", "update"]
+      - resources: ["serviceaccounts"]
+        verbs: ["get"]
+      - resources: ["services"]
+        verbs: ["create", "get"]
+      - resources: ["events"]
+        verbs: ["list", "watch"]
   # Job pods: without requests they would be BestEffort, first evicted under pressure
   runners:
+    jobNamespace: gitlab-ci-jobs
     config: |
       [[runners]]
         [runners.kubernetes]
+        namespace = "gitlab-ci-jobs"
         image = "alpine:3.22"
         cpu_request = "100m"
         memory_request = "256Mi"
