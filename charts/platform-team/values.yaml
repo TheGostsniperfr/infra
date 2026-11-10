@@ -1,4 +1,4 @@
-# Set by the ApplicationSet k8s/apps/gitlab-agents.yaml from k8s/config/gitlab-agents/teams/<team>.yaml
+# Set by the ApplicationSet k8s/apps/app-platform-teams.yaml from k8s/config/app-platform/teams/<team>.yaml
 team: ""
 # <app>: {database: bool, roles: ...}
 apps: {}

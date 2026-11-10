@@ -47,7 +47,7 @@ resources:
   - photo-ai.yaml
   - immich.yaml
   - gitlab.yaml
-  - gitlab-agents.yaml
+  - app-platform-teams.yaml
 
   # Arffornia Apps
   - arffornia/
