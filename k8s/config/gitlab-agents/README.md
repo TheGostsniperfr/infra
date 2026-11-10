@@ -76,7 +76,8 @@ RBAC of `charts/gitlab-team`, which GitLab users cannot see or change.
 2. `terraform apply` on the PR: group `apps/<team>`, project `apps/platform/agent-<team>`, the
    agent, its config and its token in `kvv2/gitlab-agents/<team>`.
 3. Merge: the ApplicationSet creates `gitlab-agent-<team>`, the agent connects.
-4. Add the team's people to `apps/<team>` only, never to `apps` or `apps/platform`.
+4. Once each of the team's people has signed in, approve them (Admin > Users > Pending approval)
+   and add them to `apps/<team>` only, never to `apps` or `apps/platform`.
 
 ## Check the isolation
 
