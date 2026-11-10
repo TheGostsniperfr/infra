@@ -252,6 +252,12 @@ registry:
   storage:
     secret: gitlab-registry-storage
     key: config
+    # Serve blobs through the registry instead of redirecting clients to a presigned S3 URL: that
+    # URL is Garage's in-cluster address, which neither nodes (kubelet pulls) nor workstations resolve
+    # https://docs.gitlab.com/charts/charts/registry/#storage
+    # https://gitlab.com/gitlab-org/container-registry/-/blob/master/docs/configuration.md#redirect
+    redirect:
+      disable: true
 
 # Instance runner: CI jobs run as pods in this namespace
 # Chart: https://docs.gitlab.com/charts/charts/gitlab/gitlab-runner/
