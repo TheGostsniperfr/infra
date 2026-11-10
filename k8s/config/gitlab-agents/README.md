@@ -6,6 +6,8 @@ outbound tunnel to KAS (in namespace `gitlab`); GitLab CI jobs of the team then 
 `helm` against this cluster through that tunnel, without any kubeconfig or cluster credential in
 GitLab.
 
+To create and deploy an app, read [`GUIDE.md`](GUIDE.md).
+
 ## How a deployment reaches the cluster
 
 1. `agentk` (namespace `gitlab-agent-<team>`) keeps a websocket open to KAS, in-cluster
