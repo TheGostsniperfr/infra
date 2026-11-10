@@ -11,7 +11,8 @@ image:
 vault:
   authMethod: kubernetes
   reconciliationTime: 60
-  address: https://vault.arffornia.com
+  # In-cluster Service, not the public URL: a DNS or Cloudflare outage must not stop secret sync
+  address: http://vault.vault.svc.cluster.local:8200
   kubernetesRole: "vault-secrets-operator-role"
 
 resources:
