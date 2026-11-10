@@ -10,6 +10,11 @@ metadata:
   name: gitlab-agents
   namespace: argocd
 spec:
+  # A team's Application holds its namespaces and databases: removing or renaming it must not
+  # delete them. No resources finalizer either, which would delete them anyway.
+  # https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Application-Deletion/
+  syncPolicy:
+    preserveResourcesOnDeletion: true
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   generators:
@@ -23,8 +28,6 @@ spec:
       name: 'gitlab-agent-{{ trimSuffix ".yaml" .path.filename }}'
       annotations:
         argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
-      finalizers:
-        - resources-finalizer.argocd.argoproj.io
     spec:
       project: default
       sources:
