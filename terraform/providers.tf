@@ -19,12 +19,12 @@ terraform {
   required_providers {
     vault = {
       source  = "hashicorp/vault"
-      version = "5.6.0"
+      version = "5.13.0"
     }
 
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "5.16.0"
+      version = "5.28.1"
     }
 
     keycloak = {
@@ -34,7 +34,7 @@ terraform {
 
     tls = {
       source  = "hashicorp/tls"
-      version = "4.4.1"
+      version = "4.4.2"
     }
 
     gitlab = {
