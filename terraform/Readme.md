@@ -78,6 +78,13 @@ To import the prod app, pass its **object id** (not the client id) as
 prod app stays outside Terraform. Imported with `ignore_changes = all`, so the import plan
 changes nothing.
 
+For now staging and pr1-pr3 sign in with the prod app, already approved for Minecraft
+(`staging_uses_prod_microsoft_app_var`, default `true`): Terraform adds their redirect URIs to
+the prod app, keeps every other URI it already has, and writes the prod client id and secret to
+the staging and previews Vault paths. This needs the prod object id. Once "Arffornia Test" is
+approved, pass `-var staging_uses_prod_microsoft_app_var=false` (or set it in the tfvars) and
+apply: the test URIs leave the prod app and the test app's id and secret go to Vault.
+
 Terraform cannot give Minecraft access to a new client id: until Microsoft approves it through
 https://aka.ms/mce-reviewappid, `login_with_xbox` answers 403 and the website login fails after
 the Microsoft consent page. The "Arffornia Test" app needs this review once.

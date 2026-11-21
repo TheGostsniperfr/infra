@@ -4,7 +4,7 @@
 # show additions only. Kubernetes side: k8s/config/arffornia/{staging,slot,previews,playtest}.
 #
 # No prod value is reused. Every secret is generated here (random_*), except the optional
-# "Arffornia Test" Microsoft app, created in microsoft_apps.tf (its secret comes from Entra).
+# Microsoft app: the prod one for now, "Arffornia Test" once approved (microsoft_apps.tf).
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -63,8 +63,8 @@ resource "vault_kv_secret_v2" "arffornia_staging_website" {
   name  = "arffornia/staging/website"
   data_json = jsonencode({
     APP_KEY                   = "base64:${random_bytes.staging_app_key.base64}"
-    AZURE_OAUTH_CLIENT_ID     = azuread_application.website_test.client_id
-    AZURE_OAUTH_CLIENT_SECRET = azuread_application_password.website_test.value
+    AZURE_OAUTH_CLIENT_ID     = local.staging_azure_client_id
+    AZURE_OAUTH_CLIENT_SECRET = local.staging_azure_client_secret
   })
 }
 
@@ -106,8 +106,8 @@ resource "vault_kv_secret_v2" "arffornia_previews_website" {
   data_json = jsonencode({
     APP_KEY                   = "base64:${random_bytes.previews_app_key.base64}"
     DB_PASSWORD               = random_password.playtest["previews_db"].result
-    AZURE_OAUTH_CLIENT_ID     = azuread_application.website_test.client_id
-    AZURE_OAUTH_CLIENT_SECRET = azuread_application_password.website_test.value
+    AZURE_OAUTH_CLIENT_ID     = local.staging_azure_client_id
+    AZURE_OAUTH_CLIENT_SECRET = local.staging_azure_client_secret
   })
 }
 

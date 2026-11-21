@@ -53,6 +53,42 @@ resource "azuread_application" "website_prod" {
   }
 }
 
+# Shortcut until the "Arffornia Test" app is approved for Minecraft: staging and pr1-pr3 use the
+# prod app, which is approved. Its web redirect URIs then also hold the test hosts; every other
+# URI already on the app is kept as read. Switch back: set staging_uses_prod_microsoft_app_var to
+# false and apply. The test URIs leave the prod app and the test app's id and secret go to Vault.
+variable "staging_uses_prod_microsoft_app_var" {
+  description = "Staging and pr1-pr3 sign in with the prod Microsoft app instead of 'Arffornia Test'."
+  type        = bool
+  default     = true
+}
+
+data "azuread_application" "website_prod" {
+  count     = var.azure_prod_app_object_id_var != "" ? 1 : 0
+  object_id = var.azure_prod_app_object_id_var
+}
+
+locals {
+  website_test_redirect_uris = [for host in local.website_test_hosts : "https://${host}.${var.domain_name}/login/connect"]
+  website_prod_other_redirect_uris = var.azure_prod_app_object_id_var != "" ? setsubtract(
+    flatten([for web in data.azuread_application.website_prod[0].web : web.redirect_uris]),
+    local.website_test_redirect_uris,
+  ) : []
+  staging_azure_client_id     = var.staging_uses_prod_microsoft_app_var ? var.website_azure_oauth_client_id_var : azuread_application.website_test.client_id
+  staging_azure_client_secret = var.staging_uses_prod_microsoft_app_var ? var.website_azure_oauth_client_secret_var : azuread_application_password.website_test.value
+}
+
+# Owns the prod app's web redirect URIs (the app itself ignores all changes).
+resource "azuread_application_redirect_uris" "website_prod_web" {
+  count          = var.azure_prod_app_object_id_var != "" ? 1 : 0
+  application_id = azuread_application.website_prod[0].id
+  type           = "Web"
+  redirect_uris = setunion(
+    local.website_prod_other_redirect_uris,
+    var.staging_uses_prod_microsoft_app_var ? local.website_test_redirect_uris : [],
+  )
+}
+
 # -----------------------------------------------------------------------------
 # "Arffornia Test" app (spec 016 decision D7): staging and the website playtest slots pr1-pr3.
 # Same audience as a Minecraft login app: personal Microsoft accounts and work accounts.
@@ -61,6 +97,8 @@ resource "azuread_application" "website_prod" {
 locals {
   website_test_hosts = ["staging", "pr1", "pr2", "pr3"]
 }
+
+# Submit its client id at https://aka.ms/mce-reviewappid, then switch staging to it (see above).
 
 resource "azuread_application" "website_test" {
   display_name     = "Arffornia Test"
@@ -72,7 +110,7 @@ resource "azuread_application" "website_test" {
   }
 
   web {
-    redirect_uris = [for host in local.website_test_hosts : "https://${host}.${var.domain_name}/login/connect"]
+    redirect_uris = local.website_test_redirect_uris
   }
 }
 
