@@ -45,3 +45,8 @@ data:
 
   # The "Arffornia Test" Microsoft app (D7); its id and secret come from Vault, empty until it exists.
   AZURE_OAUTH_REDIRECT_URI: "https://staging.arffornia.com/login/connect"
+
+  # Progression graph viewer (/progression) on the published snapshot and real player state.
+  # Staging has no item renders: they are served from the production site.
+  PROGRESSION_VIEWER: "api"
+  PROGRESSION_ICON_BASE: "https://arffornia.com/images/item_textures/"
