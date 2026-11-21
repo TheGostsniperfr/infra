@@ -70,6 +70,24 @@ variable "staging_uses_prod_microsoft_app_var" {
   default     = true
 }
 
+# The prod secret made by hand expired on 2026-04-20 and broke every login. Terraform owns it now:
+# rotated every year, valid two years, so a missed yearly apply leaves a year of margin.
+resource "time_rotating" "website_prod_secret" {
+  count         = var.azure_prod_app_object_id_var != "" ? 1 : 0
+  rotation_days = 365
+}
+
+resource "azuread_application_password" "website_prod" {
+  count          = var.azure_prod_app_object_id_var != "" ? 1 : 0
+  application_id = azuread_application.website_prod[0].id
+  display_name   = "terraform"
+  end_date       = timeadd(time_rotating.website_prod_secret[0].rfc3339, "17520h")
+
+  rotate_when_changed = {
+    rotation = time_rotating.website_prod_secret[0].id
+  }
+}
+
 data "azuread_application" "website_prod" {
   count     = var.azure_prod_app_object_id_var != "" ? 1 : 0
   object_id = var.azure_prod_app_object_id_var
@@ -82,7 +100,8 @@ locals {
     local.website_test_redirect_uris,
   ) : []
   staging_azure_client_id     = var.staging_uses_prod_microsoft_app_var ? var.website_azure_oauth_client_id_var : azuread_application.website_test.client_id
-  staging_azure_client_secret = var.staging_uses_prod_microsoft_app_var ? var.website_azure_oauth_client_secret_var : azuread_application_password.website_test.value
+  website_prod_client_secret  = var.azure_prod_app_object_id_var != "" ? azuread_application_password.website_prod[0].value : var.website_azure_oauth_client_secret_var
+  staging_azure_client_secret = var.staging_uses_prod_microsoft_app_var ? local.website_prod_client_secret : azuread_application_password.website_test.value
 }
 
 # Owns the prod app's web redirect URIs (the app itself ignores all changes).
