@@ -62,6 +62,33 @@ To provision the cloudflare resources using terraform you need to use the `CLOUD
 export CLOUDFLARE_API_TOKEN="token"
 ```
 
+### Setup the Microsoft Entra connection
+
+`microsoft_apps.tf` manages the website's Microsoft app registrations with the `azuread`
+provider, authenticated by the Azure CLI. Log in with the account that owns the apps:
+
+```sh
+nix shell nixpkgs#azure-cli
+az login --allow-no-subscriptions
+az ad app list --query '[].{name:displayName,objectId:id,clientId:appId}' -o table
+```
+
+To import the prod app, pass its **object id** (not the client id) as
+`-var azure_prod_app_object_id_var=<object id>` or put it in the sops tfvars. Without it, the
+prod app stays outside Terraform. Imported with `ignore_changes = all`, so the import plan
+changes nothing.
+
+For now staging and pr1-pr3 sign in with the prod app, already approved for Minecraft
+(`staging_uses_prod_microsoft_app_var`, default `true`): Terraform adds their redirect URIs to
+the prod app, keeps every other URI it already has, and writes the prod client id and secret to
+the staging and previews Vault paths. This needs the prod object id. Once "Arffornia Test" is
+approved, pass `-var staging_uses_prod_microsoft_app_var=false` (or set it in the tfvars) and
+apply: the test URIs leave the prod app and the test app's id and secret go to Vault.
+
+Terraform cannot give Minecraft access to a new client id: until Microsoft approves it through
+https://aka.ms/mce-reviewappid, `login_with_xbox` answers 403 and the website login fails after
+the Microsoft consent page. The "Arffornia Test" app needs this review once.
+
 ### Plan your changes
 
 ```sh
