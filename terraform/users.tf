@@ -64,6 +64,8 @@ resource "keycloak_user_groups" "team_groups" {
   for_each = local.team_members
   realm_id = keycloak_realm.arffornia.id
   user_id  = keycloak_user.team[each.key].id
+  # Not exhaustive: keycloak_group_memberships.app_role (apps.tf) also adds team members to app role groups.
+  exhaustive = false
 
   group_ids = each.value.is_infra ? [
     keycloak_group.member.id,
