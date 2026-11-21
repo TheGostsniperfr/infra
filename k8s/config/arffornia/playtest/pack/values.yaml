@@ -1,13 +1,14 @@
 # The test slot, over ../../server/base/values.yaml. Lists replace the base ones entirely.
 
 # A test server holds one or two players on a fresh world: a 6 GiB heap is enough (a client runs
-# the same pack in 5 GiB). The namespace quota stays the hard cap.
+# the same pack in 5 GiB), but the pack needs about 4 GiB off heap: 9 GiB was OOMKilled at boot.
+# The namespace quota stays the hard cap.
 resources:
   requests:
     memory: 4Gi
     cpu: "1"
   limits:
-    memory: 9Gi
+    memory: 11Gi
     cpu: "4"
 
 # The config-updater reads the pack from pack-files (this namespace), not raw GitHub.
