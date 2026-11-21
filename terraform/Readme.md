@@ -62,6 +62,26 @@ To provision the cloudflare resources using terraform you need to use the `CLOUD
 export CLOUDFLARE_API_TOKEN="token"
 ```
 
+### Setup the Microsoft Entra connection
+
+`microsoft_apps.tf` manages the website's Microsoft app registrations with the `azuread`
+provider, authenticated by the Azure CLI. Log in with the account that owns the apps:
+
+```sh
+nix shell nixpkgs#azure-cli
+az login --allow-no-subscriptions
+az ad app list --query '[].{name:displayName,objectId:id,clientId:appId}' -o table
+```
+
+To import the prod app, pass its **object id** (not the client id) as
+`-var azure_prod_app_object_id_var=<object id>` or put it in the sops tfvars. Without it, the
+prod app stays outside Terraform. Imported with `ignore_changes = all`, so the import plan
+changes nothing.
+
+Terraform cannot give Minecraft access to a new client id: until Microsoft approves it through
+https://aka.ms/mce-reviewappid, `login_with_xbox` answers 403 and the website login fails after
+the Microsoft consent page. The "Arffornia Test" app needs this review once.
+
 ### Plan your changes
 
 ```sh

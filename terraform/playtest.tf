@@ -4,7 +4,7 @@
 # show additions only. Kubernetes side: k8s/config/arffornia/{staging,slot,previews,playtest}.
 #
 # No prod value is reused. Every secret is generated here (random_*), except the optional
-# "Arffornia Test" Microsoft app, which comes from the sops tfvars and defaults to empty.
+# "Arffornia Test" Microsoft app, created in microsoft_apps.tf (its secret comes from Entra).
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -36,24 +36,6 @@ resource "cloudflare_dns_record" "playtest_test_slot" {
 }
 
 # -----------------------------------------------------------------------------
-# Optional: the separate free "Arffornia Test" Microsoft app (decision D7), with redirect URIs
-# on staging and pr1-pr3. Empty until it exists: Microsoft login then fails off prod, nothing else.
-# -----------------------------------------------------------------------------
-
-variable "website_test_azure_oauth_client_id_var" {
-  description = "Client ID of the 'Arffornia Test' Microsoft app (staging and playtest slots only)."
-  type        = string
-  sensitive   = true
-  default     = ""
-}
-variable "website_test_azure_oauth_client_secret_var" {
-  description = "Client secret of the 'Arffornia Test' Microsoft app (staging and playtest slots only)."
-  type        = string
-  sensitive   = true
-  default     = ""
-}
-
-# -----------------------------------------------------------------------------
 # Generated values
 # -----------------------------------------------------------------------------
 
@@ -81,8 +63,8 @@ resource "vault_kv_secret_v2" "arffornia_staging_website" {
   name  = "arffornia/staging/website"
   data_json = jsonencode({
     APP_KEY                   = "base64:${random_bytes.staging_app_key.base64}"
-    AZURE_OAUTH_CLIENT_ID     = var.website_test_azure_oauth_client_id_var
-    AZURE_OAUTH_CLIENT_SECRET = var.website_test_azure_oauth_client_secret_var
+    AZURE_OAUTH_CLIENT_ID     = azuread_application.website_test.client_id
+    AZURE_OAUTH_CLIENT_SECRET = azuread_application_password.website_test.value
   })
 }
 
@@ -124,8 +106,8 @@ resource "vault_kv_secret_v2" "arffornia_previews_website" {
   data_json = jsonencode({
     APP_KEY                   = "base64:${random_bytes.previews_app_key.base64}"
     DB_PASSWORD               = random_password.playtest["previews_db"].result
-    AZURE_OAUTH_CLIENT_ID     = var.website_test_azure_oauth_client_id_var
-    AZURE_OAUTH_CLIENT_SECRET = var.website_test_azure_oauth_client_secret_var
+    AZURE_OAUTH_CLIENT_ID     = azuread_application.website_test.client_id
+    AZURE_OAUTH_CLIENT_SECRET = azuread_application_password.website_test.value
   })
 }
 

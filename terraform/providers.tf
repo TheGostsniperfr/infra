@@ -41,6 +41,16 @@ terraform {
       source  = "gitlabhq/gitlab"
       version = "19.5.0"
     }
+
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "3.4.0"
+    }
+
+    time = {
+      source  = "hashicorp/time"
+      version = "0.13.1"
+    }
   }
 }
 
