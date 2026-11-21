@@ -18,3 +18,57 @@ routes:
             port: 3902
     auth:
       enabled: false
+
+  # Item icons (3D inventory renders named by item id) for the website, the progression graph
+  # viewer and the game, served from the `item-icons` bucket on the website's own host, so pages
+  # load them same-origin. Garage web picks the bucket from the Host header
+  # (<bucket>.web.garage.tld, see s3_web.root_domain). Upload: Arffornia_Website scripts/icons/publish.sh.
+  # Clients add ?v=<hash from manifest.json> so a week of caching never serves a stale icon.
+  item-icons:
+    hostnames:
+      - "staging.arffornia.com"
+    rules:
+      - matches:
+          - path:
+              type: Exact
+              value: /icons/manifest.json
+        filters:
+          - type: URLRewrite
+            urlRewrite:
+              hostname: item-icons.web.garage.tld
+              path:
+                type: ReplaceFullPath
+                replaceFullPath: /manifest.json
+          - type: ResponseHeaderModifier
+            responseHeaderModifier:
+              set:
+                - name: Cache-Control
+                  value: "public, max-age=300"
+                - name: Access-Control-Allow-Origin
+                  value: "*"
+        backendRefs:
+          - name: garage
+            port: 3902
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /icons/
+        filters:
+          - type: URLRewrite
+            urlRewrite:
+              hostname: item-icons.web.garage.tld
+              path:
+                type: ReplacePrefixMatch
+                replacePrefixMatch: /
+          - type: ResponseHeaderModifier
+            responseHeaderModifier:
+              set:
+                - name: Cache-Control
+                  value: "public, max-age=604800"
+                - name: Access-Control-Allow-Origin
+                  value: "*"
+        backendRefs:
+          - name: garage
+            port: 3902
+    auth:
+      enabled: false
