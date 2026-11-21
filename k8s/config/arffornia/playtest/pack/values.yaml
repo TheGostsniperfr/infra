@@ -42,7 +42,8 @@ extraEnv:
   # Start small and give memory back when idle: the image sets -Xms to the max otherwise, which
   # pins the whole heap from boot. G1 returns unused heap after a periodic GC.
   INIT_MEMORY: 1G
-  JVM_XX_OPTS: "-XX:+UseG1GC -XX:G1PeriodicGCInterval=60000 -XX:MaxHeapFreeRatio=30 -XX:MinHeapFreeRatio=10"
+  # Direct buffers default to the heap size (6 GiB more): capped so the pod stays under its limit.
+  JVM_XX_OPTS: "-XX:+UseG1GC -XX:G1PeriodicGCInterval=60000 -XX:MaxHeapFreeRatio=30 -XX:MinHeapFreeRatio=10 -XX:MaxDirectMemorySize=1g"
   # LuckPerms reads LUCKPERMS_<KEY> overrides; the profile also rewrites luckperms.conf to h2.
   LUCKPERMS_STORAGE_METHOD: h2
 
