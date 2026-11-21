@@ -1,14 +1,14 @@
 # The test slot, over ../../server/base/values.yaml. Lists replace the base ones entirely.
 
-# A test server holds one or two players on a fresh world: a 6 GiB heap is enough (a client runs
-# the same pack in 5 GiB), but the pack needs about 4 GiB off heap: 9 GiB was OOMKilled at boot.
-# The namespace quota stays the hard cap.
+# A test server holds one or two players on a fresh world. A 6 GiB heap was OOMKilled under 9 and
+# 11 GiB limits on 2026-11-21: 8 GiB heap under 14 GiB while the off-heap use is measured (NMT).
+# The namespace quota (17 GiB) stays the hard cap.
 resources:
   requests:
     memory: 4Gi
     cpu: "1"
   limits:
-    memory: 11Gi
+    memory: 14Gi
     cpu: "4"
 
 # The config-updater reads the pack from pack-files (this namespace), not raw GitHub.
@@ -43,7 +43,7 @@ extraEnv:
   # pins the whole heap from boot. G1 returns unused heap after a periodic GC.
   INIT_MEMORY: 1G
   # Direct buffers default to the heap size (6 GiB more): capped so the pod stays under its limit.
-  JVM_XX_OPTS: "-XX:+UseG1GC -XX:G1PeriodicGCInterval=60000 -XX:MaxHeapFreeRatio=30 -XX:MinHeapFreeRatio=10 -XX:MaxDirectMemorySize=1g"
+  JVM_XX_OPTS: "-XX:+UseG1GC -XX:G1PeriodicGCInterval=60000 -XX:MaxHeapFreeRatio=30 -XX:MinHeapFreeRatio=10 -XX:MaxDirectMemorySize=1g -XX:NativeMemoryTracking=summary"
   # LuckPerms reads LUCKPERMS_<KEY> overrides; the profile also rewrites luckperms.conf to h2.
   LUCKPERMS_STORAGE_METHOD: h2
 
@@ -64,7 +64,7 @@ minecraftServer:
   ops: "The_Gost_sniper"
   maxPlayers: 10
   motd: "Arffornia test slot"
-  memory: 6G
+  memory: 8G
   serviceType: ClusterIP
   rcon:
     enabled: true
