@@ -43,6 +43,13 @@ import {
   id       = "/applications/${each.value}"
 }
 
+# Entra ID keeps a redirect URI collection per app, so it must be imported, not created.
+import {
+  for_each = var.azure_prod_app_object_id_var != "" ? toset([var.azure_prod_app_object_id_var]) : toset([])
+  to       = azuread_application_redirect_uris.website_prod_web[0]
+  id       = "/applications/${each.value}/redirectUris/Web"
+}
+
 resource "azuread_application" "website_prod" {
   count        = var.azure_prod_app_object_id_var != "" ? 1 : 0
   display_name = "Arffornia"
