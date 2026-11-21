@@ -29,14 +29,12 @@ initContainers:
       - name: datadir
         mountPath: /data
 
-# Only staging values: no proxy forwarding secret, no Discord bot, no prod database.
+# Only staging values: no proxy forwarding secret, no Discord bot, no database (rewards go through the API).
 envFrom:
   - configMapRef:
       name: arffornia-slot-config
   - secretRef:
       name: slot-svc-secret
-  - secretRef:
-      name: slot-db-secret
 
 extraEnv:
   ENFORCE_WHITELIST: "TRUE"
