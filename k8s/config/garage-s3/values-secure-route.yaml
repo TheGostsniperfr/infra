@@ -27,6 +27,10 @@ routes:
   item-icons:
     hostnames:
       - "staging.arffornia.com"
+      # Playtest website slots run the same progression viewer.
+      - "pr1.arffornia.com"
+      - "pr2.arffornia.com"
+      - "pr3.arffornia.com"
     rules:
       - matches:
           - path:
