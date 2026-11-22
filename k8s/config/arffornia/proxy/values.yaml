@@ -56,7 +56,7 @@ startupProbe:
 
 initContainers:
   - name: config-updater
-    image: ghcr.io/arffornia/config-updater:updater-0.0.7@sha256:4a76a42ea5b7ce3eb63344eef784510c225ffc10695746846bf9f69ec00078d8
+    image: ghcr.io/arffornia/config-updater:updater-0.0.8@sha256:a6cf42b979a3184e79a1866c3a99b333d46b58338b53a7637b40ee709e6d5a0d
     env:
       - name: KIND
         value: proxy
