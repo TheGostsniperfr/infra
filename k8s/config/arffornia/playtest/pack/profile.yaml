@@ -36,7 +36,8 @@ data:
           "kinds": ["server"],
           "path": "config/neoforwarding-server.toml",
           "replace": [
-            { "from": "enableForwarding = true", "to": "enableForwarding = false" }
+            { "from": "enableForwarding = true", "to": "enableForwarding = false" },
+            { "from": "enableEmbeddedCrossStitch = true", "to": "enableEmbeddedCrossStitch = false" }
           ]
         },
         {
