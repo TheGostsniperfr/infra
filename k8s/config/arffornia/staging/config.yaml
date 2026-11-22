@@ -50,3 +50,6 @@ data:
   # Staging has no item renders: they are served from the production site.
   PROGRESSION_VIEWER: "api"
   PROGRESSION_ICON_BASE: "https://arffornia.com/images/item_textures/"
+
+  # Weekly streak rewards as crate keys (website#167); staging only until validated.
+  REWARDS_STREAK_AS_KEYS: "true"
