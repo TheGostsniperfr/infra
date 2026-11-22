@@ -36,3 +36,7 @@ data:
   CACHE_PREFIX: "playtest"
   # The "Arffornia Test" Microsoft app (D7) has a redirect URI per slot.
   AZURE_OAUTH_REDIRECT_URI: "https://unset.arffornia.com/login/connect"
+
+  # Progression graph viewer (/progression) on the published snapshot, as on staging.
+  PROGRESSION_VIEWER: "api"
+  PROGRESSION_ICON_BASE: "https://arffornia.com/images/item_textures/"
