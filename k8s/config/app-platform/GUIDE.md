@@ -66,8 +66,8 @@ What that does, system by system, as it would be done by hand:
    - In `kyverno`: the app's public key. In `argocd`: the team's read token for the deploy repositories.
 6. **First deployment**: a push to `main` of each repository.
 
-Once per team, not per app: group `apps/<team>`, its registry and repository deploy tokens, its
-agent. See `README.md`.
+Once per team, not per app: group `apps/<team>`, its registry and repository deploy tokens. See
+`README.md`.
 
 ## Deploy a change
 

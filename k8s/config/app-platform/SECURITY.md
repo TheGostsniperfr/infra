@@ -49,7 +49,7 @@ reach. A `.dark` variant and the editable `.drawio` sit next to each.
 |---|---|---|
 | GitLab | `main` protected: Maintainers only push and merge | GitLab default branch protection |
 | GitLab | Groups and projects private; teams are members of `apps/<team>` only | `terraform/gitlab.tf` |
-| GitLab | Agents have no CI access: no pipeline can reach the cluster | `terraform/gitlab.tf` |
+| GitLab | No agent for Kubernetes: no pipeline can reach the cluster | `terraform/gitlab.tf` |
 | GitLab | A Keycloak user's first sign-in creates a blocked account: an admin approves it before it can run a job. Users cannot create groups | `k8s/config/gitlab/values.yaml` (`blockAutoCreatedUsers`), `terraform/gitlab.tf` (`can_create_group`) |
 | CI | Builds without privileges (Kaniko) | `.gitlab-ci.yml` of the templates |
 | CI | Jobs in `gitlab-ci-jobs`: nothing reaches them, they reach DNS and the internet only | `k8s/config/gitlab/ci-jobs-namespace.yaml` |
@@ -96,7 +96,6 @@ None is stored in a repository, and none is readable by a team member.
 | App secrets | Vault `kvv2/apps/<team>/<app>` | The app's namespace |
 | Database credentials | Written by the postgres-operator in the app's namespace | The app |
 | Keycloak client | None: public client with PKCE | |
-| Agent token | Vault `kvv2/gitlab-agents/<team>` | The agent, which has no rights in the app namespaces |
 
 ## Attacks, and what stops them
 
@@ -131,7 +130,6 @@ unexpected case would hide, so each says what contains it. A change that adds on
 | A Maintainer alone merges to `main`, so ships | Free tier: no mandatory approvals | Git history; Ultimate would require a review |
 | Team Applications run in Argo CD's `default` project | They create namespaces and the apps' projects | They render only charts of this repo, reviewed by PR |
 | Signing with a key, not keyless | Sigstore's public instance does not accept a self-hosted GitLab | Key never exported; only `main` of the app may use it |
-| GitLab agents stay connected | Kept for Workspaces, scanning, dashboard | No CI access, no rights outside their own namespace |
 | Kyverno does not re-check existing objects (`background: false`) | Its reports controller cannot read HTTPRoutes and VaultSecrets | Every create and update is checked; nothing is created otherwise |
 
 ## What remains
@@ -153,7 +151,7 @@ controls a pipeline on `main`, or GitLab itself, does too. With Argo CD, the clu
 checks; GitLab only proposes. It also corrects manual changes (`selfHeal`), and needs no paid tier
 to isolate apps: an Argo CD project per app replaces the agent's impersonation, which is Premium.
 
-What the agent still offers, kept connected but without rights:
+The agents were removed on 2026-11-23. What an agent would bring back, if one is ever needed:
 
 | Use | Tier | Without the agent |
 |---|---|---|
@@ -173,8 +171,4 @@ kubectl -n argocd get appproject app-demo-timetrack -o yaml
 
 # An unsigned image of the app is refused (tag pushed by hand)
 kubectl -n demo-timetrack run t --image=gitlab-registry.arffornia.com/apps/demo/timetrack/backend:<tag> --dry-run=server
-
-# The agent has no rights in the app namespace
-kubectl auth can-i create deployments -n demo-timetrack \
-  --as=system:serviceaccount:gitlab-agent-demo:gitlab-agent-demo   # no
 ```

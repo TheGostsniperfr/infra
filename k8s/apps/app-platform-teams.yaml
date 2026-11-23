@@ -1,9 +1,8 @@
 # App platform: one Application `team-<team>` per file k8s/config/app-platform/teams/<team>.yaml
-# (the team name is the file name, never its content). Each Application is:
-#   - the official gitlab-agent chart, with the values shared by every team (agent-values.yaml);
-#   - charts/platform-team: the agent's namespace and token, and per app its namespace, guardrails,
-#     Argo CD project and the Applications that deploy it (charts/app).
-# The same files drive terraform/gitlab.tf (GitLab group, agent, token), see the README there.
+# (the team name is the file name, never its content). Each Application renders charts/platform-team:
+# per app its namespace, guardrails, Argo CD project and the Applications that deploy it (charts/app).
+# The same files drive terraform/gitlab.tf and terraform/apps.tf (GitLab groups, Vault, Keycloak,
+# DNS), see k8s/config/app-platform/README.md.
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
@@ -31,16 +30,6 @@ spec:
     spec:
       project: default
       sources:
-        - repoURL: https://charts.gitlab.io
-          chart: gitlab-agent
-          targetRevision: 2.33.0
-          helm:
-            releaseName: 'gitlab-agent-{{ trimSuffix ".yaml" .path.filename }}'
-            valueFiles:
-              - $infra/k8s/config/app-platform/agent-values.yaml
-        - repoURL: https://github.com/TheGostsniperfr/infra.git
-          targetRevision: HEAD
-          ref: infra
         - repoURL: https://github.com/TheGostsniperfr/infra.git
           targetRevision: HEAD
           path: charts/platform-team
@@ -51,7 +40,8 @@ spec:
               apps: {{ toJson .apps }}
       destination:
         name: in-cluster
-        namespace: 'gitlab-agent-{{ trimSuffix ".yaml" .path.filename }}'
+        # Every object of the chart names its namespace; this only catches one that would not
+        namespace: argocd
       syncPolicy:
         automated:
           prune: true
