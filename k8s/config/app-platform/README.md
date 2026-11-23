@@ -1,9 +1,9 @@
-# App platform: teams, agents and Argo CD
+# App platform: teams and Argo CD
 
 A team is a GitLab group `apps/<team>`: its members, and one subgroup per application. Its apps
 are deployed by Argo CD from their `deploy` repositories (`charts/platform-team`, `charts/app`).
-Each team also gets a GitLab agent (`agentk`), connected but without CI access or rights in the
-app namespaces: it is kept for what only it can do. Why: [`SECURITY.md`](SECURITY.md).
+There is no GitLab agent for Kubernetes: no pipeline reaches the cluster, Argo CD pulls. Why:
+[`SECURITY.md`](SECURITY.md).
 
 To create and deploy an app, read [`GUIDE.md`](GUIDE.md). To change the platform: [`HANDBOOK.md`](HANDBOOK.md).
 
@@ -17,14 +17,12 @@ To create and deploy an app, read [`GUIDE.md`](GUIDE.md). To change the platform
 3. Kyverno admits the Pods if the image is the app's and its signature checks out against the
    public key in `kyverno/cosign-<team>-<app>`.
 
-The agent: `agentk` (namespace `gitlab-agent-<team>`) keeps a websocket open to KAS, in-cluster
-(`ws://gitlab-kas.gitlab.svc.cluster.local:8150`). Its config, written by Terraform, is empty.
-
 ## Isolation model: one Argo CD project per app
 
 GitLab's answer to multi-tenancy is one agent with *impersonation*, Premium. On Free a job using
-an agent has all of the agent's rights, hence one agent per team when the agents deployed. Argo CD
-projects are free and per app: destination namespace, allowed kinds, source repositories.
+an agent has all of the agent's rights, hence one agent per team when the agents deployed (until
+2026-11-10; the agents were removed on 2026-11-23). Argo CD projects are free and per app:
+destination namespace, allowed kinds, source repositories.
 
 | | Agent + impersonation | Agent per team | Argo CD project per app (this setup) |
 |---|---|---|---|
@@ -46,11 +44,10 @@ The full list, with the secrets and the attacks: [`SECURITY.md`](SECURITY.md).
 |---|---|
 | `../../../architecture/app-platform` | noodle diagrams, renders in `architecture/diagrams/app-platform-*`: see [Diagrams](#diagrams) |
 | `teams/<team>.yaml` | The team: display name and application namespaces. The only file to add per team |
-| `agent-values.yaml` | Values of the official `gitlab-agent` chart, shared by every team |
-| `../../../charts/platform-team` | Per team: agent namespace and token, app namespaces, network policies, Kyverno rules, Argo CD projects and Applications |
+| `../../../charts/platform-team` | Per team: app namespaces, network policies, Kyverno rules, Argo CD projects and Applications |
 | `../../../charts/app` | The platform chart of one component, with the schema of what a team may set |
 | `../../apps/app-platform-teams.yaml` | ApplicationSet `app-platform-teams`: one Application `team-<team>` per file in `teams/` |
-| `../../../terraform/gitlab.tf` | Per file in `teams/`: GitLab group, agent project, agent, config, token in Vault |
+| `../../../terraform/gitlab.tf` | Per file in `teams/`: GitLab group `apps/<team>` |
 | `../../../terraform/apps.tf` | Per app: repositories, deploy token, signing key and Vault roles, Keycloak client, DNS |
 
 ## Diagrams
@@ -68,18 +65,16 @@ Start with `overview`, then follow an app through `onboarding` and `release`.
 ## Add a team
 
 1. Add `teams/<team>.yaml` (copy `teams/demo.yaml`) in a PR.
-2. `terraform apply` on the PR: group `apps/<team>`, project `apps/platform/agent-<team>`, the
-   agent, its config and its token in `kvv2/gitlab-agents/<team>`, the team's deploy tokens.
-3. Merge: the ApplicationSet creates `team-<team>`: the agent, and per app its namespace,
-   Argo CD project and Applications.
+2. `terraform apply` on the PR: group `apps/<team>`, the team's deploy tokens, and per app its
+   projects, keys and roles.
+3. Merge: the ApplicationSet creates `team-<team>`: per app its namespace, Argo CD project and
+   Applications.
 4. Once each of the team's people has signed in, approve them (Admin > Users > Pending approval)
    and add them to `apps/<team>` only, never to `apps` or `apps/platform`.
 
 ## Check the isolation
 
 ```sh
-kubectl auth can-i create deployments -n demo-timetrack \
-  --as=system:serviceaccount:gitlab-agent-demo:gitlab-agent-demo   # no: the agent does not deploy
 kubectl -n argocd get appproject app-demo-timetrack -o jsonpath='{.spec.destinations}'
 kubectl -n demo-timetrack get policy app-guardrails -o jsonpath='{.spec.rules[*].name}'
 ```
@@ -90,5 +85,4 @@ kubectl -n demo-timetrack get policy app-guardrails -o jsonpath='{.spec.rules[*]
    root's own Access tokens), scope `api`, with an expiry date. Add it to the sops tfvars as
    `gitlab_admin_token_var`.
 2. `terraform init` (new provider `gitlabhq/gitlab`), `terraform plan`, `terraform apply`.
-3. Merge: Argo CD deploys the agent, the VaultSecret pulls its token, the agent connects.
-   Check in GitLab: `apps/platform/agent-demo` > Operate > Kubernetes clusters shows the agent connected.
+3. Merge: the ApplicationSet creates one Application `team-<team>` per team file.

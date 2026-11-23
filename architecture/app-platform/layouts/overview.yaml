@@ -16,12 +16,11 @@ elements:
   gh-platform-team: {x: 350, y: 220, w: 290, h: 96}
   gh-app-chart: {x: 350, y: 370, w: 290, h: 96}
 
-  z-gitlab-projects: {x: 340, y: 820, w: 680, h: 900}
-  g-gl-platform: {x: 20, y: 60, w: 640, h: 320}
-  gl-agent: {x: 20, y: 60, w: 290, h: 96}
-  gl-tpl-backend: {x: 20, y: 190, w: 290, h: 96}
-  gl-tpl-frontend: {x: 340, y: 190, w: 290, h: 96}
-  g-gl-timetrack: {x: 20, y: 440, w: 640, h: 400}
+  z-gitlab-projects: {x: 340, y: 820, w: 680, h: 760}
+  g-gl-platform: {x: 20, y: 60, w: 640, h: 190}
+  gl-tpl-backend: {x: 20, y: 60, w: 290, h: 96}
+  gl-tpl-frontend: {x: 340, y: 60, w: 290, h: 96}
+  g-gl-timetrack: {x: 20, y: 310, w: 640, h: 400}
   gl-backend: {x: 20, y: 60, w: 290, h: 96}
   gl-frontend: {x: 340, y: 60, w: 290, h: 96}
   gl-deploy: {x: 20, y: 250, w: 290, h: 96}
@@ -37,8 +36,6 @@ elements:
   app-db: {x: 30, y: 260, w: 300, h: 110}
   g-postgres-operator: {x: 40, y: 1100, w: 340, h: 200}
   postgres-operator: {x: 20, y: 70, w: 300, h: 96}
-  g-agent: {x: 440, y: 1100, w: 360, h: 200}
-  agentk: {x: 30, y: 70, w: 300, h: 96}
   g-secrets: {x: 880, y: 60, w: 720, h: 420}
   vso: {x: 30, y: 70, w: 300, h: 96}
   vault: {x: 380, y: 240, w: 300, h: 96}
@@ -56,12 +53,11 @@ edges:
   r-appset-teams: {from: applicationset.top@260px, to: gh-teams.top, waypoints: [[1430, 260], [505, 260]], label_at: [860, 260]}
   r-appset-platform-team: {from: applicationset.left@70px, to: gh-platform-team.right, waypoints: [[1035, 420], [1035, 488]]}
   r-controller-app-chart: {from: argocd-controller.left@30px, to: gh-app-chart.right, waypoints: [[1050, 550], [1050, 638]]}
-  r-controller-deploy: {from: argocd-controller.left@70px, to: gl-deploy.right@25px, waypoints: [[1065, 590], [1065, 1535]], label_at: [870, 1535]}
-  r-agentk-config: {from: agentk.left, to: gl-agent.right, waypoints: [[1520, 1438], [1520, 1290], [1080, 1290], [1080, 988]], label_at: [870, 988]}
+  r-controller-deploy: {from: argocd-controller.left@70px, to: gl-deploy.right@25px, waypoints: [[1065, 590], [1065, 1405]], label_at: [870, 1405]}
   r-backend-template: {from: gl-backend.top@260px, to: gl-tpl-backend.bottom@260px}
   r-frontend-template: {from: gl-frontend.top, to: gl-tpl-frontend.bottom}
   r-backend-deploy: {from: gl-backend.bottom@140px, to: gl-deploy.top@140px}
-  r-frontend-deploy: {from: gl-frontend.bottom, to: gl-deploy.right@75px, waypoints: [[845, 1585]]}
+  r-frontend-deploy: {from: gl-frontend.bottom, to: gl-deploy.right@75px, waypoints: [[845, 1455]]}
   r-controller-appproject: {from: argocd-controller.right, to: appproject.left}
   r-kyverno-guardrails: {from: kyverno.left, to: app-guardrails.right}
   r-guardrails-workloads: {from: app-guardrails.left, to: workloads.right}

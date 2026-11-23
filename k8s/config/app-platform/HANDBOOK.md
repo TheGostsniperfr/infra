@@ -24,7 +24,7 @@ Never test by editing what Argo CD manages: selfHeal reverts it.
 ## Add a team
 
 1. `teams/<team>.yaml`, copied from `teams/demo.yaml`, in a PR.
-2. `terraform apply` on the PR: GitLab group, agent, deploy tokens, share of `apps/platform/ci`.
+2. `terraform apply` on the PR: GitLab group, deploy tokens, share of `apps/platform/ci`.
 3. Merge: Application `team-<team>`.
 4. People sign in once, then an admin approves them (Admin > Users > Pending approval) and adds
    them to `apps/<team>`: Developer, or Maintainer for those who may ship.
@@ -127,7 +127,6 @@ again.
 |---|---|
 | `DEPLOY_REPO_TOKEN` | `terraform apply -replace=gitlab_project_access_token.app_deploy["<team>/<app>"]` |
 | Registry and repository deploy tokens | `-replace=` the `gitlab_group_deploy_token`; the VaultSecrets pick the new one up |
-| Agent token | `-replace=gitlab_cluster_agent_token.team["<team>"]` |
 | A person | Block them in GitLab (Admin > Users) and disable them in Keycloak |
 
 ## An app is compromised

@@ -26,7 +26,6 @@ elements:
   - {id: z-gitlab-projects, kind: region, color: orange, icon: gitlab, title: GITLAB PROJECTS, sub: gitlab.arffornia.com}
   - {id: g-gl-platform, kind: group, parent: z-gitlab-projects, color: amber, icon: gitlab, title: PLATFORM, sub: apps/platform}
   - {id: g-gl-timetrack, kind: group, parent: z-gitlab-projects, color: emerald, icon: gitlab, title: TIMETRACK, sub: apps/demo/timetrack}
-  - {id: g-agent, kind: group, parent: z-cluster, color: orange, icon: gitlab, title: GITLAB AGENT, sub: gitlab-agent-demo}
   # People and tools
   - {id: user, kind: frontend, parent: z-internet, shape: actor, icon: user, title: User, desc: browser}
   - {id: public-api, kind: external, parent: z-web, icon: globe, title: Public APIs, tech: "[any host]", desc: "Ports 80 and 443 only",
@@ -63,8 +62,6 @@ elements:
      desc: "k8s/config/app-platform/"}
   - {id: gh-diagrams, kind: tool, parent: z-github, icon: git, title: Diagrams, tech: "[noodle]",
      desc: "architecture/app-platform/"}
-  - {id: gl-agent, kind: database, parent: g-gl-platform, icon: gitlab, title: agent-demo, tech: "[agent project]",
-     desc: "Agent config, Terraform owns it"}
   - {id: gl-tpl-backend, kind: database, parent: g-gl-platform, icon: gitlab, title: quarkus-backend, tech: "[template]",
      desc: "templates/quarkus-backend"}
   - {id: gl-tpl-frontend, kind: database, parent: g-gl-platform, icon: gitlab, title: react-frontend, tech: "[template]",
@@ -75,8 +72,6 @@ elements:
      desc: "SPA served by nginx"}
   - {id: gl-deploy, kind: database, parent: g-gl-timetrack, icon: gitlab, title: deploy, tech: "[backend.yaml · frontend.yaml]",
      desc: "Released values, CI writes"}
-  - {id: agentk, kind: backend, parent: g-agent, icon: gitlab, title: agentk, tech: "[gitlab-agent 2.33]",
-     desc: "Connected, no rights in apps"}
 
   # CI
   - {id: ci-job, kind: backend, parent: g-ci, icon: k8s-pod, title: Release jobs, tech: "[build · sign · release]",
@@ -188,5 +183,4 @@ references:
   - {id: r-frontend-template, from: gl-frontend, to: gl-tpl-frontend, kind: forked from}
   - {id: r-backend-deploy, from: gl-backend, to: gl-deploy, kind: release}
   - {id: r-frontend-deploy, from: gl-frontend, to: gl-deploy, kind: release}
-  - {id: r-agentk-config, from: agentk, to: gl-agent, kind: config}
   - {id: r-operator-db, from: postgres-operator, to: app-db, kind: manages}

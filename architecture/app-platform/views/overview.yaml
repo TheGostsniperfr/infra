@@ -30,7 +30,6 @@ include:
   - app-guardrails
   - app-db
   - g-postgres-operator/**
-  - g-agent/**
   - g-secrets/**
   - g-admission/**
   - g-identity/**
@@ -53,7 +52,7 @@ cards:
       - "**Terraform**  …/infra/blob/main/terraform/apps.tf · gitlab.tf"
       - "**Diagrams**  …/infra/tree/main/architecture/diagrams"
       - "**App projects**  gitlab.arffornia.com/apps/demo/timetrack"
-      - "**Templates, agent**  gitlab.arffornia.com/apps/platform"
+      - "**Templates**  gitlab.arffornia.com/apps/platform"
       - "**Argo CD**  argocd.arffornia.com · applications team-demo, demo-timetrack-*"
       - "**The app**  timetrack-demo.arffornia.com"
   - id: card-background
