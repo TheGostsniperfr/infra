@@ -1,0 +1,8 @@
+displayName: Nico Demo
+
+apps:
+  demo-app-poc:
+    database: true
+    roles:
+      manager: [brian]
+      member: [brian]
