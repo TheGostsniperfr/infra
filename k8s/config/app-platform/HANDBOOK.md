@@ -32,7 +32,7 @@ Never test by editing what Argo CD manages: selfHeal reverts it.
 ## Add an app
 
 [`GUIDE.md`, Create an app](GUIDE.md#create-an-app): an entry under `apps`, `terraform apply`,
-merge, a push to `main` of each repository.
+merge. The apply starts the first pipeline of each repository; the app is online once they end.
 
 ## Remove an app or a team
 
