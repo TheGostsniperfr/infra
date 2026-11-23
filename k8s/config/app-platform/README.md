@@ -44,7 +44,7 @@ The full list, with the secrets and the attacks: [`SECURITY.md`](SECURITY.md).
 
 | Path | What |
 |---|---|
-| `../../../architecture/app-platform` | noodle diagrams: views `delivery` and `isolation`, renders in `architecture/diagrams/app-platform-*` |
+| `../../../architecture/app-platform` | noodle diagrams, renders in `architecture/diagrams/app-platform-*`: see [Diagrams](#diagrams) |
 | `teams/<team>.yaml` | The team: display name and application namespaces. The only file to add per team |
 | `agent-values.yaml` | Values of the official `gitlab-agent` chart, shared by every team |
 | `../../../charts/platform-team` | Per team: agent namespace and token, app namespaces, network policies, Kyverno rules, Argo CD projects and Applications |
@@ -52,6 +52,18 @@ The full list, with the secrets and the attacks: [`SECURITY.md`](SECURITY.md).
 | `../../apps/app-platform-teams.yaml` | ApplicationSet `app-platform-teams`: one Application `team-<team>` per file in `teams/` |
 | `../../../terraform/gitlab.tf` | Per file in `teams/`: GitLab group, agent project, agent, config, token in Vault |
 | `../../../terraform/apps.tf` | Per app: repositories, deploy token, signing key and Vault roles, Keycloak client, DNS |
+
+## Diagrams
+
+Start with `overview`, then follow an app through `onboarding` and `release`.
+
+| View | Question |
+|---|---|
+| [overview](../../../architecture/diagrams/app-platform-overview.light.png) | Which repository, GitLab project and namespace hold each piece, and what reads what |
+| [onboarding](../../../architecture/diagrams/app-platform-onboarding.light.png) | What happens between a ticket and an app ready for its first push |
+| [release](../../../architecture/diagrams/app-platform-release.light.png) | What happens between a merge to main and the new pod, and who checks what |
+| [delivery](../../../architecture/diagrams/app-platform-delivery.light.png) | The same release as a topology: what can refuse it on the way |
+| [isolation](../../../architecture/diagrams/app-platform-isolation.light.png) | What a pod of an app can reach |
 
 ## Add a team
 

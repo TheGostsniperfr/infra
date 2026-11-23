@@ -1,0 +1,42 @@
+apiVersion: noodle/v1alpha1
+kind: View
+type: sequence
+title: Arffornia · App platform · Releasing a commit
+subtitle: What happens between a merge to main and the new pod serving, and who checks what.
+meta:
+  - "Scope: the backend of demo/timetrack; the frontend is the same. Branch and MR pipelines stop after the test stage"
+  - "Verified live 2026-11-10 and 2026-11-23 (admission refusals). Argo CD polls Git every 30 s"
+  - "JWT: a signed JSON token; whoever has the issuer's public key can check it was not forged"
+  - "Bound claims: the values a Vault role requires in the token before it gives anything"
+  - "cosign: the Sigstore tool that signs an image digest and stores the signature in the registry"
+  - "Rollback: re-run an older release job, or revert its commit in the deploy repo"
+  - "v0.1 · source: .gitlab-ci.yml of apps/platform/templates/*, charts/app, charts/platform-team/templates/{argocd,guardrails}.yaml"
+participants: [developer, gitlab-git, ci-job, vault, registry, argocd-repo, infra-repo, argocd-controller, kube-apiserver, kyverno, kubelet, vso]
+steps:
+  - {id: merge, from: developer, to: gitlab-git, over: c-developer-gitlab, text: "merge the MR to main"}
+  - {note: gitlab-git, text: "main is protected: only a Maintainer<br>can push or merge to it"}
+  - {id: job, from: gitlab-git, to: ci-job, over: c-ci-job-gitlab, text: "the runner starts each job in its own pod ◀"}
+  - {note: ci-job, text: "test: unit tests, then deploy-config renders<br>charts/app with deploy.yaml against its schema"}
+  - {id: push, from: ci-job, to: registry, over: c-ci-job-registry, text: "build: Kaniko pushes the image"}
+  - {note: registry, text: "Digest: sha256 of the image manifest.<br>Unlike a tag, it can never point elsewhere"}
+  - {id: login, from: ci-job, to: vault, over: c-ci-job-vault, text: "sign: log in with the job's id_token"}
+  - {note: ci-job, text: "id_token: a JWT GitLab signs for this job only,<br>stating project path, ref and ref_protected"}
+  - {note: vault, text: "Vault checks GitLab's signature, aud, and the bound claims<br>namespace_path=apps/demo/timetrack, ref=main, ref_protected"}
+  - {reply: login, text: "Vault token, 5 min"}
+  - {id: sign, from: ci-job, to: vault, over: c-ci-job-vault, text: "transit: sign the digest"}
+  - {reply: sign, text: "signature; the key stays in Vault"}
+  - {id: sig, from: ci-job, to: registry, over: c-ci-job-registry, text: "cosign pushes the .sig next to the image"}
+  - {id: release, from: ci-job, to: gitlab-git, over: c-ci-job-gitlab, text: "release: write deploy/backend.yaml with the digest"}
+  - {note: gitlab-git, text: "The deploy repo holds the released values.<br>Its history is the release history"}
+  - {id: fetch, from: argocd-repo, to: gitlab-git, over: c-argocd-repo-gitlab, text: "fetch the deploy repo"}
+  - {id: chart, from: argocd-repo, to: infra-repo, over: c-argocd-repo-infra, text: "fetch charts/app"}
+  - {note: argocd-repo, text: "Renders charts/app with the team's file; platform.*<br>values (host, image path, team) override it"}
+  - {id: apply, from: argocd-controller, to: kube-apiserver, over: c-argocd-controller-apiserver, text: "apply the Deployment, Service, HTTPRoute, VaultSecret"}
+  - {note: argocd-controller, text: "Refused here if a kind or namespace<br>falls outside the AppProject"}
+  - {id: admit, from: kube-apiserver, to: kyverno, over: c-apiserver-kyverno, text: "admission review"}
+  - {id: verify, from: kyverno, to: registry, over: c-kyverno-registry, text: "fetch the .sig of the digest"}
+  - {note: kyverno, text: "Checks the signature with cosign-demo-timetrack,<br>then image path, Pod Security, hostnames"}
+  - {reply: admit, text: "allowed, or refused with the rule's name"}
+  - {id: pull, from: kubelet, to: registry, over: c-kubelet-registry, text: "pull the image by digest"}
+  - {id: secrets, from: vso, to: vault, over: c-vso-vault, text: "read kvv2/apps/demo/timetrack"}
+  - {note: kubelet, text: "The new pod gets ready, then<br>the old one stops"}

@@ -1,0 +1,36 @@
+apiVersion: noodle/v1alpha1
+kind: View
+type: sequence
+title: Arffornia · App platform · Onboarding an app
+subtitle: What happens between a ticket and an app that is ready for its first push.
+meta:
+  - "Scope: one new app in an existing team (demo/timetrack). A new team adds one file, teams/<team>.yaml, and the same steps"
+  - "Next: the first push to main of backend and frontend, see view release"
+  - "Team file: k8s/config/app-platform/teams/<team>.yaml, one entry per app"
+  - "Fork: a copy of a template project; it never follows later changes of the template"
+  - "AppProject: the Argo CD fence of one app: source repos, destination namespace, allowed kinds"
+  - "VSO: Vault Secrets Operator, reads Vault with the namespace's Kubernetes role"
+  - "v0.1 · source: k8s/config/app-platform/teams/, terraform/apps.tf, terraform/gitlab.tf, charts/platform-team, k8s/apps/app-platform-teams.yaml"
+participants: [team-lead, platform-admin, infra-repo, terraform, gitlab-git, vault, keycloak, cloudflare-dns, applicationset, kube-apiserver, postgres-operator, vso]
+steps:
+  - {id: ticket, from: team-lead, to: platform-admin, over: c-teamlead-admin, text: "ticket: app name, database or not, managers and members"}
+  - {id: pr, from: platform-admin, to: infra-repo, over: c-admin-infra, text: "PR: an entry under apps: in teams/demo.yaml"}
+  - {note: infra-repo, text: "teams/<team>.yaml is the only input:<br>Terraform and Argo CD both read it"}
+  - {id: apply, from: platform-admin, to: terraform, over: c-admin-terraform, text: "terraform apply, on the admin's machine"}
+  - {note: terraform, text: "The state backend credentials live only<br>there: CI never applies Terraform"}
+  - {id: gl, from: terraform, to: gitlab-git, over: c-terraform-gitlab, text: "group apps/demo/timetrack, forks, deploy repo, tokens"}
+  - {note: gitlab-git, text: "Forks of the templates: the team owns its code.<br>DEPLOY_REPO_TOKEN: protected, main pipelines only"}
+  - {id: vt, from: terraform, to: vault, over: c-terraform-vault, text: "transit key, JWT role sign-demo-timetrack"}
+  - {note: vault, text: "Transit key: Vault signs with it, nobody can export it.<br>JWT role: accepts only an id_token of main of this app"}
+  - {id: kc, from: terraform, to: keycloak, over: c-terraform-keycloak, text: "client demo-timetrack, roles, groups"}
+  - {note: keycloak, text: "Public client with PKCE:<br>no client secret to leak"}
+  - {id: dns, from: terraform, to: cloudflare-dns, over: c-terraform-cloudflare, text: "CNAME timetrack-demo"}
+  - {id: merge, from: platform-admin, to: infra-repo, over: c-admin-infra, text: "merge the PR to main"}
+  - {id: read, from: applicationset, to: infra-repo, over: c-appset-infra, text: "read teams/*.yaml"}
+  - {note: applicationset, text: "Git generator: one Application team-<team><br>per file, rendering charts/platform-team"}
+  - {id: create, from: applicationset, to: kube-apiserver, over: c-appset-apiserver, text: "Application team-demo, which Argo CD applies: namespace, quota, policies, postgresql, AppProject"}
+  - {note: kube-apiserver, text: "AppProject app-demo-timetrack: Argo CD may only create<br>4 kinds, in namespace demo-timetrack"}
+  - {id: db, from: postgres-operator, to: kube-apiserver, over: c-operator-apiserver, text: "watch postgresql, create the database and its Secret"}
+  - {id: keys, from: vso, to: vault, over: c-vso-vault, text: "copy the public key, the registry pull token"}
+  - {note: vso, text: "VaultSecret: a CR that VSO turns into a Secret,<br>with the namespace's own Vault role"}
+  - {id: approve, from: platform-admin, to: gitlab-git, over: c-admin-gitlab, text: "approve the team's accounts, add them to apps/demo"}

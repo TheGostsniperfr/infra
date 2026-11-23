@@ -11,12 +11,16 @@ meta:
 include:
   - z-internet
   - developer
-  - z-workstation/**
+  - z-workstation
+  - terraform
   - z-cluster
   - g-ci/**
   - g-gitlab/**
   - g-secrets/**
-  - g-argocd/**
+  - g-argocd
+  - argocd-repo
+  - argocd-controller
+  - appproject
   - g-control-plane/**
   - g-admission/**
   - g-app
@@ -36,6 +40,7 @@ labels:
 background:
   - c-terraform-vault
   - c-vso-vault
+  - c-terraform-gitlab
 cards:
   - id: card-steps
     title: "Request path · data plane: a release"
@@ -55,6 +60,7 @@ cards:
     lines:
       - "[A] Terraform creates the app's transit key, its JWT role and the public key in KV"
       - "[B] VSO copies the public key into kyverno/cosign-<team>-<app>"
+      - "[C] Terraform creates the app's group, forks, deploy repo, deploy token and CI variables"
   - id: card-refused
     title: Refused on the way
     color: rose

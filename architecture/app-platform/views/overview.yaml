@@ -1,0 +1,71 @@
+apiVersion: noodle/v1alpha1
+kind: View
+type: topology
+title: Arffornia · App platform · Where things live
+subtitle: Which repository, GitLab project and namespace hold each piece of the platform and of an app, and what reads what.
+meta:
+  - "Scope: the platform and one app (demo/timetrack); every app gets the same projects and namespace. Verified live 2026-11-23 (GitLab projects, Argo CD applications)"
+  - "Not drawn: traffic of a release (view delivery), of a request (view isolation), the order of onboarding and release (views onboarding, release)"
+  - "v0.1 · source: k8s/config/app-platform/, charts/, terraform/apps.tf, terraform/gitlab.tf, GitLab apps/"
+include:
+  - z-workstation
+  - platform-admin
+  - terraform
+  - z-saas/**
+  - z-github
+  - gh-teams
+  - gh-appset
+  - gh-platform-team
+  - gh-app-chart
+  - gh-docs
+  - gh-diagrams
+  - z-gitlab-projects/**
+  - z-cluster
+  - g-argocd
+  - applicationset
+  - argocd-controller
+  - appproject
+  - g-app
+  - workloads
+  - app-guardrails
+  - app-db
+  - g-postgres-operator/**
+  - g-agent/**
+  - g-secrets/**
+  - g-admission/**
+  - g-identity/**
+labels:
+  r-terraform-teams: ""
+  c-terraform-cloudflare: ""
+background:
+  - c-terraform-vault
+  - c-terraform-keycloak
+  - c-terraform-cloudflare
+  - c-vso-vault
+cards:
+  - id: card-where
+    title: Where to look
+    color: emerald
+    lines:
+      - "**Platform docs**  github.com/TheGostsniperfr/infra/tree/main/k8s/config/app-platform"
+      - "**Team files**  …/infra/tree/main/k8s/config/app-platform/teams"
+      - "**Charts**  …/infra/tree/main/charts/app · …/charts/platform-team"
+      - "**Terraform**  …/infra/blob/main/terraform/apps.tf · gitlab.tf"
+      - "**Diagrams**  …/infra/tree/main/architecture/diagrams"
+      - "**App projects**  gitlab.arffornia.com/apps/demo/timetrack"
+      - "**Templates, agent**  gitlab.arffornia.com/apps/platform"
+      - "**Argo CD**  argocd.arffornia.com · applications team-demo, demo-timetrack-*"
+      - "**The app**  timetrack-demo.arffornia.com"
+  - id: card-background
+    title: Background · control plane
+    color: indigo
+    lines:
+      - "[A] Terraform creates the app's transit key and Vault roles"
+      - "[B] Terraform creates the app's Keycloak client, roles and groups"
+      - "[C] Terraform creates the CNAME <app>-<team>"
+      - "[D] VSO copies the public key and the registry token into the namespaces"
+      - "Terraform also creates the GitLab groups, forks, deploy repo and tokens (view onboarding)"
+  - id: card-legend
+    title: Legend
+    color: slate
+    legend: true
