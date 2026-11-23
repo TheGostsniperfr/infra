@@ -1,7 +1,8 @@
 # App platform: security and isolation
 
 What protects the cluster and the teams from each other, and what does not. Written to be
-presented: each control names the file that enforces it. How to use the platform: [`GUIDE.md`](GUIDE.md).
+presented: each control names the file that enforces it. How to use the platform:
+[`GUIDE.md`](GUIDE.md). How to change it without opening a hole: [`HANDBOOK.md`](HANDBOOK.md).
 
 ## The model
 
@@ -25,6 +26,12 @@ presented: each control names the file that enforces it. How to use the platform
 So to run code in production, someone must get it merged to `main`. Pushing an image, writing to
 the `deploy` repository, or stealing a GitLab token is not enough.
 
+Diagrams, from `architecture/app-platform`:
+[delivery](../../../architecture/diagrams/app-platform-delivery.light.png), what can refuse a
+release on its way;
+[isolation](../../../architecture/diagrams/app-platform-isolation.light.png), what a pod can
+reach. A `.dark` variant and the editable `.drawio` sit next to each.
+
 ## Who can do what
 
 | Actor | Can | Cannot |
@@ -43,6 +50,7 @@ the `deploy` repository, or stealing a GitLab token is not enough.
 | GitLab | `main` protected: Maintainers only push and merge | GitLab default branch protection |
 | GitLab | Groups and projects private; teams are members of `apps/<team>` only | `terraform/gitlab.tf` |
 | GitLab | Agents have no CI access: no pipeline can reach the cluster | `terraform/gitlab.tf` |
+| GitLab | A Keycloak user's first sign-in creates a blocked account: an admin approves it before it can run a job. Users cannot create groups | `k8s/config/gitlab/values.yaml` (`blockAutoCreatedUsers`), `terraform/gitlab.tf` (`can_create_group`) |
 | CI | Builds without privileges (Kaniko) | `.gitlab-ci.yml` of the templates |
 | CI | Jobs in `gitlab-ci-jobs`: nothing reaches them, they reach DNS and the internet only | `k8s/config/gitlab/ci-jobs-namespace.yaml` |
 | Vault | Signing key never leaves Vault; role bound to `namespace_path`, `ref=main`, `ref_protected=true`; token valid 5 minutes | `terraform/apps.tf` |
@@ -105,12 +113,32 @@ None is stored in a repository, and none is readable by a team member.
 | Runs code in an app | Reach Vault, the LAN, other teams, other databases | Network policies |
 | Runs code in a CI job | Reach Gitaly, Redis, the LAN | Jobs namespace network policy |
 
+## Register of exceptions
+
+The model denies by default. Each line below allows something more, on purpose; each is where an
+unexpected case would hide, so each says what contains it. A change that adds one follows
+[`HANDBOOK.md`](HANDBOOK.md#the-rule-behind-every-recipe) and adds a line here.
+
+| Exception | Why | Contained by |
+|---|---|---|
+| The database image runs as root, exempt from 4 `restricted` controls | Spilo needs them | Only that pinned image is exempt (rule `pod-security-restricted`) |
+| The database's service account may create Services, Endpoints, ConfigMaps and patch Pods | Patroni elects its leader through the API | Reserved to the database image (rule `database-identity`) |
+| Pods labelled `application: spilo` reach the Kubernetes API | Same | Same rule; the label opens nothing else |
+| Apps reach the internet on 80 and 443 | Apps call external APIs | Private ranges excluded: no LAN, no cluster service. Exfiltration stays possible |
+| Apps of the same team reach each other | Asked for: apps of a team work together | Not their databases; never another team |
+| One Vault Secrets Operator identity for every namespace | Operator design | Each VaultSecret names a role; Kyverno pins the app's own (rule `vault-role`) |
+| Developers can write the Kaniko layer cache that `main` builds reuse | Build time | Only their own app; the registry logs who pushed. Accepted risk |
+| A Maintainer alone merges to `main`, so ships | Free tier: no mandatory approvals | Git history; Ultimate would require a review |
+| Team Applications run in Argo CD's `default` project | They create namespaces and the apps' projects | They render only charts of this repo, reviewed by PR |
+| Signing with a key, not keyless | Sigstore's public instance does not accept a self-hosted GitLab | Key never exported; only `main` of the app may use it |
+| GitLab agents stay connected | Kept for Workspaces, scanning, dashboard | No CI access, no rights outside their own namespace |
+| Kyverno does not re-check existing objects (`background: false`) | Its reports controller cannot read HTTPRoutes and VaultSecrets | Every create and update is checked; nothing is created otherwise |
+
 ## What remains
 
 | Risk | Why | Fix |
 |---|---|---|
 | One Maintainer alone ships to production | No mandatory approvals on Free | Ultimate: approval rules, Code Owners, protected environments |
-| Any Keycloak user gets a GitLab account and runs jobs on the shared runner | OmniAuth auto-creates users | `blockAutoCreatedUsers`, `defaultCanCreateGroup: false` (separate PR) |
 | A `main` pipeline signs whatever the code builds | That is the point of trusting `main` | Reviews; Ultimate pipeline execution policies to force jobs the team cannot remove |
 | A Developer can push a crafted layer to the build cache, which the next `main` build reuses and signs | The cache is in the project's registry, where Developers may push. Kept: builds without it are too slow. It only reaches that Developer's own app, and the registry's logs show who pushed | A cache only `main` pipelines write, in a registry Developers cannot push to |
 | Apps reach the whole internet on 443 | Exfiltration is possible | Cilium FQDN policies: each app declares its domains |

@@ -1,0 +1,43 @@
+apiVersion: noodle/v1alpha1
+kind: Layout
+canvas: {width: 2580, height: 2060}
+elements:
+  z-internet: {x: 40, y: 260, w: 220, h: 240}
+  user: {x: 82, y: 122, w: 56, h: 56}
+  z-web: {x: 2280, y: 220, w: 260, h: 200}
+  public-api: {x: 20, y: 70, w: 220, h: 100}
+  z-cluster: {x: 320, y: 160, w: 1900, h: 1160}
+  g-gateway: {x: 40, y: 120, w: 300, h: 200}
+  envoy: {x: 30, y: 70, w: 240, h: 100}
+  g-app: {x: 420, y: 60, w: 620, h: 760}
+  frontend: {x: 40, y: 70, w: 240, h: 100}
+  backend: {x: 40, y: 250, w: 240, h: 110}
+  app-db: {x: 40, y: 430, w: 240, h: 110}
+  netpols: {x: 340, y: 430, w: 240, h: 110}
+  g-team-app: {x: 1300, y: 60, w: 320, h: 300}
+  appb-backend: {x: 40, y: 60, w: 240, h: 90}
+  appb-db: {x: 40, y: 180, w: 240, h: 100}
+  g-other-team: {x: 1300, y: 420, w: 320, h: 170}
+  other-app: {x: 40, y: 60, w: 240, h: 90}
+  g-secrets: {x: 1300, y: 650, w: 320, h: 180}
+  vault: {x: 40, y: 60, w: 240, h: 100}
+  g-control-plane: {x: 1300, y: 890, w: 320, h: 230}
+  kube-apiserver: {x: 40, y: 60, w: 240, h: 160}
+edges:
+  c-user-envoy: {from: user.right, to: envoy.left@60px}
+  c-envoy-frontend: {from: envoy.right@10px, to: frontend.left@70px}
+  c-envoy-backend: {from: envoy.right@80px, to: backend.left@70px, waypoints: [[700, 430], [700, 540]]}
+  c-backend-db: {from: backend.bottom, to: app-db.top}
+  c-db-apiserver: {from: app-db.bottom@60px, to: kube-apiserver.left@130px, waypoints: [[840, 1240]]}
+  c-backend-internet: {from: backend.right@10px, to: public-api.left@50px, waypoints: [[1420, 480], [1420, 190], [2260, 190], [2260, 340]], label_at: [1900, 190]}
+  c-backend-appb: {from: backend.right@25px, to: appb-backend.left@65px, waypoints: [[1440, 495], [1440, 345]], label_at: [1550, 345]}
+  c-backend-appb-db: {from: backend.right@40px, to: appb-db.left@70px, waypoints: [[1460, 510], [1460, 470]], label_at: [1560, 470]}
+  c-backend-other: {from: backend.right@55px, to: other-app.left@65px, waypoints: [[1480, 525], [1480, 705]], label_at: [1570, 705]}
+  c-backend-vault: {from: backend.right@70px, to: vault.left@70px, waypoints: [[1500, 540], [1500, 940]], label_at: [1580, 940]}
+  c-backend-apiserver: {from: backend.right@85px, to: kube-apiserver.left@75px, waypoints: [[1520, 555], [1520, 1185]], label_at: [1590, 1185]}
+cards:
+  card-steps: {x: 40, y: 1360, w: 1240, h: 170}
+  card-background: {x: 40, y: 1550, w: 1240, h: 110}
+  card-flows: {x: 1310, y: 1360, w: 1230, h: 150}
+  card-contract: {x: 1310, y: 1530, w: 1230, h: 170}
+  card-legend: {x: 40, y: 1680, w: 1240, h: 340}

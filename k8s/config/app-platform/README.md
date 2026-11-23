@@ -5,7 +5,7 @@ are deployed by Argo CD from their `deploy` repositories (`charts/platform-team`
 Each team also gets a GitLab agent (`agentk`), connected but without CI access or rights in the
 app namespaces: it is kept for what only it can do. Why: [`SECURITY.md`](SECURITY.md).
 
-To create and deploy an app, read [`GUIDE.md`](GUIDE.md).
+To create and deploy an app, read [`GUIDE.md`](GUIDE.md). To change the platform: [`HANDBOOK.md`](HANDBOOK.md).
 
 ## How a deployment reaches the cluster
 
@@ -44,6 +44,7 @@ The full list, with the secrets and the attacks: [`SECURITY.md`](SECURITY.md).
 
 | Path | What |
 |---|---|
+| `../../../architecture/app-platform` | noodle diagrams: views `delivery` and `isolation`, renders in `architecture/diagrams/app-platform-*` |
 | `teams/<team>.yaml` | The team: display name and application namespaces. The only file to add per team |
 | `agent-values.yaml` | Values of the official `gitlab-agent` chart, shared by every team |
 | `../../../charts/platform-team` | Per team: agent namespace and token, app namespaces, network policies, Kyverno rules, Argo CD projects and Applications |
