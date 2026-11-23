@@ -50,6 +50,7 @@ reach. A `.dark` variant and the editable `.drawio` sit next to each.
 | GitLab | `main` protected: Maintainers only push and merge | GitLab default branch protection |
 | GitLab | Groups and projects private; teams are members of `apps/<team>` only | `terraform/gitlab.tf` |
 | GitLab | Agents have no CI access: no pipeline can reach the cluster | `terraform/gitlab.tf` |
+| GitLab | A Keycloak user's first sign-in creates a blocked account: an admin approves it before it can run a job. Users cannot create groups | `k8s/config/gitlab/values.yaml` (`blockAutoCreatedUsers`), `terraform/gitlab.tf` (`can_create_group`) |
 | CI | Builds without privileges (Kaniko) | `.gitlab-ci.yml` of the templates |
 | CI | Jobs in `gitlab-ci-jobs`: nothing reaches them, they reach DNS and the internet only | `k8s/config/gitlab/ci-jobs-namespace.yaml` |
 | Vault | Signing key never leaves Vault; role bound to `namespace_path`, `ref=main`, `ref_protected=true`; token valid 5 minutes | `terraform/apps.tf` |
@@ -138,7 +139,6 @@ unexpected case would hide, so each says what contains it. A change that adds on
 | Risk | Why | Fix |
 |---|---|---|
 | One Maintainer alone ships to production | No mandatory approvals on Free | Ultimate: approval rules, Code Owners, protected environments |
-| Any Keycloak user gets a GitLab account and runs jobs on the shared runner | OmniAuth auto-creates users | `blockAutoCreatedUsers`, `defaultCanCreateGroup: false` (separate PR) |
 | A `main` pipeline signs whatever the code builds | That is the point of trusting `main` | Reviews; Ultimate pipeline execution policies to force jobs the team cannot remove |
 | A Developer can push a crafted layer to the build cache, which the next `main` build reuses and signs | The cache is in the project's registry, where Developers may push. Kept: builds without it are too slow. It only reaches that Developer's own app, and the registry's logs show who pushed | A cache only `main` pipelines write, in a registry Developers cannot push to |
 | Apps reach the whole internet on 443 | Exfiltration is possible | Cilium FQDN policies: each app declares its domains |
