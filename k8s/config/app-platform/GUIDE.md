@@ -67,7 +67,8 @@ What that does, system by system, as it would be done by hand:
    - In `kyverno`: the app's public key. In `argocd`: the team's read token for the deploy repositories.
 6. **First deployment**: `terraform apply` starts one pipeline on `main` of each repository
    (`terraform_data.app_first_pipeline`). The app is online once both have released and the
-   team file is merged.
+   team file is merged. `terraform output apps` gives its URL, its GitLab group and its Argo CD
+   project; the URL is also the description of the app's GitLab group.
 
 Once per team, not per app: group `apps/<team>`, its registry and repository deploy tokens. See
 `README.md`.

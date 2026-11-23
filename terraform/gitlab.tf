@@ -52,4 +52,14 @@ resource "gitlab_group" "team" {
   name             = each.value.displayName
   path             = each.key
   visibility_level = "private"
+  # Removing a team file removes its group for good, not "pending deletion" for a week
+  permanently_remove_on_delete = true
+
+  lifecycle {
+    # GitLab refuses two sibling groups with the same name, with a 400 in the middle of the apply
+    precondition {
+      condition     = length(distinct([for t in local.gitlab_teams : t.displayName])) == length(local.gitlab_teams)
+      error_message = "Two files in k8s/config/app-platform/teams/ have the same displayName: each team needs its own."
+    }
+  }
 }
