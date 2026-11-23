@@ -9,11 +9,12 @@ metadata:
   name: app-platform-teams
   namespace: argocd
 spec:
-  # A team's Application holds its namespaces and databases: removing or renaming it must not
-  # delete them. No resources finalizer either, which would delete them anyway.
+  # Removing a team file removes everything the team had in the cluster: its Application deletes,
+  # through its finalizer, the app namespaces (databases included) and the apps' Applications.
+  # Nothing is left to clean by hand. Renaming a team file is a removal plus a creation.
   # https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Application-Deletion/
   syncPolicy:
-    preserveResourcesOnDeletion: true
+    preserveResourcesOnDeletion: false
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   generators:
@@ -25,6 +26,8 @@ spec:
   template:
     metadata:
       name: 'team-{{ trimSuffix ".yaml" .path.filename }}'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
       annotations:
         argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
     spec:

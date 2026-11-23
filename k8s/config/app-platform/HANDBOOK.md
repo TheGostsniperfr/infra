@@ -33,13 +33,21 @@ Never test by editing what Argo CD manages: selfHeal reverts it.
 
 [`GUIDE.md`, Create an app](GUIDE.md#create-an-app): an entry under `apps`, `terraform apply`,
 merge. The apply starts the first pipeline of each repository; the app is online once they end.
+`terraform output apps` gives the URL and the links to answer the ticket with.
 
 ## Remove an app or a team
 
-Remove the entry or the file, `terraform apply`, merge. The app's namespace and Argo CD project
-are pruned with the team's Application; the database goes with its namespace. Removing a whole
-team file keeps its resources (`preserveResourcesOnDeletion` on the ApplicationSet): delete its
-namespaces by hand once nothing needs them.
+Remove the entry or the file, merge, then `terraform apply`. Nothing is left to clean by hand:
+
+- Kubernetes: the team's Application prunes the app's namespace (database and volumes included)
+  and its Argo CD project and Applications. A removed team file deletes the team's Application,
+  and its finalizer deletes all of that for every app of the team.
+- GitLab: the groups and projects are deleted for good (`permanently_remove_on_delete`,
+  `permanently_delete_on_destroy`), their registry repositories with them.
+- Vault (transit key, `deletion_allowed`), Keycloak and Cloudflare: destroyed by the apply.
+
+Gap: the registry deletes the repositories, but their blobs stay in the `gitlab-registry` bucket
+until a garbage collection, which needs the registry's metadata database (not enabled yet).
 
 ## Offer a new service to the apps, Redis for example
 

@@ -79,7 +79,10 @@ resource "gitlab_group" "app" {
   parent_id        = gitlab_group.team[each.value.team].id
   name             = each.value.app
   path             = each.value.app
+  description      = "https://${each.value.host} · Argo CD project app-${each.value.namespace}"
   visibility_level = "private"
+  # Removing an app removes its group for good, not "pending deletion" for a week with its name taken
+  permanently_remove_on_delete = true
 }
 
 resource "gitlab_project" "app_component" {
@@ -92,6 +95,21 @@ resource "gitlab_project" "app_component" {
   forked_from_project_id = gitlab_project.template[each.value.component].id
   # Merge requests of the app target the app itself, never the template
   mr_default_target_self = true
+  # Removing an app deletes its projects for good, registry repositories included
+  permanently_delete_on_destroy = true
+
+  # Old images and their signatures go away on their own; the newest 25 tags of each repository
+  # stay, enough to roll back several releases. The layer cache (<component>/cache) follows the same
+  # policy. This removes tags; the blobs stay in the bucket until the registry runs a garbage
+  # collection, which needs its metadata database (not enabled yet, k8s/config/gitlab).
+  # https://docs.gitlab.com/user/packages/container_registry/reduce_container_registry_storage/#cleanup-policy
+  container_expiration_policy {
+    enabled           = true
+    cadence           = "1d"
+    keep_n            = 25
+    older_than        = "30d"
+    name_regex_delete = ".*"
+  }
 
   lifecycle {
     # Created once from the template; the team owns the code afterwards
@@ -162,13 +180,14 @@ resource "vault_kv_secret_v2" "team_registry" {
 resource "gitlab_project" "app_deploy" {
   for_each = local.gitlab_apps
 
-  namespace_id           = gitlab_group.app[each.key].id
-  name                   = "deploy"
-  path                   = "deploy"
-  description            = "What Argo CD deploys: <component>.yaml per component, written by its pipeline on main. Revert a commit to roll back."
-  visibility_level       = "private"
-  initialize_with_readme = true
-  builds_access_level    = "disabled"
+  namespace_id                  = gitlab_group.app[each.key].id
+  name                          = "deploy"
+  path                          = "deploy"
+  description                   = "What Argo CD deploys: <component>.yaml per component, written by its pipeline on main. Revert a commit to roll back."
+  visibility_level              = "private"
+  initialize_with_readme        = true
+  builds_access_level           = "disabled"
+  permanently_delete_on_destroy = true
 }
 
 # Lets the release job push to `deploy`. Not the trust boundary: an image runs only if the app's
@@ -241,6 +260,8 @@ resource "vault_transit_secret_backend_key" "app_signing" {
   name       = "apps-${each.value.namespace}"
   type       = "ecdsa-p256"
   exportable = false
+  # Vault refuses to delete a transit key unless allowed: without this, removing an app fails
+  deletion_allowed = true
 }
 
 resource "vault_kv_secret_v2" "app_signing_public_key" {
@@ -411,4 +432,18 @@ resource "cloudflare_dns_record" "app" {
   content = "origin.${var.domain_name}"
   ttl     = 1
   proxied = true
+}
+
+# --- What to answer the ticket with ---
+# `terraform output apps` after the apply: per app, its URL and where everything lives.
+output "apps" {
+  description = "Per app (<team>/<app>): site URL, GitLab group, namespace and Argo CD project."
+  value = {
+    for key, a in local.gitlab_apps : key => {
+      url       = "https://${a.host}"
+      gitlab    = "https://gitlab.${var.base_domain}/apps/${a.team}/${a.app}"
+      namespace = a.namespace
+      argocd    = "https://argocd.${var.base_domain}/applications?proj=app-${a.namespace}"
+    }
+  }
 }
