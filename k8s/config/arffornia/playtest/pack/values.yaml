@@ -1,19 +1,22 @@
 # The test slot, over ../../server/base/values.yaml. Lists replace the base ones entirely.
 
-# A test server holds one or two players on a fresh world: a 6 GiB heap is enough (a client runs
-# the same pack in 5 GiB). The namespace quota stays the hard cap.
+# A test server holds one or two players on a fresh world. A 6 GiB heap was OOMKilled under 9 and
+# 11 GiB limits on 2026-11-21: 8 GiB heap under 14 GiB while the off-heap use is measured (NMT).
+# The namespace quota (17 GiB) stays the hard cap.
+# The request matches what the server really uses (about 9 GiB): with 4 GiB the scheduler put it on
+# worker-01, already at 80 % with the prod server, and the node OOM killer stopped it at 5.5 GiB.
 resources:
   requests:
-    memory: 4Gi
+    memory: 9Gi
     cpu: "1"
   limits:
-    memory: 9Gi
+    memory: 14Gi
     cpu: "4"
 
 # The config-updater reads the pack from pack-files (this namespace), not raw GitHub.
 initContainers:
   - name: config-updater
-    image: ghcr.io/arffornia/config-updater:updater-0.0.7@sha256:4a76a42ea5b7ce3eb63344eef784510c225ffc10695746846bf9f69ec00078d8
+    image: ghcr.io/arffornia/config-updater:updater-0.0.8@sha256:a6cf42b979a3184e79a1866c3a99b333d46b58338b53a7637b40ee709e6d5a0d
     env:
       - name: KIND
         value: server
@@ -29,21 +32,20 @@ initContainers:
       - name: datadir
         mountPath: /data
 
-# Only staging values: no proxy forwarding secret, no Discord bot, no prod database.
+# Only staging values: no proxy forwarding secret, no Discord bot, no database (rewards go through the API).
 envFrom:
   - configMapRef:
       name: arffornia-slot-config
   - secretRef:
       name: slot-svc-secret
-  - secretRef:
-      name: slot-db-secret
 
 extraEnv:
   ENFORCE_WHITELIST: "TRUE"
   # Start small and give memory back when idle: the image sets -Xms to the max otherwise, which
   # pins the whole heap from boot. G1 returns unused heap after a periodic GC.
   INIT_MEMORY: 1G
-  JVM_XX_OPTS: "-XX:+UseG1GC -XX:G1PeriodicGCInterval=60000 -XX:MaxHeapFreeRatio=30 -XX:MinHeapFreeRatio=10"
+  # Direct buffers default to the heap size (6 GiB more): capped so the pod stays under its limit.
+  JVM_XX_OPTS: "-XX:+UseG1GC -XX:G1PeriodicGCInterval=60000 -XX:MaxHeapFreeRatio=30 -XX:MinHeapFreeRatio=10 -XX:MaxDirectMemorySize=1g -XX:NativeMemoryTracking=summary"
   # LuckPerms reads LUCKPERMS_<KEY> overrides; the profile also rewrites luckperms.conf to h2.
   LUCKPERMS_STORAGE_METHOD: h2
 
@@ -64,7 +66,7 @@ minecraftServer:
   ops: "The_Gost_sniper"
   maxPlayers: 10
   motd: "Arffornia test slot"
-  memory: 6G
+  memory: 8G
   serviceType: ClusterIP
   rcon:
     enabled: true

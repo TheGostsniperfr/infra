@@ -24,7 +24,7 @@ spec:
       containers:
         - name: pack-files
           # tree-<12> = the git tree hash of envfiles/ in Arffornia_Playtest (content-addressed).
-          image: ghcr.io/arffornia/playtest-envfiles:tree-000429c48b85
+          image: ghcr.io/arffornia/playtest-envfiles:tree-e364eb790a36
           imagePullPolicy: IfNotPresent
           env:
             # The ref and the mod tag come from the pod annotations, so the pack slot's

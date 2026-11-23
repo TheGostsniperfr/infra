@@ -7,6 +7,8 @@ Current buckets:
 - `longhorn` - Longhorn backup storage
 - `postgres-backups` - PostgreSQL WAL-G backups
 - `user-avatars` - Website user avatar storage
+- `item-icons` - Item icons by registry id (website access on), served at `https://staging.arffornia.com/icons/`
+  by the `item-icons` route; filled by Arffornia_Website `scripts/icons/publish.sh`
 - `loki` - Loki log chunks, index and ruler data (k8s/config/logging)
 - `gitlab-*` - GitLab object storage: `gitlab-lfs`, `gitlab-artifacts`, `gitlab-uploads`,
   `gitlab-packages`, `gitlab-terraform-state`, `gitlab-ci-secure-files`, `gitlab-dependency-proxy`,
@@ -19,6 +21,7 @@ Current keys:
 - `longhorn-backup-key` - For Longhorn backups
 - `postgres-backup-key` - For PostgreSQL backups
 - `user-avatars-key` - For website avatars (public read)
+- `item-icons-key` - Upload key for `item-icons`; `publish.sh` reads it through kubectl at run time, it is stored nowhere else
 - `loki-key` - For the `loki` bucket
 - `gitlab-key` - For every `gitlab-*` bucket
 
@@ -78,6 +81,7 @@ kubectl exec -it garage-0 -n garage-s3 -- /garage key list
 - **Web Interface**: `http://garage.garage-s3.svc.cluster.local:3902`
 - **External S3 API**: `https://s3.arffornia.com`
 - **External Web**: `https://avatars-s3.arffornia.com`
+- **Item icons**: `https://staging.arffornia.com/icons/{size}/{namespace}/{path}.png`, `/icons/manifest.json`
 
 ## Metadata corruption recovery
 

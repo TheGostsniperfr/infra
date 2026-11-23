@@ -151,7 +151,7 @@ variable "website_azure_oauth_client_id_var" {
   sensitive   = true
 }
 variable "website_azure_oauth_client_secret_var" {
-  description = "Azure OAuth Client Secret."
+  description = "Azure OAuth client secret of the prod app, used only when azure_prod_app_object_id_var is empty (Terraform makes the secret otherwise)."
   type        = string
   sensitive   = true
 }
@@ -192,7 +192,7 @@ resource "vault_kv_secret_v2" "arffornia_website_secret" {
   data_json = jsonencode({
     APP_KEY                   = var.website_app_key_var
     AZURE_OAUTH_CLIENT_ID     = var.website_azure_oauth_client_id_var
-    AZURE_OAUTH_CLIENT_SECRET = var.website_azure_oauth_client_secret_var
+    AZURE_OAUTH_CLIENT_SECRET = local.website_prod_client_secret
     PUSHER_APP_ID             = var.website_pusher_app_id_var
     PUSHER_APP_KEY            = var.website_pusher_app_key_var
     PUSHER_APP_SECRET         = var.website_pusher_app_secret_var
