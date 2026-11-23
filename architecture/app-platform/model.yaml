@@ -96,9 +96,9 @@ elements:
   - {id: argocd-repo, kind: backend, parent: g-argocd, icon: argo, title: repo-server, tech: "[Argo CD 3.3]",
      desc: "charts/app + deploy file"}
   - {id: argocd-controller, kind: backend, parent: g-argocd, icon: argo, title: application-controller,
-     tech: "[Application per component]", desc: "Applies, prunes, self-heals"}
+     tech: "[one Application per app]", desc: "Applies, prunes, self-heals"}
   - {id: appproject, kind: security, parent: g-argocd, icon: k8s-crd, title: AppProject, tech: "[app-demo-timetrack]",
-     desc: "1 namespace, 4 kinds"}
+     desc: "Only its namespace"}
 
   # Control plane and admission
   - {id: kube-apiserver, kind: backend, parent: g-control-plane, icon: kubernetes, title: kube-apiserver,

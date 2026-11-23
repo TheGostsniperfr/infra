@@ -40,7 +40,7 @@ reach. A `.dark` variant and the editable `.drawio` sit next to each.
 | Maintainer | Merge to `main`, so deploy. Edit `deploy` directly | Sign outside a `main` pipeline, change anything in the cluster beyond `deploy.yaml`'s keys |
 | Branch or MR pipeline | Test, check `deploy.yaml` | See `DEPLOY_REPO_TOKEN`, log in to Vault's signing role |
 | `main` pipeline | Sign with its app's key, write its app's `deploy` repository | Reach the cluster API, the LAN, another app's key |
-| Argo CD, for an app | Create Deployments, Services, HTTPRoutes, VaultSecrets in `<team>-<app>` | Anything else, anywhere else |
+| Argo CD, for an app | Apply what the platform's charts render in `<team>-<app>`: Deployments, Services, HTTPRoutes, VaultSecrets, the database | Anything cluster-scoped, anything in another namespace, any manifest a team wrote |
 | Platform admin | Everything: Terraform, Argo CD, the cluster | |
 
 ## Controls, layer by layer
@@ -55,7 +55,7 @@ reach. A `.dark` variant and the editable `.drawio` sit next to each.
 | CI | Jobs in `gitlab-ci-jobs`: nothing reaches them, they reach DNS and the internet only | `k8s/config/gitlab/ci-jobs-namespace.yaml` |
 | Vault | Signing key never leaves Vault; role bound to `namespace_path`, `ref=main`, `ref_protected=true`; token valid 5 minutes | `terraform/apps.tf` |
 | Vault | Each app namespace reads only its own path, through a role Kyverno pins | `terraform/apps.tf`, `guardrails.yaml` |
-| Argo CD | One project per app: one namespace, 4 kinds, no cluster-scoped object | `charts/platform-team/templates/argocd.yaml` |
+| Argo CD | One project per app: one namespace, no cluster-scoped object, sources the platform's charts and the app's deploy repo. Kinds: what the charts render, and what controllers make from them so Argo CD shows them (Pods, ReplicaSets...); what a Pod may be is Kyverno's job | `charts/platform-team/templates/argocd.yaml` |
 | Chart | Values limited by a schema; security context, image path, service account fixed | `charts/app` |
 | Admission | Images: the app's registry path only, plus the database image | `guardrails.yaml`, rule `images` |
 | Admission | Images signed by the app's key | rule `signed-images` |

@@ -1,0 +1,26 @@
+# Database of the app. The operator writes the credentials to the Secret
+# app.{{ .Values.app }}-db.credentials.postgresql.acid.zalan.do (keys username, password), and with
+# owner references (k8s/config/postgres-operator) its StatefulSet and Pods show under this object.
+# Cluster manifest: https://opensource.zalando.com/postgres-operator/docs/reference/cluster_manifest.html
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+metadata:
+  name: {{ required "app is required" .Values.app }}-db
+spec:
+  teamId: {{ required "team is required" .Values.team }}
+  numberOfInstances: 1
+  postgresql:
+    version: {{ .Values.version | quote }}
+  volume:
+    size: {{ .Values.size }}
+    storageClass: {{ .Values.storageClass }}
+  users:
+    app: []
+  databases:
+    app: app
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi

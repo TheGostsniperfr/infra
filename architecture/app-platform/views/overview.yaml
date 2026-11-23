@@ -53,7 +53,7 @@ cards:
       - "**Diagrams**  …/infra/tree/main/architecture/diagrams"
       - "**App projects**  gitlab.arffornia.com/apps/demo/timetrack"
       - "**Templates**  gitlab.arffornia.com/apps/platform"
-      - "**Argo CD**  argocd.arffornia.com · applications team-demo, demo-timetrack-*"
+      - "**Argo CD**  argocd.arffornia.com · applications team-demo, demo-timetrack"
       - "**The app**  timetrack-demo.arffornia.com"
   - id: card-background
     title: Background · control plane

@@ -3,7 +3,7 @@ team: ""
 # <app>: {database: bool, roles: ...}
 apps: {}
 # Every app has these components, each its own GitLab project forked from a template
-# (terraform/apps.tf) and its own Argo CD Application rendering charts/app
+# (terraform/apps.tf), rendered by charts/app in the app's single Argo CD Application
 components: [backend, frontend]
 
 # Argo CD reads the platform chart here and the app's deploy repository on GitLab

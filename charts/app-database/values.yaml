@@ -1,0 +1,6 @@
+# Set by charts/platform-team in the app's Application (valuesObject): a team never writes these
+app: ""
+team: ""
+version: "17"
+size: 2Gi
+storageClass: longhorn
