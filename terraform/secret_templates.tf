@@ -905,10 +905,7 @@ resource "random_password" "gitlab" {
 
 resource "random_id" "gitlab" {
   for_each = {
-    kas             = 32
-    kas_private_api = 32
-    kas_websocket   = 72
-    workhorse       = 32
+    workhorse = 32
   }
   byte_length = each.value
 }
@@ -985,15 +982,6 @@ locals {
     ]...)
     "gitlab/gitaly" = {
       token = random_password.gitlab["gitaly"].result
-    }
-    "gitlab/kas" = {
-      kas_shared_secret = random_id.gitlab["kas"].b64_std
-    }
-    "gitlab/kas-private-api" = {
-      kas_private_api_secret = random_id.gitlab["kas_private_api"].b64_std
-    }
-    "gitlab/kas-websocket" = {
-      kas_websocket_token_secret = random_id.gitlab["kas_websocket"].b64_std
     }
     "gitlab/workhorse" = {
       shared_secret = random_id.gitlab["workhorse"].b64_std

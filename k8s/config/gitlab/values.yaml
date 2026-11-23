@@ -25,8 +25,6 @@ global:
       name: gitlab.arffornia.com
     registry:
       name: gitlab-registry.arffornia.com
-    kas:
-      name: gitlab-kas.arffornia.com
     # SSH clone URLs: ssh://git@gitlab-ssh.arffornia.com:5522/<group>/<project>.git
     ssh: gitlab-ssh.arffornia.com
 
@@ -67,11 +65,11 @@ global:
       secret: gitlab-redis-secret
       key: password
 
-  # KAS: server side of the GitLab agent for Kubernetes
-  # Feature: https://docs.gitlab.com/user/clusters/agent/
+  # KAS: server side of the GitLab agent for Kubernetes. Off: no agent, pipelines never reach a
+  # cluster and Argo CD pulls instead (k8s/config/app-platform/SECURITY.md)
   # Chart: https://docs.gitlab.com/charts/charts/gitlab/kas/
   kas:
-    enabled: true
+    enabled: false
 
   # Runner: authentication token from Vault, not the deprecated registration token
   # Chart: https://docs.gitlab.com/charts/installation/secrets/#gitlab-runner-secret
@@ -185,14 +183,6 @@ gitlab:
     resources:
       limits:
         memory: 5G # chart
-
-  # Chart: https://docs.gitlab.com/charts/charts/gitlab/kas/
-  kas:
-    minReplicas: 1
-    maxReplicas: 1
-    resources:
-      limits:
-        memory: 512Mi
 
   # Git repositories
   # Feature: https://docs.gitlab.com/administration/gitaly/
