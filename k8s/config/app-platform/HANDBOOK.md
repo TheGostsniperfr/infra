@@ -43,7 +43,9 @@ Remove the entry or the file, merge, then `terraform apply`. Nothing is left to 
   and its Argo CD project and Applications. A removed team file deletes the team's Application,
   and its finalizer deletes all of that for every app of the team.
 - GitLab: the groups and projects are deleted for good (`permanently_remove_on_delete`,
-  `permanently_delete_on_destroy`), their registry repositories with them.
+  `permanently_delete_on_destroy`). `terraform_data.app_registry_cleanup` first empties each
+  project's registry: GitLab refuses to delete a project with tags while the registry has no
+  metadata database.
 - Vault (transit key, `deletion_allowed`), Keycloak and Cloudflare: destroyed by the apply.
 
 Gap: the registry deletes the repositories, but their blobs stay in the `gitlab-registry` bucket

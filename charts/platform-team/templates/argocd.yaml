@@ -62,8 +62,9 @@ metadata:
   # weight) that the chart does not set. Kyverno's annotations are part of that dry run too.
   annotations:
     argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
+  # No resources finalizer: everything this Application deploys lives in the app's namespace, and
+  # removing the app deletes the namespace. With one, removing the app deleted the AppProject at
+  # the same time, and the finalizer then waited forever for its missing project.
 spec:
   project: app-{{ $ns }}
   sources:

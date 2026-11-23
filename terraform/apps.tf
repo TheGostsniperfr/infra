@@ -144,6 +144,44 @@ resource "terraform_data" "app_first_pipeline" {
   ]
 }
 
+# GitLab refuses to delete a project that still has registry tags while the registry has no
+# metadata database ("Cannot rename or delete project because it contains container registry
+# tags"). Destroyed before its project (it depends on it), this empties the project's registry and
+# waits until GitLab has done so. A destroy-time provisioner only sees `self`: the token is in
+# `input`, i.e. in the state, which already holds every secret of this configuration.
+# https://docs.gitlab.com/api/container_registry/#delete-registry-repository
+resource "terraform_data" "app_registry_cleanup" {
+  for_each = local.gitlab_app_components
+
+  input = {
+    api     = "https://gitlab.${var.base_domain}/api/v4"
+    project = gitlab_project.app_component[each.key].id
+    token   = sensitive(var.gitlab_admin_token_var)
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<-EOT
+      set -eu
+      repos="$GITLAB_API/projects/$PROJECT_ID/registry/repositories"
+      for id in $(curl -fsS -H "PRIVATE-TOKEN: $GITLAB_TOKEN" "$repos?per_page=100" | grep -o '"id":[0-9]*' | cut -d: -f2); do
+        curl -fsS -o /dev/null -X DELETE -H "PRIVATE-TOKEN: $GITLAB_TOKEN" "$repos/$id"
+      done
+      for _ in $(seq 1 60); do
+        [ "$(curl -fsS -H "PRIVATE-TOKEN: $GITLAB_TOKEN" "$repos")" = "[]" ] && exit 0
+        sleep 5
+      done
+      echo "registry of project $PROJECT_ID still not empty after 5 minutes" >&2
+      exit 1
+    EOT
+    environment = {
+      GITLAB_API   = self.input.api
+      PROJECT_ID   = self.input.project
+      GITLAB_TOKEN = self.input.token
+    }
+  }
+}
+
 resource "gitlab_group_variable" "app" {
   for_each = local.gitlab_app_variables
 
