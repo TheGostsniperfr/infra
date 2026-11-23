@@ -1002,9 +1002,11 @@ locals {
 resource "vault_kv_secret_v2" "gitlab" {
   for_each = local.gitlab_vault_secrets
 
-  mount     = vault_mount.kvv2.path
-  name      = each.key
-  data_json = jsonencode(each.value)
+  mount = vault_mount.kvv2.path
+  # A destroy removes the path for good: without it KV v2 keeps the metadata of a deleted key
+  delete_all_versions = true
+  name                = each.key
+  data_json           = jsonencode(each.value)
 }
 
 resource "vault_kv_secret_v2" "gitlab_runner" {

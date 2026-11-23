@@ -204,7 +204,9 @@ resource "vault_kv_secret_v2" "team_registry" {
   for_each = local.gitlab_teams
 
   mount = vault_mount.kvv2.path
-  name  = "gitlab-agents/${each.key}-registry"
+  # A destroy removes the path for good: without it KV v2 keeps the metadata of a deleted key
+  delete_all_versions = true
+  name                = "gitlab-agents/${each.key}-registry"
   data_json = jsonencode({
     username = gitlab_group_deploy_token.team_registry[each.key].username
     password = gitlab_group_deploy_token.team_registry[each.key].token
@@ -270,7 +272,9 @@ resource "vault_kv_secret_v2" "team_repo" {
   for_each = local.gitlab_teams
 
   mount = vault_mount.kvv2.path
-  name  = "gitlab-agents/${each.key}-repo"
+  # A destroy removes the path for good: without it KV v2 keeps the metadata of a deleted key
+  delete_all_versions = true
+  name                = "gitlab-agents/${each.key}-repo"
   data_json = jsonencode({
     username = gitlab_group_deploy_token.team_repo[each.key].username
     password = gitlab_group_deploy_token.team_repo[each.key].token
@@ -306,7 +310,9 @@ resource "vault_kv_secret_v2" "app_signing_public_key" {
   for_each = local.gitlab_apps
 
   mount = vault_mount.kvv2.path
-  name  = "gitlab-agents/${each.value.namespace}-cosign"
+  # A destroy removes the path for good: without it KV v2 keeps the metadata of a deleted key
+  delete_all_versions = true
+  name                = "gitlab-agents/${each.value.namespace}-cosign"
   data_json = jsonencode({
     "cosign.pub" = vault_transit_secret_backend_key.app_signing[each.key].keys[vault_transit_secret_backend_key.app_signing[each.key].latest_version - 1].public_key
   })
