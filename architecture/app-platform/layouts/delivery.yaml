@@ -35,6 +35,7 @@ edges:
   c-argocd-controller-apiserver: {from: argocd-controller.right@40px, to: kube-apiserver.left@50px, waypoints: [[1890, 510], [1890, 350]], label_at: [1890, 430]}
   c-apiserver-kyverno: {from: kube-apiserver.bottom@210px, to: kyverno.top@210px}
   c-kyverno-registry: {from: kyverno.bottom@60px, to: registry.right@80px, waypoints: [[2050, 860], [1400, 860], [1400, 570]], against_flow: true}
+  c-terraform-gitlab: {from: terraform.right@20px, to: gitlab-git.top@200px, waypoints: [[300, 1015], [300, 250], [1160, 250]], label_at: [620, 250]}
   c-terraform-vault: {from: terraform.right@70px, to: vault.left@105px, label_at: [420, 1065]}
   c-vso-vault: {from: vso.bottom, to: vault.top}
   r-controller-appproject: {from: argocd-controller.bottom, to: appproject.top}

@@ -1,0 +1,72 @@
+apiVersion: noodle/v1alpha1
+kind: Layout
+canvas: {width: 2800, height: 2400}
+elements:
+  z-workstation: {x: 40, y: 260, w: 240, h: 400}
+  platform-admin: {x: 50, y: 70, w: 56, h: 56}
+  terraform: {x: 20, y: 250, w: 200, h: 90}
+  z-saas: {x: 40, y: 760, w: 240, h: 180}
+  cloudflare-dns: {x: 10, y: 70, w: 220, h: 90}
+
+  z-github: {x: 340, y: 220, w: 680, h: 520}
+  gh-teams: {x: 20, y: 70, w: 290, h: 96}
+  gh-docs: {x: 20, y: 220, w: 290, h: 96}
+  gh-diagrams: {x: 20, y: 370, w: 290, h: 96}
+  gh-appset: {x: 350, y: 70, w: 290, h: 96}
+  gh-platform-team: {x: 350, y: 220, w: 290, h: 96}
+  gh-app-chart: {x: 350, y: 370, w: 290, h: 96}
+
+  z-gitlab-projects: {x: 340, y: 820, w: 680, h: 900}
+  g-gl-platform: {x: 20, y: 60, w: 640, h: 320}
+  gl-agent: {x: 20, y: 60, w: 290, h: 96}
+  gl-tpl-backend: {x: 20, y: 190, w: 290, h: 96}
+  gl-tpl-frontend: {x: 340, y: 190, w: 290, h: 96}
+  g-gl-timetrack: {x: 20, y: 440, w: 640, h: 400}
+  gl-backend: {x: 20, y: 60, w: 290, h: 96}
+  gl-frontend: {x: 340, y: 60, w: 290, h: 96}
+  gl-deploy: {x: 20, y: 250, w: 290, h: 96}
+
+  z-cluster: {x: 1100, y: 220, w: 1640, h: 1500}
+  g-argocd: {x: 40, y: 60, w: 760, h: 420}
+  applicationset: {x: 30, y: 70, w: 300, h: 96}
+  argocd-controller: {x: 30, y: 240, w: 300, h: 96}
+  appproject: {x: 420, y: 240, w: 300, h: 96}
+  g-app: {x: 40, y: 560, w: 760, h: 460}
+  workloads: {x: 30, y: 80, w: 300, h: 96}
+  app-guardrails: {x: 420, y: 80, w: 300, h: 96}
+  app-db: {x: 30, y: 260, w: 300, h: 110}
+  g-postgres-operator: {x: 40, y: 1100, w: 340, h: 200}
+  postgres-operator: {x: 20, y: 70, w: 300, h: 96}
+  g-agent: {x: 440, y: 1100, w: 360, h: 200}
+  agentk: {x: 30, y: 70, w: 300, h: 96}
+  g-secrets: {x: 880, y: 60, w: 720, h: 420}
+  vso: {x: 30, y: 70, w: 300, h: 96}
+  vault: {x: 380, y: 240, w: 300, h: 96}
+  g-admission: {x: 880, y: 560, w: 360, h: 200}
+  kyverno: {x: 30, y: 70, w: 300, h: 96}
+  g-identity: {x: 880, y: 860, w: 360, h: 200}
+  keycloak: {x: 30, y: 70, w: 300, h: 96}
+edges:
+  c-admin-terraform: {from: platform-admin.right, to: terraform.top@170px, waypoints: [[230, 358]]}
+  c-terraform-cloudflare: {from: terraform.bottom@180px, to: cloudflare-dns.top@190px}
+  c-terraform-vault: {from: terraform.right@20px, to: vault.top@150px, waypoints: [[310, 530], [310, 190], [2510, 190]], label_at: [1600, 190]}
+  c-terraform-keycloak: {from: terraform.right@60px, to: keycloak.left@70px, waypoints: [[295, 570], [295, 1760], [1940, 1760], [1940, 1220]], label_at: [1500, 1760]}
+  c-vso-vault: {from: vso.right, to: vault.left@70px, waypoints: [[2335, 398], [2335, 590]]}
+  r-terraform-teams: {from: terraform.right@45px, to: gh-teams.left, waypoints: [[325, 555], [325, 338]]}
+  r-appset-teams: {from: applicationset.top@260px, to: gh-teams.top, waypoints: [[1430, 260], [505, 260]], label_at: [860, 260]}
+  r-appset-platform-team: {from: applicationset.left@70px, to: gh-platform-team.right, waypoints: [[1035, 420], [1035, 488]]}
+  r-controller-app-chart: {from: argocd-controller.left@30px, to: gh-app-chart.right, waypoints: [[1050, 550], [1050, 638]]}
+  r-controller-deploy: {from: argocd-controller.left@70px, to: gl-deploy.right@25px, waypoints: [[1065, 590], [1065, 1535]], label_at: [870, 1535]}
+  r-agentk-config: {from: agentk.left, to: gl-agent.right, waypoints: [[1520, 1438], [1520, 1290], [1080, 1290], [1080, 988]], label_at: [870, 988]}
+  r-backend-template: {from: gl-backend.top@260px, to: gl-tpl-backend.bottom@260px}
+  r-frontend-template: {from: gl-frontend.top, to: gl-tpl-frontend.bottom}
+  r-backend-deploy: {from: gl-backend.bottom@140px, to: gl-deploy.top@140px}
+  r-frontend-deploy: {from: gl-frontend.bottom, to: gl-deploy.right@75px, waypoints: [[845, 1585]]}
+  r-controller-appproject: {from: argocd-controller.right, to: appproject.left}
+  r-kyverno-guardrails: {from: kyverno.left, to: app-guardrails.right}
+  r-guardrails-workloads: {from: app-guardrails.left, to: workloads.right}
+  r-operator-db: {from: postgres-operator.top@260px, to: app-db.bottom@250px}
+cards:
+  card-where: {x: 40, y: 1820, w: 1340, h: 330}
+  card-background: {x: 1420, y: 1820, w: 1340, h: 200}
+  card-legend: {x: 1420, y: 2050, w: 1340, h: 310}
