@@ -1,6 +1,6 @@
 # CI job pods run here, not in `gitlab`, unprivileged (images are built with Kaniko in the job): a job is code pushed by any team member, it must not sit
 # next to Redis, Gitaly or Postgres. Nothing can reach a job, and a job reaches only the cluster
-# DNS and the internet (GitLab, the registry and KAS through their public URLs).
+# DNS and the internet (GitLab and the registry through their public URLs).
 # https://docs.gitlab.com/runner/executors/kubernetes/
 apiVersion: v1
 kind: Namespace

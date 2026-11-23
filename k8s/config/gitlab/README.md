@@ -9,7 +9,6 @@ disabled so a rebuild gets the same keys back. Architecture: `architecture/gitla
 |---|---|---|
 | `gitlab.arffornia.com` | Web, API, Git over HTTPS | shared-gateway, Keycloak SSO |
 | `gitlab-registry.arffornia.com` | Container registry | shared-gateway |
-| `gitlab-kas.arffornia.com` | GitLab agent for Kubernetes (`wss://`) | shared-gateway |
 | `gitlab-ssh.arffornia.com:5522` | Git over SSH | MetalLB `192.168.1.240`, router rule below |
 
 ## First install

@@ -5,12 +5,11 @@ title: Arffornia · GitLab · Runtime
 subtitle: Which GitLab component handles what, and where its state lives.
 meta:
   - "Scope: GitLab chart 10.5.4 (GitLab 19.5.3) in namespace gitlab and the services it uses"
-  - "Not drawn: Puma, Sidekiq and KAS also call Gitaly and Garage; Registry notifies Rails; Toolbox and the migrations Job"
-  - "Out of scope: optional modules (Pages, Zoekt, Geo...), the target cluster's own resources"
+  - "Not drawn: Puma and Sidekiq also call Gitaly and Garage; Registry notifies Rails; Toolbox and the migrations Job"
+  - "Out of scope: optional modules (Pages, Zoekt, Geo, KAS: all disabled)"
   - "v0.1 · source: k8s/config/gitlab, terraform/secret_templates.tf"
 include:
   - z-internet/**
-  - z-target-cluster/**
   - z-cluster
   - g-gateway/**
   - g-secrets/**
@@ -27,9 +26,6 @@ steps:
   - c-sidekiq-postgres
 background:
   - c-vso-vault
-  - c-agentk-envoy
-  - c-envoy-kas
-  - c-kas-puma
   - c-runner-envoy
 cards:
   - id: card-legend
@@ -52,16 +48,9 @@ cards:
     title: Background · control plane
     color: indigo
     lines:
-      - "[A] VSO copies the 18 GitLab secrets from Vault into Kubernetes Secrets"
-      - "[B] agentk opens an outbound websocket: the target cluster exposes nothing"
-      - "[C] Envoy relays the tunnel to KAS on gitlab-kas.arffornia.com"
-      - "[D] KAS validates the agent token with Rails, then serves kubectl and GitOps"
-      - "[E] The runner polls the public API for jobs, then starts one pod per job"
+      - "[A] VSO copies the 16 GitLab secrets from Vault into Kubernetes Secrets"
+      - "[B] The runner polls the public API for jobs, then starts one pod per job"
 labels:
-  c-envoy-kas-proxy: ""
-  c-agentk-envoy: ""
-  c-envoy-kas: ""
-  c-kas-puma: ""
   c-runner-envoy: ""
   c-puma-redis: ""
   c-sidekiq-postgres: ""

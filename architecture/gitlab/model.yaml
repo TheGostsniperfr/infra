@@ -3,7 +3,6 @@ kind: Model
 elements:
   # Zones
   - {id: z-internet, kind: region, color: slate, icon: globe, title: INTERNET}
-  - {id: z-target-cluster, kind: region, color: amber, icon: kubernetes, title: TARGET CLUSTER}
   - {id: z-cluster, kind: region, color: cyan, icon: kubernetes, title: ARFFORNIA CLUSTER}
   - {id: g-gateway, kind: group, parent: z-cluster, color: emerald, icon: envoy-gateway, title: GATEWAY API, sub: gateway-infra}
   - {id: g-secrets, kind: group, parent: z-cluster, color: rose, icon: vault, title: SECRETS, sub: vault · vault-secrets-operator}
@@ -12,8 +11,6 @@ elements:
 
   # Clients
   - {id: developer, kind: frontend, parent: z-internet, shape: actor, icon: user, title: Developer, desc: "browser · git · docker"}
-  - {id: agentk, kind: external, parent: z-target-cluster, icon: gitlab, title: agentk, tech: "[GitLab agent · Go]",
-     desc: "Runs in the managed cluster"}
 
   # Gateway
   - {id: envoy, kind: backend, parent: g-gateway, icon: envoy, title: shared-gateway, tech: "[Envoy Gateway · HTTPRoutes]",
@@ -21,7 +18,7 @@ elements:
      ports: [{name: https, protocol: TCP, port: 443}]}
 
   # Secrets
-  - {id: vso, kind: security, parent: g-secrets, icon: k8s-crd, title: Vault Secrets Operator, tech: "[18 VaultSecrets]",
+  - {id: vso, kind: security, parent: g-secrets, icon: k8s-crd, title: Vault Secrets Operator, tech: "[16 VaultSecrets]",
      desc: "Writes the Secrets pods read"}
   - {id: vault, kind: database, parent: g-secrets, icon: vault, title: Vault, tech: "[KV v2 · kvv2/gitlab/*]",
      desc: "Values from Terraform",
@@ -39,9 +36,6 @@ elements:
      ports: [{name: http, protocol: TCP, port: 5000}]}
   - {id: sidekiq, kind: backend, parent: g-gitlab, icon: gitlab, title: Sidekiq, tech: "[Ruby · same code as Rails]",
      desc: "Jobs: pipelines, mails, webhooks"}
-  - {id: kas, kind: backend, parent: g-gitlab, icon: gitlab, title: KAS, tech: "[Go · agent server]",
-     desc: "Agent tunnels, kubectl proxy",
-     ports: [{name: agent, protocol: TCP, port: 8150}, {name: k8s-proxy, protocol: TCP, port: 8154}]}
   - {id: runner, kind: backend, parent: g-gitlab, icon: gitlab, title: GitLab Runner, tech: "[Go · Kubernetes executor]",
      desc: "One pod per CI job"}
 
@@ -61,7 +55,6 @@ elements:
      ports: [{name: s3, protocol: TCP, port: 3900}]}
 
 connections:
-  - {id: c-envoy-kas-proxy, from: envoy, to: kas, kind: flow, port: k8s-proxy, protocol: HTTP, verb: proxy}
   - {id: c-developer-envoy, from: developer, to: envoy, kind: flow, port: https, protocol: HTTPS, verb: git push}
   - {id: c-envoy-workhorse, from: envoy, to: workhorse, kind: flow, port: http, protocol: HTTP, verb: proxy}
   - {id: c-workhorse-puma, from: workhorse, to: puma, kind: flow, port: http, protocol: HTTP, verb: authorize}
@@ -74,8 +67,5 @@ connections:
   - {id: c-workhorse-garage, from: workhorse, to: garage, kind: flow, port: s3, protocol: S3, verb: direct upload}
   - {id: c-envoy-registry, from: envoy, to: registry, kind: flow, port: http, protocol: HTTP, verb: docker push}
   - {id: c-registry-garage, from: registry, to: garage, kind: flow, port: s3, protocol: S3, verb: store layers}
-  - {id: c-agentk-envoy, from: agentk, to: envoy, kind: tunnel, port: https, protocol: WSS, verb: open tunnel}
-  - {id: c-envoy-kas, from: envoy, to: kas, kind: tunnel, port: agent, protocol: WS, verb: proxy tunnel}
-  - {id: c-kas-puma, from: kas, to: puma, kind: auth, port: http, protocol: HTTP, verb: check agent token}
   - {id: c-runner-envoy, from: runner, to: envoy, kind: async, port: https, protocol: HTTPS, verb: poll jobs}
   - {id: c-vso-vault, from: vso, to: vault, kind: async, port: api, protocol: HTTPS, verb: read secrets}

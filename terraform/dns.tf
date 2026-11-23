@@ -85,10 +85,8 @@ locals {
     "plex"       = false
 
     # DNS Only: Cloudflare caps request bodies at 100 MB (git push, docker push)
-    # and cuts the long-lived KAS websockets
     "gitlab"          = false
     "gitlab-registry" = false
-    "gitlab-kas"      = false
     "gitlab-ssh"      = false # Raw SSH on 5522, Cloudflare cannot proxy it
   }
 }

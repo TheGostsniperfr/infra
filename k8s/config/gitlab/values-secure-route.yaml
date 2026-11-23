@@ -35,33 +35,3 @@ routes:
     ipFilter:
       enabled: false
 
-  # Agent for Kubernetes: long-lived websocket on /, kubectl proxy (exec, logs) on /k8s-proxy
-  # https://docs.gitlab.com/charts/charts/gitlab/kas/#agent-connection-protocol
-  # https://docs.gitlab.com/user/clusters/agent/user_access/
-  gitlab-kas:
-    hostnames:
-      - "gitlab-kas.arffornia.com"
-    rules:
-      - matches:
-          - path:
-              type: PathPrefix
-              value: /k8s-proxy
-        backendRefs:
-          - name: gitlab-kas
-            port: 8154
-        timeouts:
-          request: 2h
-          backendRequest: 2h
-      - matches:
-          - path:
-              type: PathPrefix
-              value: /
-        backendRefs:
-          - name: gitlab-kas
-            port: 8150
-        timeouts:
-          request: 0s
-    auth:
-      enabled: false # Agents authenticate with their own token
-    ipFilter:
-      enabled: false
