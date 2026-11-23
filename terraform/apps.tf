@@ -99,6 +99,33 @@ resource "gitlab_project" "app_component" {
   }
 }
 
+# A fork starts no pipeline, so a new app would stay empty until someone pushes. Run the first
+# pipeline on main of each component once the app can sign and release. It runs again only if the
+# project is recreated. The token goes through the environment, never the command line.
+# https://docs.gitlab.com/api/pipelines/#create-a-new-pipeline
+resource "terraform_data" "app_first_pipeline" {
+  for_each = local.gitlab_app_components
+
+  triggers_replace = gitlab_project.app_component[each.key].id
+
+  provisioner "local-exec" {
+    command = "curl --fail --silent --show-error --output /dev/null --request POST --header \"PRIVATE-TOKEN: $GITLAB_TOKEN\" \"$GITLAB_API/projects/$PROJECT_ID/pipeline?ref=main\""
+    environment = {
+      GITLAB_TOKEN = var.gitlab_admin_token_var
+      GITLAB_API   = "https://gitlab.${var.base_domain}/api/v4"
+      PROJECT_ID   = gitlab_project.app_component[each.key].id
+    }
+  }
+
+  depends_on = [
+    gitlab_group_variable.app,
+    gitlab_group_variable.app_deploy_token,
+    vault_transit_secret_backend_key.app_signing,
+    vault_policy.app_signing,
+    vault_jwt_auth_backend_role.app_signing,
+  ]
+}
+
 resource "gitlab_group_variable" "app" {
   for_each = local.gitlab_app_variables
 
