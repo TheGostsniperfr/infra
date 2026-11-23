@@ -28,7 +28,7 @@ steps:
   - {id: merge, from: platform-admin, to: infra-repo, over: c-admin-infra, text: "merge the PR to main"}
   - {id: read, from: applicationset, to: infra-repo, over: c-appset-infra, text: "read teams/*.yaml"}
   - {note: applicationset, text: "Git generator: one Application team-<team><br>per file, rendering charts/platform-team"}
-  - {id: create, from: applicationset, to: kube-apiserver, over: c-appset-apiserver, text: "Application team-demo, which Argo CD applies: namespace, quota, policies, AppProject, Application demo-timetrack (components and postgresql)"}
+  - {id: create, from: applicationset, to: kube-apiserver, over: c-appset-apiserver, text: "Application team-demo, which Argo CD applies: namespace, quota, policies, AppProject, an Application per component (postgresql with the backend)"}
   - {note: kube-apiserver, text: "AppProject app-demo-timetrack: Argo CD may only deploy<br>into demo-timetrack, nothing cluster-wide"}
   - {id: db, from: postgres-operator, to: kube-apiserver, over: c-operator-apiserver, text: "watch postgresql, create the database and its Secret"}
   - {id: keys, from: vso, to: vault, over: c-vso-vault, text: "copy the public key, the registry pull token"}

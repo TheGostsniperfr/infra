@@ -47,12 +47,16 @@ spec:
     - group: policy
       kind: PodDisruptionBudget
 ---
-# The whole app in one Application: each component as its pipeline last released it (charts/app
-# with apps/{{ $.Values.team }}/{{ $app }}/deploy:<component>.yaml; nothing until that file exists), and its database.
+{{- range $component := $.Values.components }}
+{{- $withDatabase := and $cfg.database (eq $component $.Values.databaseComponent) }}
+# One Application per component, so each syncs and fails on its own, at the pace of its own
+# pipeline: charts/app with apps/{{ $.Values.team }}/{{ $app }}/deploy:{{ $component }}.yaml (nothing until that file
+# exists){{ if $withDatabase }}, and the app's database, which this component uses{{ end }}.
+# The app's Applications share the project app-{{ $ns }}: filter on it to see the whole app.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ $ns }}
+  name: {{ $ns }}-{{ $component }}
   namespace: argocd
   # Compare with what the API server would store: it defaults fields of HTTPRoutes (group, kind,
   # weight) that the chart does not set. Kyverno's annotations are part of that dry run too.
@@ -63,7 +67,6 @@ metadata:
 spec:
   project: app-{{ $ns }}
   sources:
-    {{- range $component := $.Values.components }}
     - repoURL: {{ $.Values.infraRepo }}
       targetRevision: HEAD
       path: charts/app
@@ -83,8 +86,7 @@ spec:
             oidcIssuer: {{ $.Values.oidcIssuer }}
             oidcClientId: {{ $ns }}
             database: {{ $cfg.database | default false }}
-    {{- end }}
-    {{- if $cfg.database }}
+    {{- if $withDatabase }}
     - repoURL: {{ $.Values.infraRepo }}
       targetRevision: HEAD
       path: charts/app-database
@@ -110,6 +112,7 @@ spec:
     syncOptions:
       - ServerSideApply=true
 ---
+{{- end }}
 {{- end }}
 # Argo CD reads the deploy repositories of the team with a group deploy token (read_repository on
 # apps/<team>), created by Terraform. Credential template for every repository under that URL.
