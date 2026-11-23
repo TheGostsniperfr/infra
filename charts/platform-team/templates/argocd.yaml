@@ -1,9 +1,10 @@
 {{- range $app, $cfg := .Values.apps }}
 {{- $ns := printf "%s-%s" $.Values.team $app }}
 {{- $deployRepo := printf "%s/apps/%s/%s/deploy.git" $.Values.gitlabUrl $.Values.team $app }}
-# What Argo CD may deploy for the app: the platform chart, values from the app's deploy
-# repository, into the app's namespace only, and only these kinds. Network policies, quotas, RBAC,
-# Kyverno policies and every cluster-scoped object stay out of reach, whatever a values file says.
+# Where the app's Application may deploy: the app's namespace only, no cluster-scoped object, from
+# the platform's charts and the app's deploy repository. What a manifest may contain is decided
+# before (charts/app and its schema: a team writes values, never manifests) and after (Kyverno, on
+# every object of the namespace, whoever creates it).
 # https://argo-cd.readthedocs.io/en/stable/user-guide/projects/
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
@@ -20,6 +21,7 @@ spec:
       namespace: {{ $ns }}
   clusterResourceWhitelist: []
   namespaceResourceWhitelist:
+    # What the platform's charts render (charts/app, charts/app-database)
     - group: apps
       kind: Deployment
     - group: ""
@@ -28,14 +30,29 @@ spec:
       kind: HTTPRoute
     - group: ricoberger.de
       kind: VaultSecret
+    - group: acid.zalan.do
+      kind: postgresql
+    # What controllers create from them. No chart renders these; they are listed because Argo CD
+    # hides from an Application's tree, logs included, every kind its project does not permit
+    - group: apps
+      kind: ReplicaSet
+    - group: apps
+      kind: StatefulSet
+    - group: ""
+      kind: Pod
+    - group: ""
+      kind: Endpoints
+    - group: ""
+      kind: Secret
+    - group: policy
+      kind: PodDisruptionBudget
 ---
-{{- range $component := $.Values.components }}
-# The component as its pipeline last released it: charts/app with
-# apps/{{ $.Values.team }}/{{ $app }}/deploy:{{ $component }}.yaml. Until that file exists, nothing is deployed.
+# The whole app in one Application: each component as its pipeline last released it (charts/app
+# with apps/{{ $.Values.team }}/{{ $app }}/deploy:<component>.yaml; nothing until that file exists), and its database.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ $ns }}-{{ $component }}
+  name: {{ $ns }}
   namespace: argocd
   # Compare with what the API server would store: it defaults fields of HTTPRoutes (group, kind,
   # weight) that the chart does not set. Kyverno's annotations are part of that dry run too.
@@ -46,6 +63,7 @@ metadata:
 spec:
   project: app-{{ $ns }}
   sources:
+    {{- range $component := $.Values.components }}
     - repoURL: {{ $.Values.infraRepo }}
       targetRevision: HEAD
       path: charts/app
@@ -65,6 +83,20 @@ spec:
             oidcIssuer: {{ $.Values.oidcIssuer }}
             oidcClientId: {{ $ns }}
             database: {{ $cfg.database | default false }}
+    {{- end }}
+    {{- if $cfg.database }}
+    - repoURL: {{ $.Values.infraRepo }}
+      targetRevision: HEAD
+      path: charts/app-database
+      helm:
+        releaseName: database
+        valuesObject:
+          app: {{ $app }}
+          team: {{ $.Values.team }}
+          version: {{ $.Values.database.version | quote }}
+          size: {{ $.Values.database.size }}
+          storageClass: {{ $.Values.database.storageClass }}
+    {{- end }}
     - repoURL: {{ $deployRepo }}
       targetRevision: main
       ref: deploy
@@ -78,7 +110,6 @@ spec:
     syncOptions:
       - ServerSideApply=true
 ---
-{{- end }}
 {{- end }}
 # Argo CD reads the deploy repositories of the team with a group deploy token (read_repository on
 # apps/<team>), created by Terraform. Credential template for every repository under that URL.

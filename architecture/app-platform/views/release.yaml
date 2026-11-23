@@ -32,7 +32,7 @@ steps:
   - {id: chart, from: argocd-repo, to: infra-repo, over: c-argocd-repo-infra, text: "fetch charts/app"}
   - {note: argocd-repo, text: "Renders charts/app with the team's file; platform.*<br>values (host, image path, team) override it"}
   - {id: apply, from: argocd-controller, to: kube-apiserver, over: c-argocd-controller-apiserver, text: "apply the Deployment, Service, HTTPRoute, VaultSecret"}
-  - {note: argocd-controller, text: "Refused here if a kind or namespace<br>falls outside the AppProject"}
+  - {note: argocd-controller, text: "Refused here if a namespace or a cluster object<br>falls outside the AppProject"}
   - {id: admit, from: kube-apiserver, to: kyverno, over: c-apiserver-kyverno, text: "admission review"}
   - {id: verify, from: kyverno, to: registry, over: c-kyverno-registry, text: "fetch the .sig of the digest"}
   - {note: kyverno, text: "Checks the signature with cosign-demo-timetrack,<br>then image path, Pod Security, hostnames"}

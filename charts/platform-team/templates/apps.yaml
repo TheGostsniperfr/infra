@@ -53,32 +53,4 @@ spec:
     .dockerconfigjson: '{"auths":{"{{ $.Values.registryHost }}":{"username":"{% .Secrets.username %}","password":"{% .Secrets.password %}"}}}'
   type: kubernetes.io/dockerconfigjson
 ---
-{{- if $cfg.database }}
-# Database of the app. The operator writes the credentials to the Secret
-# app.{{ $app }}-db.credentials.postgresql.acid.zalan.do in this namespace (keys username, password).
-apiVersion: acid.zalan.do/v1
-kind: postgresql
-metadata:
-  name: {{ $app }}-db
-  namespace: {{ $ns }}
-spec:
-  teamId: {{ $.Values.team }}
-  numberOfInstances: 1
-  postgresql:
-    version: {{ $.Values.database.version | quote }}
-  volume:
-    size: {{ $.Values.database.size }}
-    storageClass: {{ $.Values.database.storageClass }}
-  users:
-    app: []
-  databases:
-    app: app
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    limits:
-      memory: 512Mi
----
-{{- end }}
 {{- end }}

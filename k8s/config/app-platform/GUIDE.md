@@ -61,8 +61,9 @@ What that does, system by system, as it would be done by hand:
 4. **Cloudflare** (`terraform/apps.tf`): a proxied CNAME `<app>-<team>`.
 5. **Kubernetes** (Argo CD, `charts/platform-team`)
    - Namespace `<team>-<app>`: quota, LimitRange, network policies, Kyverno rules, registry pull
-     secret, Postgres database.
-   - Argo CD project `app-<team>-<app>`, and one Application per component.
+     secret.
+   - Argo CD project `app-<team>-<app>`, and one Application `<team>-<app>`: both components and
+     the Postgres database.
    - In `kyverno`: the app's public key. In `argocd`: the team's read token for the deploy repositories.
 6. **First deployment**: `terraform apply` starts one pipeline on `main` of each repository
    (`terraform_data.app_first_pipeline`). The app is online once both have released and the
@@ -117,7 +118,7 @@ forward instead, with a new commit.
 |---|---|
 | Did my pipeline work? | The repository > Build > Pipelines |
 | Which version is released, and what was before? | `apps/<team>/<app>/deploy`, its commits. Or Operate > Environments |
-| Is it deployed and healthy? | Argo CD, applications `<team>-<app>-<component>`. Platform admins only for now |
+| Is it deployed and healthy? | Argo CD, application `<team>-<app>`: components, database, Pods and logs. Platform admins only for now |
 | Why was it refused? | Argo CD, the sync error of the application: schema, Argo CD project or Kyverno |
 | My images | The repository > Deploy > Container registry |
 | Who may sign in, with which role | `roles` in `teams/<team>.yaml` |

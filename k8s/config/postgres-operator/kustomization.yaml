@@ -6,3 +6,18 @@ namespace: postgres-operator
 resources:
   - namespace.yaml
   - github.com/zalando/postgres-operator/manifests?ref=v1.15.1
+
+patches:
+  # Owner references on a cluster's StatefulSet, Services, Endpoints, PDB and Secrets, so Argo CD
+  # shows them, Pods included, under their `postgresql` object. PVCs never get one: they follow
+  # persistent_volume_claim_retention_policy (when_deleted: retain), so the data survives a deleted
+  # manifest as before. No delete protection is configured here, so the warning below costs nothing.
+  # https://opensource.zalando.com/postgres-operator/docs/administrator.html#owner-references-and-finalizers
+  # https://opensource.zalando.com/postgres-operator/docs/reference/operator_parameters.html
+  - target:
+      kind: ConfigMap
+      name: postgres-operator
+    patch: |-
+      - op: replace
+        path: /data/enable_owner_references
+        value: "true"

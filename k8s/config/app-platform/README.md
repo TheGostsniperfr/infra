@@ -11,9 +11,10 @@ To create and deploy an app, read [`GUIDE.md`](GUIDE.md). To change the platform
 
 1. A pipeline on `main` signs its image with the app's key in Vault and writes
    `deploy/<component>.yaml` (values and digest).
-2. Argo CD, Application `<team>-<app>-<component>` in project `app-<team>-<app>`, reads it with the
-   team's `read_repository` token and renders `charts/app`. The values the platform sets
-   (`platform.*`) take precedence over the file.
+2. Argo CD, Application `<team>-<app>` in project `app-<team>-<app>`, reads it with the team's
+   `read_repository` token and renders `charts/app` once per component, plus `charts/app-database`.
+   The values the platform sets (`platform.*`) take precedence over the file. That one Application
+   shows the whole app: workloads, their Pods and logs, the database and its Pods.
 3. Kyverno admits the Pods if the image is the app's and its signature checks out against the
    public key in `kyverno/cosign-<team>-<app>`.
 

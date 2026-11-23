@@ -1,0 +1,5 @@
+apiVersion: v2
+name: app-database
+description: "The Postgres database of one app of the app platform (Zalando postgres-operator). Values come from the platform only"
+type: application
+version: 0.1.0
