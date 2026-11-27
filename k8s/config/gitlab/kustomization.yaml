@@ -14,7 +14,7 @@ helmGlobals:
 helmCharts:
   - name: gitlab
     repo: https://charts.gitlab.io
-    version: "10.5.4"
+    version: "10.5.6"
     releaseName: gitlab
     namespace: gitlab
     valuesFile: values.yaml
