@@ -1,6 +1,7 @@
 # Minecraft Prometheus Exporter (Forge mod in the modpack) on port 19565: TPS and tick time
 # per dimension, loaded chunks, entities by type, JVM heap and GC.
 # Metrics: https://github.com/cpburnz/minecraft-prometheus-exporter/blob/v0.3.1/metrics.md
+# Arffornia mod counters (rewards, milestones, website API errors) on port 19566, same Service layout.
 # The overlay sets the namespace; only the http-metrics Service exposes that port.
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -14,3 +15,6 @@ spec:
     - port: http-metrics
       path: /metrics
       interval: 15s
+    - port: mod-metrics
+      path: /metrics
+      interval: 30s

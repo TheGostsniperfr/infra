@@ -1,0 +1,84 @@
+# Website app metrics: request rate, errors and latency by route group, reward backlog, votes,
+# progression events and the scheduler heartbeat. Served on the Service port `metrics` (9145) by the
+# nginx frontend; the HTTPRoute only routes `http`, so the endpoint is not public.
+# Needs a chart and images that include Arffornia_Website#196 (until then the target is absent and
+# these alerts stay silent: the gateway-level GatewayBackend5xx still covers the website).
+# Source: https://github.com/Arffornia/Arffornia_Website/tree/main/app/Metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: arffornia-website
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: arffornia-website-chart
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: arffornia-website
+spec:
+  groups:
+    - name: arffornia.website
+      rules:
+        - alert: WebsiteHigh5xxRate
+          expr: |
+            sum(rate(arffornia_http_requests_total{namespace="arffornia-website", status_class="5xx"}[5m]))
+            / sum(rate(arffornia_http_requests_total{namespace="arffornia-website"}[5m])) > 0.05
+            and sum(rate(arffornia_http_requests_total{namespace="arffornia-website"}[5m])) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+            namespace: arffornia-website
+          annotations:
+            summary: "The website answers {{ $value | humanizePercentage }} 5xx"
+            description: "More than 5% of the website requests fail for 5 minutes. The dashboard 'Arffornia beta' shows the route group; the runbook has the first commands."
+
+        - alert: WebsiteP95LatencyHigh
+          expr: |
+            histogram_quantile(0.95, sum by (le) (rate(arffornia_http_request_duration_seconds_bucket{namespace="arffornia-website"}[5m]))) > 2
+            and sum(rate(arffornia_http_requests_total{namespace="arffornia-website"}[5m])) > 0.05
+          for: 10m
+          labels:
+            severity: warning
+            namespace: arffornia-website
+          annotations:
+            summary: "Website p95 latency is {{ $value | humanizeDuration }}"
+            description: "Half of a second is normal here. Above 2 seconds for 10 minutes usually means a slow query or a saturated php-fpm pool."
+
+        - alert: WebsiteMetricsTargetDown
+          expr: up{namespace="arffornia-website", endpoint="metrics"} == 0
+          for: 10m
+          labels:
+            severity: warning
+            namespace: arffornia-website
+          annotations:
+            summary: "Prometheus cannot scrape the website metrics"
+            description: "The RED panels and the alerts above are blind. Check that the frontend container serves the metrics port."
+
+        - alert: WebsiteSchedulerStalled
+          expr: |
+            time() - arffornia_scheduler_last_heartbeat_timestamp_seconds{namespace="arffornia-website"} > 600
+            and arffornia_scheduler_last_heartbeat_timestamp_seconds{namespace="arffornia-website"} > 0
+          for: 5m
+          labels:
+            severity: warning
+            namespace: arffornia-website
+          annotations:
+            summary: "The website scheduler has not run for {{ $value | humanizeDuration }}"
+            description: "The schedule:work container beats every minute. Daily jobs (vote IP pruning, token pruning) are not running."
+
+        - alert: RewardApiErrors
+          expr: |
+            sum(increase(arffornia_http_requests_total{namespace="arffornia-website", group="rewards", status_class="5xx"}[10m])) >= 3
+          for: 0m
+          labels:
+            severity: critical
+            namespace: arffornia-website
+          annotations:
+            summary: "The rewards API returned {{ $value | humanize }} server errors in 10 minutes"
+            description: "Players cannot claim shop or vote rewards. Look at the website logs for the exception, then at the database."

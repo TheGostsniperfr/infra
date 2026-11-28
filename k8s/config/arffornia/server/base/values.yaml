@@ -398,6 +398,14 @@ minecraftServer:
         type: ClusterIP
         port: 19565
 
+    - name: mod-metrics
+      containerPort: 19566
+      protocol: TCP
+      service:
+        enabled: true
+        type: ClusterIP
+        port: 19566
+
     - name: bluemap-live
       containerPort: 8100
       protocol: TCP
