@@ -10,6 +10,7 @@ Keycloak and Cloudflare. Read this before changing anything here.
 | `k8s/config/<app>/` | What each Application deploys: kustomize, Helm values, `VaultSecret`s |
 | `charts/` | Local Helm charts (`secure-route`, the Arffornia charts) |
 | `terraform/` | Vault (auth, policies, roles, secrets), Keycloak, Cloudflare DNS. See `terraform/Readme.md` |
+| `terraform/homelab/` | Separate root: Proxmox guests (bpg/proxmox) and the Tailscale tailnet. See its `README.md` |
 | `docs/network/ip-plan.md` | Who owns which LAN address. Update it with anything that pins an IP |
 | `architecture/` | noodle diagrams: one system per directory (`model.yaml`, `views/`, `layouts/`), renders in `architecture/diagrams/` |
 | `.noodle/icons/` | Project icons for noodle, passed with `-icons .noodle/icons` |

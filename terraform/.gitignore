@@ -2,3 +2,4 @@
 *.tfstate
 *.tfstate.*
 secrets_variables.tfvars
+.edge-template
