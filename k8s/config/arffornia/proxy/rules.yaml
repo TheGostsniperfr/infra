@@ -91,6 +91,15 @@ spec:
             summary: "{{ $labels.namespace }} runs below 10 TPS ({{ $value | humanizeDuration }} per tick)"
             description: "The game is visibly broken for players. Look for an entity or chunk loading spike on the dashboard, or a stuck mod in the server logs."
 
+        - alert: MinecraftServerTPSLow
+          expr: arffornia:server_tps:rate5m < 15 and on (namespace) arffornia:server_wanted == 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.namespace }} runs at {{ $value | humanize }} TPS"
+            description: "Ticks per second stayed under 15 for 5 minutes (20 is normal), so the game feels slow before MinecraftServerSevereLag fires. The panel 'TPS and MSPT' of the dashboard 'Arffornia beta' shows the trend."
+
         - alert: MinecraftHeapPressure
           expr: |
             max by (namespace) (jvm_memory_bytes_used{area="heap", namespace=~"arffornia-server-.*"})
@@ -114,3 +123,23 @@ spec:
           annotations:
             summary: "{{ $labels.namespace }} spends {{ $value | humanizePercentage }} of its time in GC pauses"
             description: "Stop-the-world pauses above 10% of wall time cause lag spikes. Usually the heap is too small for the loaded world."
+
+    - name: arffornia.mod
+      rules:
+        - alert: ModApiErrors
+          expr: sum by (namespace) (increase(arffornia_api_errors_total{kind=~"5xx|network", namespace=~"arffornia-server-.*"}[10m])) >= 5
+          for: 0m
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $labels.namespace }} saw {{ $value | humanize }} website API failures in 10 minutes"
+            description: "The game server cannot reach the website API or gets 5xx answers: rewards and milestone events queue up (arffornia_progression_outbox_pending)."
+
+        - alert: RewardDeliveryFailed
+          expr: sum by (namespace) (increase(arffornia_reward_claims_total{result="delivery_failed", namespace=~"arffornia-server-.*"}[15m])) > 0
+          for: 0m
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $labels.namespace }} claimed a reward but could not give it"
+            description: "The website marked the reward claimed and the game threw while delivering it: redo it by hand. The server log has the player and the contents."

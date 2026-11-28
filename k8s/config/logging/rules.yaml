@@ -39,3 +39,23 @@ data:
             annotations:
               summary: "{{ $labels.namespace }} world backup failed"
               description: "mc-backup or its post-backup check logged an error in the last hour: the newest archive may be missing or broken."
+
+          # The backup container is silent while players are online and loops "No players online"
+          # while empty, so backup age cannot be read from its output alone. Players joined in the
+          # last 12h with no verified archive for 50h (interval 24h) means the loop is broken.
+          # A player who joins once, leaves, and returns after 50h of silence can trip it: the
+          # next backup then runs and the alert resolves by itself.
+          - alert: MinecraftBackupStale
+            expr: |
+              (sum by (namespace) (
+                count_over_time({namespace=~"arffornia-server-.*", container=~"arffornia-server-.*-minecraft"}
+                  |= "joined the game" [12h])) > 0)
+              unless on (namespace)
+              (sum by (namespace) (
+                count_over_time({namespace=~"arffornia-server-.*", container=~".*-mc-backup"}
+                  |= "post-backup: verified" [50h])) > 0)
+            labels:
+              severity: warning
+            annotations:
+              summary: "{{ $labels.namespace }} has no verified world backup for 50 hours"
+              description: "Players are active but mc-backup produced no archive that post-backup verified in 50 hours. Check the mc-backup container logs and the free space of the /backups volume."
